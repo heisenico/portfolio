@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="en" class="is-booting">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="color-scheme" content="dark" />
+    <title>Nicholas Ferrer — Staff Front-End Engineer</title>
+    <meta
+      name="description"
+      content="Portfolio of Nicholas Ferrer, staff front-end engineer working on rendering, interaction and design systems."
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@300;400;500&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <canvas id="stage" aria-hidden="true"></canvas>
+
+    <!-- Liquid-glass SVG filter definitions are injected here at runtime. -->
+    <svg id="lg-defs" aria-hidden="true" focusable="false"></svg>
+
+    <div id="veil" aria-hidden="true"></div>
+
+    <main id="ui"></main>
+
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
