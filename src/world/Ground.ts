@@ -22,7 +22,7 @@ import { groundFragment, groundVertex } from '../fx/shaders/ground'
 
 const RINGS = 16
 const SPOKES = 48
-const RADIUS = 46
+const RADIUS = 34
 const SEGMENTS_PER_RING = 96
 
 export class Ground {
@@ -75,7 +75,7 @@ export class Ground {
           uBand: { value: 3.2 },
           uTime: { value: 0 },
           uColor: { value: new Color(color) },
-          uFadeRadius: { value: RADIUS * 0.62 },
+          uFadeRadius: { value: RADIUS * 0.72 },
           uOpacity: { value: 1 },
         },
       ]),

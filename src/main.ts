@@ -6,6 +6,7 @@ import { Loop } from './core/Loop'
 import { Pointer } from './core/Pointer'
 import { Quality } from './core/Quality'
 import { Stage } from './core/Stage'
+import { Post } from './fx/Post'
 import { generateBranches } from './world/BranchSystem'
 import { Ground } from './world/Ground'
 import { ScanPulse } from './world/ScanPulse'
@@ -36,6 +37,8 @@ let scanClock = 0
 let scanFrozen = false
 const SCAN_DURATION = 2.9
 
+const post = new Post(stage, quality)
+
 // Frame the tree from its real extent, and refit whenever the viewport changes.
 rig.frame(new Vector3(0, branches.centreY, 0), branches.halfWidth, branches.halfHeight)
 stage.onResize(() => rig.refit())
@@ -53,7 +56,7 @@ loop.add((dt, elapsed) => {
   ground.update(dt, elapsed, scan.radius)
 })
 loop.add(() => quality.sample(loop.frameMs))
-loop.add(() => stage.renderDefault())
+loop.add((dt, elapsed) => post.render(dt, elapsed))
 
 loop.start()
 document.documentElement.classList.remove('is-booting')
@@ -70,6 +73,7 @@ document.getElementById('veil')?.classList.add('is-lifted')
   pointer,
   rig,
   loop,
+  post,
   scan,
   pulse,
   ground,
@@ -109,7 +113,7 @@ document.getElementById('veil')?.classList.add('is-lifted')
     scan.setRadius(scan.maxRadius * progress)
     pulse.update(0, loop.elapsed, scan.radius, scan.progress)
     ground.update(0, loop.elapsed, scan.radius)
-    stage.renderDefault()
+    post.render(0, loop.elapsed)
   },
   step(dt = 1 / 60, frames = 1) {
     for (let i = 0; i < frames; i++) loop.stepManual(dt)

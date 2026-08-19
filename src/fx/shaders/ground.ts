@@ -43,8 +43,11 @@ void main() {
 
   float wave = 1.0 - smoothstep(0.0, uBand, lead);
 
-  // Dissolve outward so the grid has no visible edge.
-  float radial = 1.0 - smoothstep(uFadeRadius * 0.35, uFadeRadius, vRadius);
+  // Dissolve outward so the grid has no visible edge. The ramp starts close in
+  // and is squared, because a late or linear fade leaves the outermost ring
+  // legible as a hard arc that reads like the rim of a dome.
+  float radial = 1.0 - smoothstep(uFadeRadius * 0.12, uFadeRadius, vRadius);
+  radial *= radial;
 
   // A slow outward breath, so the floor feels alive rather than printed on.
   float breath = sin(vRadius * 0.55 - uTime * 0.8) * 0.5 + 0.5;
