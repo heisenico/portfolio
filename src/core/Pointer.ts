@@ -31,7 +31,7 @@ export class Pointer {
   constructor(
     private camera: PerspectiveCamera,
     /** Distance from the camera at which `world` is computed. */
-    private focalDistance = 26,
+    public focalDistance = 26,
   ) {
     window.addEventListener('pointermove', this.onMove, { passive: true })
     window.addEventListener('pointerdown', this.onDown, { passive: true })

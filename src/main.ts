@@ -10,6 +10,8 @@ import { Post } from './fx/Post'
 import { generateBranches } from './world/BranchSystem'
 import { Ground } from './world/Ground'
 import { ScanPulse } from './world/ScanPulse'
+import { Motes } from './world/Motes'
+import { PointerTrail } from './world/PointerTrail'
 import { ScanReveal } from './world/ScanReveal'
 
 const canvas = document.getElementById('stage') as HTMLCanvasElement
@@ -30,7 +32,14 @@ const branches = generateBranches({ origin: SCAN_ORIGIN, depth: TREE_DEPTH })
 const scan = new ScanReveal(branches, TREE_DEPTH)
 const pulse = new ScanPulse(SCAN_ORIGIN)
 const ground = new Ground(SCAN_ORIGIN)
-stage.scene.add(scan.group, pulse.mesh, ground.mesh)
+const motes = new Motes(quality, SCAN_ORIGIN)
+const trail = new PointerTrail(quality)
+stage.scene.add(scan.group, pulse.mesh, ground.mesh, motes.points, trail.points)
+
+stage.onResize((size) => {
+  motes.setDpr(size.dpr)
+  trail.setDpr(size.dpr)
+})
 
 // TEMPORARY (replaced by Intro): ramp the wavefront so the reveal is visible.
 let scanClock = 0
@@ -43,7 +52,12 @@ const post = new Post(stage, quality)
 rig.frame(new Vector3(0, branches.centreY, 0), branches.halfWidth, branches.halfHeight)
 stage.onResize(() => rig.refit())
 
-loop.add((dt) => pointer.update(dt))
+loop.add((dt) => {
+  // Keep emitted particles on the plane the tree occupies, whatever the
+  // camera distance currently is.
+  pointer.focalDistance = rig.radius
+  pointer.update(dt)
+})
 loop.add((dt, elapsed) => rig.update(dt, elapsed))
 loop.add((dt, elapsed) => {
   if (!scanFrozen) {
@@ -54,6 +68,8 @@ loop.add((dt, elapsed) => {
   scan.update(dt, elapsed)
   pulse.update(dt, elapsed, scan.radius, scan.progress)
   ground.update(dt, elapsed, scan.radius)
+  motes.update(dt, elapsed, pointer.world, scan.progress)
+  trail.update(dt, pointer)
 })
 loop.add(() => quality.sample(loop.frameMs))
 loop.add((dt, elapsed) => post.render(dt, elapsed))
@@ -74,6 +90,8 @@ document.getElementById('veil')?.classList.add('is-lifted')
   rig,
   loop,
   post,
+  motes,
+  trail,
   scan,
   pulse,
   ground,
