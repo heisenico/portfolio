@@ -1,6 +1,6 @@
 import './styles/base.css'
 
-import { Vector3 } from 'three'
+import { Raycaster, Vector2, Vector3 } from 'three'
 import { CameraRig } from './core/CameraRig'
 import { Loop } from './core/Loop'
 import { Pointer } from './core/Pointer'
@@ -10,6 +10,8 @@ import { Post } from './fx/Post'
 import { generateBranches } from './world/BranchSystem'
 import { Ground } from './world/Ground'
 import { ScanPulse } from './world/ScanPulse'
+import { Cat } from './world/Cat'
+import { CatBrain } from './world/CatBrain'
 import { Motes } from './world/Motes'
 import { PointerTrail } from './world/PointerTrail'
 import { ScanReveal } from './world/ScanReveal'
@@ -34,7 +36,14 @@ const pulse = new ScanPulse(SCAN_ORIGIN)
 const ground = new Ground(SCAN_ORIGIN)
 const motes = new Motes(quality, SCAN_ORIGIN)
 const trail = new PointerTrail(quality)
-stage.scene.add(scan.group, pulse.mesh, ground.mesh, motes.points, trail.points)
+const cat = new Cat()
+const catBrain = new CatBrain(branches.perches)
+stage.scene.add(scan.group, pulse.mesh, ground.mesh, motes.points, trail.points, cat.group)
+
+// Hover test against the cat's forgiving proxy rather than its assembled parts.
+const raycaster = new Raycaster()
+const ndc = new Vector2()
+let catHovered = false
 
 stage.onResize((size) => {
   motes.setDpr(size.dpr)
@@ -71,6 +80,19 @@ loop.add((dt, elapsed) => {
   motes.update(dt, elapsed, pointer.world, scan.progress)
   trail.update(dt, pointer)
 })
+
+loop.add((dt, elapsed) => {
+  if (cat.group.visible) {
+    ndc.copy(pointer.ndc)
+    raycaster.setFromCamera(ndc, stage.camera)
+    catHovered = raycaster.intersectObject(cat.proxy, false).length > 0
+  } else {
+    catHovered = false
+  }
+
+  cat.setPose(catBrain.update(dt, catHovered))
+  cat.update(dt, elapsed)
+})
 loop.add(() => quality.sample(loop.frameMs))
 loop.add((dt, elapsed) => post.render(dt, elapsed))
 
@@ -90,6 +112,11 @@ document.getElementById('veil')?.classList.add('is-lifted')
   rig,
   loop,
   post,
+  cat,
+  catBrain,
+  get catHovered() {
+    return catHovered
+  },
   motes,
   trail,
   scan,
