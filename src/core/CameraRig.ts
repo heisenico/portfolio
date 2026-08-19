@@ -24,9 +24,24 @@ const DRIFT_POLAR = 0.032
 /** Reduced motion keeps parallax legible but drops it well below vestibular range. */
 const REDUCED_SCALE = 0.3
 
+/**
+ * Margin applied to the subject's half-extents. 1.0 fits it exactly to the
+ * frame edge; above 1 leaves air around it.
+ *
+ * Fitting a bounding *sphere* instead over-tightens the vertical, because a
+ * tree's diagonal is much larger than its half-height — that cropped the
+ * canopy on every viewport.
+ */
+const FIT_MARGIN = 1.06
+const MIN_RADIUS = 12
+const MAX_RADIUS = 60
+
 export class CameraRig {
   readonly focus = new Vector3(0, 7.4, 0)
   radius = 21
+
+  private halfWidth = 8
+  private halfHeight = 10
 
   private azimuth = 0
   private polar = 0
@@ -38,6 +53,33 @@ export class CameraRig {
     private pointer: Pointer,
     private quality: Quality,
   ) {}
+
+  /**
+   * Set the subject to keep in frame. The distance is then derived from the
+   * camera's own field of view and aspect, so framing survives any viewport —
+   * a hardcoded distance crops the canopy on a portrait phone and strands the
+   * tree in the middle of an ultrawide.
+   */
+  frame(focus: Vector3, halfWidth: number, halfHeight: number): void {
+    this.focus.copy(focus)
+    this.halfWidth = halfWidth
+    this.halfHeight = halfHeight
+    this.refit()
+  }
+
+  /** Recompute the orbit distance. Call whenever the projection changes. */
+  refit(): void {
+    const vFov = (this.camera.fov * Math.PI) / 180
+    const hHalfAngle = Math.atan(Math.tan(vFov / 2) * this.camera.aspect)
+
+    // Distance at which each axis exactly fills its half-angle; take whichever
+    // is further so both fit.
+    const distance = Math.max(
+      (this.halfHeight * FIT_MARGIN) / Math.tan(vFov / 2),
+      (this.halfWidth * FIT_MARGIN) / Math.tan(hHalfAngle),
+    )
+    this.radius = Math.min(Math.max(distance, MIN_RADIUS), MAX_RADIUS)
+  }
 
   update(dt: number, elapsed: number): void {
     const reduced = this.quality.reducedMotion

@@ -32,6 +32,11 @@ export interface BranchData {
   bounds: number
   segmentCount: number
   markerCount: number
+  /** Mid-height of the tree, so the camera can aim at its centre of mass. */
+  centreY: number
+  /** Half-extents about the tree's centre, for framing. */
+  halfWidth: number
+  halfHeight: number
 }
 
 export interface Perch {
@@ -334,6 +339,17 @@ export function generateBranches(options: BranchOptions = {}): BranchData {
   grow(ctx, new Vector3(0, -2.4, 0), new Vector3(0.06, 1, 0.03), trunkLength, 0)
   grow(ctx, new Vector3(0, -1.2, 0), new Vector3(-0.34, 1, -0.16), trunkLength * 0.72, 1)
 
+  let minY = Infinity
+  let maxY = -Infinity
+  let halfWidth = 0
+  for (let i = 0; i < ctx.positions.length; i += 3) {
+    const y = ctx.positions[i + 1]!
+    if (y < minY) minY = y
+    if (y > maxY) maxY = y
+    // Horizontal reach in the worst case, since the camera orbits.
+    halfWidth = Math.max(halfWidth, Math.hypot(ctx.positions[i]!, ctx.positions[i + 2]!))
+  }
+
   return {
     positions: new Float32Array(ctx.positions),
     distances: new Float32Array(ctx.distances),
@@ -346,5 +362,8 @@ export function generateBranches(options: BranchOptions = {}): BranchData {
     bounds: ctx.bounds,
     segmentCount: ctx.positions.length / 6,
     markerCount: ctx.markerScales.length,
+    centreY: (minY + maxY) / 2,
+    halfWidth,
+    halfHeight: (maxY - minY) / 2,
   }
 }

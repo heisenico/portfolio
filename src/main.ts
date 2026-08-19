@@ -7,6 +7,8 @@ import { Pointer } from './core/Pointer'
 import { Quality } from './core/Quality'
 import { Stage } from './core/Stage'
 import { generateBranches } from './world/BranchSystem'
+import { Ground } from './world/Ground'
+import { ScanPulse } from './world/ScanPulse'
 import { ScanReveal } from './world/ScanReveal'
 
 const canvas = document.getElementById('stage') as HTMLCanvasElement
@@ -25,12 +27,18 @@ const TREE_DEPTH = 6
 
 const branches = generateBranches({ origin: SCAN_ORIGIN, depth: TREE_DEPTH })
 const scan = new ScanReveal(branches, TREE_DEPTH)
-stage.scene.add(scan.group)
+const pulse = new ScanPulse(SCAN_ORIGIN)
+const ground = new Ground(SCAN_ORIGIN)
+stage.scene.add(scan.group, pulse.mesh, ground.mesh)
 
 // TEMPORARY (replaced by Intro): ramp the wavefront so the reveal is visible.
 let scanClock = 0
 let scanFrozen = false
 const SCAN_DURATION = 2.9
+
+// Frame the tree from its real extent, and refit whenever the viewport changes.
+rig.frame(new Vector3(0, branches.centreY, 0), branches.halfWidth, branches.halfHeight)
+stage.onResize(() => rig.refit())
 
 loop.add((dt) => pointer.update(dt))
 loop.add((dt, elapsed) => rig.update(dt, elapsed))
@@ -41,6 +49,8 @@ loop.add((dt, elapsed) => {
     scan.setRadius(scan.maxRadius * (1 - Math.pow(1 - t, 3)))
   }
   scan.update(dt, elapsed)
+  pulse.update(dt, elapsed, scan.radius, scan.progress)
+  ground.update(dt, elapsed, scan.radius)
 })
 loop.add(() => quality.sample(loop.frameMs))
 loop.add(() => stage.renderDefault())
@@ -61,6 +71,8 @@ document.getElementById('veil')?.classList.add('is-lifted')
   rig,
   loop,
   scan,
+  pulse,
+  ground,
   branches,
   /**
    * Copy the current drawing buffer into a DOM image over the page.
@@ -95,6 +107,8 @@ document.getElementById('veil')?.classList.add('is-lifted')
   freezeScan(progress: number) {
     scanFrozen = true
     scan.setRadius(scan.maxRadius * progress)
+    pulse.update(0, loop.elapsed, scan.radius, scan.progress)
+    ground.update(0, loop.elapsed, scan.radius)
     stage.renderDefault()
   },
   step(dt = 1 / 60, frames = 1) {
