@@ -20,6 +20,11 @@ import type { Quality } from './Quality'
 export const BG_COLOR = 0x04060a
 export const FOG_DENSITY = 0.019
 
+export interface StageOptions {
+  /** Retain the drawing buffer so screen captures reflect the last render. */
+  preserveDrawingBuffer?: boolean | undefined
+}
+
 export interface StageSize {
   width: number
   height: number
@@ -35,10 +40,13 @@ export class Stage {
   readonly target = new Vector2(0, 0)
 
   private resizeHandlers: ((size: StageSize) => void)[] = []
+  private observer: ResizeObserver | undefined
+  private initialised = false
 
   constructor(
     readonly canvas: HTMLCanvasElement,
     private quality: Quality,
+    options: StageOptions = {},
   ) {
     this.renderer = new WebGLRenderer({
       canvas,
@@ -46,11 +54,15 @@ export class Stage {
       alpha: false,
       powerPreference: 'high-performance',
       stencil: false,
+      // Off in production. Without it the drawing buffer may be discarded on
+      // composite, so an external screen capture can show a stale frame rather
+      // than the frame just rendered.
+      preserveDrawingBuffer: options.preserveDrawingBuffer ?? false,
     })
     this.renderer.setClearColor(new Color(BG_COLOR), 1)
     this.renderer.outputColorSpace = SRGBColorSpace
     this.renderer.toneMapping = ACESFilmicToneMapping
-    this.renderer.toneMappingExposure = 1.05
+    this.renderer.toneMappingExposure = 1.22
 
     this.scene = new Scene()
     this.scene.fog = new FogExp2(BG_COLOR, FOG_DENSITY)
@@ -63,14 +75,35 @@ export class Stage {
     this.applySize()
 
     window.addEventListener('resize', this.applySize, { passive: true })
+    // A page opened in a background tab reports a zero-size viewport, and no
+    // `resize` event follows when it is finally shown. ResizeObserver does fire
+    // then, so it is the only reliable way to learn the real size.
+    if (typeof ResizeObserver !== 'undefined') {
+      this.observer = new ResizeObserver(() => this.applySize())
+      this.observer.observe(document.documentElement)
+    }
     // A downgrade lowers the DPR cap, which only takes effect on a resize.
     quality.onDowngrade(() => this.applySize())
   }
 
   private applySize = (): void => {
-    const width = window.innerWidth
-    const height = window.innerHeight
+    // Never size to zero: WebGL clamps to a 1x1 drawing buffer and everything
+    // downstream silently renders nothing.
+    const width = Math.max(window.innerWidth || document.documentElement.clientWidth, 1)
+    const height = Math.max(window.innerHeight || document.documentElement.clientHeight, 1)
     const dpr = Math.min(window.devicePixelRatio || 1, this.quality.dprCap)
+
+    // The first call must always run: a hidden tab reports 1x1, which would
+    // otherwise match the initial size and skip renderer setup entirely.
+    if (
+      this.initialised &&
+      width === this.size.width &&
+      height === this.size.height &&
+      dpr === this.size.dpr
+    ) {
+      return
+    }
+    this.initialised = true
 
     this.size.width = width
     this.size.height = height
@@ -99,6 +132,7 @@ export class Stage {
 
   dispose(): void {
     window.removeEventListener('resize', this.applySize)
+    this.observer?.disconnect()
     this.renderer.dispose()
   }
 }

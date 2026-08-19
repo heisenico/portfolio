@@ -1,35 +1,47 @@
 import './styles/base.css'
 
-import { BoxGeometry, Mesh, MeshBasicMaterial, TorusKnotGeometry } from 'three'
+import { Vector3 } from 'three'
 import { CameraRig } from './core/CameraRig'
 import { Loop } from './core/Loop'
 import { Pointer } from './core/Pointer'
 import { Quality } from './core/Quality'
 import { Stage } from './core/Stage'
+import { generateBranches } from './world/BranchSystem'
+import { ScanReveal } from './world/ScanReveal'
 
 const canvas = document.getElementById('stage') as HTMLCanvasElement
 
+/** `?verify` makes the canvas capturable by external screenshot tooling. */
+const VERIFY = new URLSearchParams(location.search).has('verify')
+
 const quality = new Quality()
-const stage = new Stage(canvas, quality)
+const stage = new Stage(canvas, quality, { preserveDrawingBuffer: VERIFY })
 const loop = new Loop()
 const pointer = new Pointer(stage.camera)
 const rig = new CameraRig(stage.camera, pointer, quality)
 
-// TEMPORARY (removed in the branch task): reference geometry at three depths so
-// parallax separation is visible before the tree exists.
-const refs: Mesh[] = []
-for (let i = 0; i < 3; i++) {
-  const m = new Mesh(
-    i === 1 ? new TorusKnotGeometry(2, 0.5, 80, 12) : new BoxGeometry(2, 2, 2),
-    new MeshBasicMaterial({ color: 0x7fe9ff, wireframe: true }),
-  )
-  m.position.set((i - 1) * 7, 6.5, (i - 1) * 9)
-  stage.scene.add(m)
-  refs.push(m)
-}
+const SCAN_ORIGIN = new Vector3(0, 6.5, 0)
+const TREE_DEPTH = 6
+
+const branches = generateBranches({ origin: SCAN_ORIGIN, depth: TREE_DEPTH })
+const scan = new ScanReveal(branches, TREE_DEPTH)
+stage.scene.add(scan.group)
+
+// TEMPORARY (replaced by Intro): ramp the wavefront so the reveal is visible.
+let scanClock = 0
+let scanFrozen = false
+const SCAN_DURATION = 2.9
 
 loop.add((dt) => pointer.update(dt))
 loop.add((dt, elapsed) => rig.update(dt, elapsed))
+loop.add((dt, elapsed) => {
+  if (!scanFrozen) {
+    scanClock = Math.min(scanClock + dt, SCAN_DURATION)
+    const t = scanClock / SCAN_DURATION
+    scan.setRadius(scan.maxRadius * (1 - Math.pow(1 - t, 3)))
+  }
+  scan.update(dt, elapsed)
+})
 loop.add(() => quality.sample(loop.frameMs))
 loop.add(() => stage.renderDefault())
 
@@ -48,6 +60,43 @@ document.getElementById('veil')?.classList.add('is-lifted')
   pointer,
   rig,
   loop,
+  scan,
+  branches,
+  /**
+   * Copy the current drawing buffer into a DOM image over the page.
+   *
+   * External screen capture reads the compositor, which serves a stale frame
+   * for a WebGL canvas — verified: the GL buffer held a gated scan while the
+   * capture showed a completed one. An <img> is composited normally, so this
+   * is the only capture path that reflects the frame actually rendered.
+   * Requires `?verify` for preserveDrawingBuffer.
+   */
+  snap() {
+    let img = document.getElementById('__snap') as HTMLImageElement | null
+    if (!img) {
+      img = document.createElement('img')
+      img.id = '__snap'
+      Object.assign(img.style, {
+        position: 'fixed',
+        inset: '0',
+        width: '100%',
+        height: '100%',
+        zIndex: '9999',
+      })
+      document.body.appendChild(img)
+    }
+    img.src = canvas.toDataURL('image/png')
+    return img.src.length
+  },
+  unsnap() {
+    document.getElementById('__snap')?.remove()
+  },
+  /** Pin the wavefront at a fraction of its travel and redraw, for inspection. */
+  freezeScan(progress: number) {
+    scanFrozen = true
+    scan.setRadius(scan.maxRadius * progress)
+    stage.renderDefault()
+  },
   step(dt = 1 / 60, frames = 1) {
     for (let i = 0; i < frames; i++) loop.stepManual(dt)
   },

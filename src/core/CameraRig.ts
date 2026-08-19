@@ -25,8 +25,8 @@ const DRIFT_POLAR = 0.032
 const REDUCED_SCALE = 0.3
 
 export class CameraRig {
-  readonly focus = new Vector3(0, 6.5, 0)
-  radius = 30
+  readonly focus = new Vector3(0, 7.4, 0)
+  radius = 21
 
   private azimuth = 0
   private polar = 0
