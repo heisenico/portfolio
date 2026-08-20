@@ -1,0 +1,369 @@
+/*
+ * Page layout.
+ *
+ * The document scrolls normally and the cards sit in ordinary flow; the world
+ * behind them is coupled through a transform offset, not by positioning each
+ * card from a projected 3D point. Keeping real layout means the page stays
+ * responsive, selectable, and keyboard-navigable, which projecting every card
+ * per frame would have cost.
+ */
+
+#ui {
+  --parallax-x: 0px;
+  --parallax-y: 0px;
+}
+
+#ui > * {
+  pointer-events: none;
+}
+
+/* Only the things you can actually interact with take pointer events, so the
+   world keeps receiving pointermove everywhere else. */
+.card,
+.link,
+a,
+button {
+  pointer-events: auto;
+}
+
+/* ---------- Hero ---------- */
+
+.hero {
+  min-height: 100svh;
+  display: grid;
+  align-content: center;
+  padding: 0 var(--gutter);
+  max-width: 1320px;
+  margin: 0 auto;
+  transform: translate3d(
+    calc(var(--parallax-x) * 1.4),
+    calc(var(--parallax-y) * 1.4),
+    0
+  );
+}
+
+.eyebrow {
+  font-family: var(--font-mono);
+  font-size: clamp(0.66rem, 1.1vw, 0.78rem);
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--scan);
+  margin: 0 0 calc(var(--step) * 3);
+  opacity: 0.85;
+}
+
+.hero h1 {
+  font-size: clamp(2.6rem, 9vw, 6.4rem);
+  font-weight: 500;
+  line-height: 0.94;
+  letter-spacing: -0.035em;
+  margin: 0;
+  text-wrap: balance;
+}
+
+.hero .role {
+  font-size: clamp(1.05rem, 2.6vw, 1.6rem);
+  font-weight: 300;
+  color: var(--scan);
+  margin: calc(var(--step) * 2) 0 0;
+  letter-spacing: -0.01em;
+}
+
+.hero .blurb {
+  max-width: 46ch;
+  margin: calc(var(--step) * 4) 0 0;
+  font-size: clamp(0.98rem, 1.7vw, 1.14rem);
+  line-height: 1.62;
+  color: var(--ink-dim);
+  text-wrap: pretty;
+}
+
+.hero .meta {
+  display: flex;
+  gap: calc(var(--step) * 3);
+  align-items: center;
+  margin-top: calc(var(--step) * 5);
+  font-family: var(--font-mono);
+  font-size: 0.74rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+}
+
+.hero .meta span::before {
+  content: '';
+  display: inline-block;
+  width: 22px;
+  height: 1px;
+  background: var(--rule);
+  vertical-align: middle;
+  margin-right: calc(var(--step) * 1.5);
+}
+
+/* ---------- Sections ---------- */
+
+.section {
+  max-width: 1320px;
+  margin: 0 auto;
+  padding: clamp(60px, 12vh, 140px) var(--gutter);
+  transform: translate3d(var(--parallax-x), var(--parallax-y), 0);
+}
+
+.section-head {
+  display: flex;
+  align-items: baseline;
+  gap: calc(var(--step) * 3);
+  margin-bottom: calc(var(--step) * 6);
+}
+
+.section-head h2 {
+  font-size: clamp(1.05rem, 2vw, 1.28rem);
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  margin: 0;
+}
+
+.section-head .rule {
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(90deg, var(--rule), transparent);
+}
+
+.section-head .count {
+  font-family: var(--font-mono);
+  font-size: 0.74rem;
+  color: var(--ink-faint);
+  letter-spacing: 0.12em;
+}
+
+/* ---------- Cards ---------- */
+
+.cards {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 330px), 1fr));
+  gap: clamp(16px, 2.4vw, 26px);
+}
+
+.card {
+  --glass-radius: 20px;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--step) * 2);
+  padding: clamp(20px, 2.6vw, 30px);
+  min-height: 250px;
+  color: inherit;
+  text-decoration: none;
+  overflow: hidden;
+  /* Depth-scaled counter-parallax: nearer cards drift more than the section. */
+  transform: translate3d(
+    calc(var(--parallax-x) * var(--depth, 1)),
+    calc(var(--parallax-y) * var(--depth, 1)),
+    0
+  );
+}
+
+.card:hover,
+.card:focus-visible {
+  box-shadow:
+    0 26px 54px -26px rgba(0, 0, 0, 0.95),
+    0 3px 18px -6px color-mix(in srgb, var(--scan) 48%, transparent);
+}
+
+.card:hover::before,
+.card:focus-visible::before {
+  opacity: 1;
+}
+
+.card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.16em;
+  color: var(--ink-faint);
+}
+
+.card-index {
+  color: var(--scan);
+}
+
+.card h3 {
+  font-size: clamp(1.18rem, 2.1vw, 1.42rem);
+  font-weight: 500;
+  letter-spacing: -0.018em;
+  margin: 0;
+  line-height: 1.18;
+}
+
+.card p {
+  margin: 0;
+  font-size: 0.95rem;
+  line-height: 1.62;
+  color: var(--ink-dim);
+  text-wrap: pretty;
+}
+
+.card-metric {
+  display: flex;
+  align-items: baseline;
+  gap: calc(var(--step) * 1.5);
+  margin-top: auto;
+  padding-top: calc(var(--step) * 2);
+}
+
+.card-metric .value {
+  font-size: clamp(1.5rem, 3vw, 2rem);
+  font-weight: 300;
+  letter-spacing: -0.03em;
+  color: var(--scan-hot);
+  line-height: 1;
+}
+
+.card-metric .label {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.1em;
+  color: var(--ink-faint);
+  text-transform: uppercase;
+}
+
+.tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: calc(var(--step));
+  margin-top: auto;
+  padding-top: calc(var(--step) * 2);
+  list-style: none;
+  padding-left: 0;
+  margin-bottom: 0;
+}
+
+.card-metric + .tags {
+  margin-top: 0;
+  padding-top: calc(var(--step) * 1.5);
+}
+
+.tags li {
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.08em;
+  padding: 4px 9px;
+  border-radius: 100px;
+  color: var(--ink-dim);
+  border: 1px solid var(--rule);
+  background: color-mix(in srgb, var(--scan) 5%, transparent);
+}
+
+/* ---------- Contact ---------- */
+
+.links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: clamp(10px, 1.6vw, 16px);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.link {
+  --glass-radius: 100px;
+  display: inline-flex;
+  align-items: center;
+  gap: calc(var(--step) * 1.5);
+  padding: 13px 24px;
+  font-size: 0.92rem;
+  color: var(--ink);
+  text-decoration: none;
+  letter-spacing: 0.01em;
+}
+
+.link:hover {
+  color: var(--scan-hot);
+}
+
+.link::after {
+  content: '↗';
+  font-size: 0.8em;
+  opacity: 0.55;
+  transition: transform 320ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.link:hover::after {
+  transform: translate(2px, -2px);
+}
+
+/* ---------- Footer ---------- */
+
+.page-foot {
+  max-width: 1320px;
+  margin: 0 auto;
+  padding: 0 var(--gutter) clamp(40px, 8vh, 90px);
+  display: flex;
+  flex-wrap: wrap;
+  gap: calc(var(--step) * 2);
+  justify-content: space-between;
+  align-items: center;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  color: var(--ink-faint);
+}
+
+/* ---------- Scroll cue ---------- */
+
+.cue {
+  position: fixed;
+  left: 50%;
+  bottom: 26px;
+  translate: -50% 0;
+  z-index: 4;
+  font-family: var(--font-mono);
+  font-size: 0.66rem;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  pointer-events: none;
+  transition: opacity 500ms ease;
+}
+
+.cue::after {
+  content: '';
+  display: block;
+  width: 1px;
+  height: 26px;
+  margin: 10px auto 0;
+  background: linear-gradient(180deg, var(--rule), transparent);
+  animation: cue-drift 2.6s ease-in-out infinite;
+}
+
+.cue.is-gone {
+  opacity: 0;
+}
+
+@keyframes cue-drift {
+  0%,
+  100% {
+    transform: translateY(0);
+    opacity: 0.9;
+  }
+  50% {
+    transform: translateY(6px);
+    opacity: 0.35;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cue::after {
+    animation: none;
+  }
+  .hero,
+  .section,
+  .card {
+    transform: none;
+  }
+}

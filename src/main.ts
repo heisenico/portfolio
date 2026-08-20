@@ -1,4 +1,7 @@
 import './styles/base.css'
+import './styles/glass.css'
+import './styles/ui.css'
+import './styles/scan.css'
 
 import { Raycaster, Vector2, Vector3 } from 'three'
 import { CameraRig } from './core/CameraRig'
@@ -7,6 +10,10 @@ import { Pointer } from './core/Pointer'
 import { Quality } from './core/Quality'
 import { Stage } from './core/Stage'
 import { Post } from './fx/Post'
+import { Cards } from './ui/Cards'
+import { CardScan } from './ui/CardScan'
+import { Intro } from './ui/Intro'
+import { installLiquidGlass } from './ui/LiquidGlass'
 import { generateBranches } from './world/BranchSystem'
 import { Ground } from './world/Ground'
 import { ScanPulse } from './world/ScanPulse'
@@ -50,10 +57,13 @@ stage.onResize((size) => {
   trail.setDpr(size.dpr)
 })
 
-// TEMPORARY (replaced by Intro): ramp the wavefront so the reveal is visible.
-let scanClock = 0
+const glass = installLiquidGlass()
+
+const cards = new Cards(document.getElementById('ui') as HTMLElement)
+const cardScan = new CardScan(cards.cards)
+const intro = new Intro(scan, cardScan, quality, document.getElementById('veil'))
+
 let scanFrozen = false
-const SCAN_DURATION = 2.9
 
 const post = new Post(stage, quality)
 
@@ -69,11 +79,7 @@ loop.add((dt) => {
 })
 loop.add((dt, elapsed) => rig.update(dt, elapsed))
 loop.add((dt, elapsed) => {
-  if (!scanFrozen) {
-    scanClock = Math.min(scanClock + dt, SCAN_DURATION)
-    const t = scanClock / SCAN_DURATION
-    scan.setRadius(scan.maxRadius * (1 - Math.pow(1 - t, 3)))
-  }
+  if (!scanFrozen) intro.update(dt)
   scan.update(dt, elapsed)
   pulse.update(dt, elapsed, scan.radius, scan.progress)
   ground.update(dt, elapsed, scan.radius)
@@ -93,12 +99,16 @@ loop.add((dt, elapsed) => {
   cat.setPose(catBrain.update(dt, catHovered))
   cat.update(dt, elapsed)
 })
+loop.add((dt) => cards.update(dt, pointer))
 loop.add(() => quality.sample(loop.frameMs))
 loop.add((dt, elapsed) => post.render(dt, elapsed))
 
 loop.start()
 document.documentElement.classList.remove('is-booting')
-document.getElementById('veil')?.classList.add('is-lifted')
+
+console.info(
+  `[portfolio] tier=${quality.initialTier} glass=${glass.refraction ? 'refracting' : 'fallback'}`,
+)
 
 // Exposed for browser-driven verification.
 /**
@@ -112,6 +122,10 @@ document.getElementById('veil')?.classList.add('is-lifted')
   rig,
   loop,
   post,
+  cards,
+  cardScan,
+  intro,
+  glass,
   cat,
   catBrain,
   get catHovered() {
@@ -137,12 +151,15 @@ document.getElementById('veil')?.classList.add('is-lifted')
     if (!img) {
       img = document.createElement('img')
       img.id = '__snap'
+      // Between the canvas (z 0) and the UI layer (z 2), so a snapshot shows
+      // the rendered world *and* the live DOM content on top of it.
       Object.assign(img.style, {
         position: 'fixed',
         inset: '0',
         width: '100%',
         height: '100%',
-        zIndex: '9999',
+        zIndex: '1',
+        pointerEvents: 'none',
       })
       document.body.appendChild(img)
     }
