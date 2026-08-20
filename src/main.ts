@@ -23,6 +23,9 @@ import { CatBrain } from './world/CatBrain'
 import { Motes } from './world/Motes'
 import { PointerTrail } from './world/PointerTrail'
 import { ScanReveal } from './world/ScanReveal'
+import { TrunkRings } from './world/TrunkRings'
+import { aprendizado } from './content/aprendizado'
+import type { SkillHoverDetail } from './ui/pages/HomePage'
 
 const canvas = document.getElementById('stage') as HTMLCanvasElement
 
@@ -46,7 +49,22 @@ const motes = new Motes(quality, SCAN_ORIGIN)
 const trail = new PointerTrail(quality)
 const cat = new Cat()
 const catBrain = new CatBrain(branches.perches)
-stage.scene.add(scan.group, pulse.mesh, ground.mesh, motes.points, trail.points, cat.group)
+const rings = new TrunkRings(aprendizado.jaAprendi)
+stage.scene.add(
+  scan.group,
+  pulse.mesh,
+  ground.mesh,
+  motes.points,
+  trail.points,
+  cat.group,
+  rings.group,
+)
+
+// The page and the world are two views of the same fact: hovering a skill in
+// the DOM lights its band of years on the trunk.
+document.addEventListener('skill-hover', (event) => {
+  rings.setHighlight((event as CustomEvent<SkillHoverDetail>).detail.index)
+})
 
 // Hover test against the cat's forgiving proxy rather than its assembled parts.
 const raycaster = new Raycaster()
@@ -104,6 +122,7 @@ loop.add((dt, elapsed) => {
   ground.update(dt, elapsed, scan.radius)
   motes.update(dt, elapsed, pointer.world, scan.progress)
   trail.update(dt, pointer)
+  rings.update(dt, elapsed, scan.progress)
 })
 
 loop.add((dt, elapsed) => {
@@ -157,6 +176,7 @@ console.info(
   },
   motes,
   trail,
+  rings,
   scan,
   pulse,
   ground,
