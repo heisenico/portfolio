@@ -10,8 +10,9 @@ import { Pointer } from './core/Pointer'
 import { Quality } from './core/Quality'
 import { Stage } from './core/Stage'
 import { Post } from './fx/Post'
-import { Cards } from './ui/Cards'
-import { CardScan } from './ui/CardScan'
+import { Router } from './core/Router'
+import { PageHost } from './ui/PageHost'
+import { HomePage } from './ui/pages/HomePage'
 import { Intro } from './ui/Intro'
 import { installLiquidGlass } from './ui/LiquidGlass'
 import { generateBranches } from './world/BranchSystem'
@@ -59,9 +60,27 @@ stage.onResize((size) => {
 
 const glass = installLiquidGlass()
 
-const cards = new Cards(document.getElementById('ui') as HTMLElement)
-const cardScan = new CardScan(cards.cards)
-const intro = new Intro(scan, cardScan, quality, document.getElementById('veil'))
+const host = new PageHost(document.getElementById('ui') as HTMLElement, quality)
+
+/**
+ * Milestone A serves one page. The blog routes land in Milestone B; until then
+ * anything that is not home is rewritten to home rather than 404ing on a URL
+ * that will shortly be real.
+ */
+const router = new Router((match) => {
+  if (match.name !== 'home') {
+    router.navigate('/', true)
+    return
+  }
+  void host.show(new HomePage())
+})
+
+const intro = new Intro(
+  scan,
+  () => document.getElementById('ui')?.classList.remove('is-waiting'),
+  quality,
+  document.getElementById('veil'),
+)
 
 let scanFrozen = false
 
@@ -99,10 +118,15 @@ loop.add((dt, elapsed) => {
   cat.setPose(catBrain.update(dt, catHovered))
   cat.update(dt, elapsed)
 })
-loop.add((dt) => cards.update(dt, pointer))
+loop.add((dt) => host.update(dt, pointer))
 loop.add(() => quality.sample(loop.frameMs))
 loop.add((dt, elapsed) => post.render(dt, elapsed))
 
+// The content waits behind the scan; the intro lifts `is-waiting` when the
+// wavefront has cleared the tree.
+document.getElementById('ui')?.classList.add('is-waiting')
+
+router.start()
 loop.start()
 document.documentElement.classList.remove('is-booting')
 
@@ -122,8 +146,8 @@ console.info(
   rig,
   loop,
   post,
-  cards,
-  cardScan,
+  host,
+  router,
   intro,
   glass,
   cat,

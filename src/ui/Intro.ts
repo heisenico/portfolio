@@ -12,7 +12,6 @@
 import type { Quality } from '../core/Quality'
 import type { ScanReveal } from '../world/ScanReveal'
 import { Timeline, clamp01, easeOutQuint } from '../util/tween'
-import type { CardScan } from './CardScan'
 
 const IGNITE_AT = 0.25
 const SWEEP_DURATION = 2.9
@@ -24,9 +23,14 @@ export class Intro {
   private finished = false
   private skipped = false
 
+  /**
+   * @param onReveal fired when the content should appear. A callback rather
+   *        than a concrete page object, so the intro does not need to know what
+   *        is being revealed — that changes per route.
+   */
   constructor(
     private scan: ScanReveal,
-    private cardScan: CardScan,
+    private onReveal: () => void,
     quality: Quality,
     private veil: HTMLElement | null,
   ) {
@@ -37,7 +41,7 @@ export class Intro {
 
     this.timeline
       .at(0.05, () => this.veil?.classList.add('is-lifted'))
-      .at(2.35, () => this.cardScan.start())
+      .at(2.35, () => this.onReveal())
       .at(IGNITE_AT + SWEEP_DURATION + 0.3, () => {
         this.finished = true
       })
@@ -54,7 +58,7 @@ export class Intro {
     this.scan.setRadius(this.scan.maxRadius)
     this.veil?.classList.add('is-lifted')
     if (this.veil) this.veil.style.transitionDuration = `${REDUCED_FADE_MS}ms`
-    this.cardScan.start()
+    this.onReveal()
     this.finished = true
   }
 

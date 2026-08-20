@@ -42,6 +42,14 @@ export class CameraRig {
 
   private halfWidth = 8
   private halfHeight = 10
+  /**
+   * World-space nudge applied to the look-at point on wide screens.
+   *
+   * Moving the *focus* left pushes the subject right on screen, which clears a
+   * column for the headline. On narrow screens there is no column to clear, so
+   * the shift is dropped and the tree stays centred.
+   */
+  private shift = 0
 
   private azimuth = 0
   private polar = 0
@@ -69,6 +77,10 @@ export class CameraRig {
 
   /** Recompute the orbit distance. Call whenever the projection changes. */
   refit(): void {
+    // Only wide viewports have room for text beside the subject.
+    const wide = this.camera.aspect > 1.15
+    this.shift = wide ? -this.halfWidth * 0.42 : 0
+
     const vFov = (this.camera.fov * Math.PI) / 180
     const hHalfAngle = Math.atan(Math.tan(vFov / 2) * this.camera.aspect)
 
@@ -103,11 +115,12 @@ export class CameraRig {
     const po = this.polar + driftPo
 
     const cosPo = Math.cos(po)
+    const fx = this.focus.x + this.shift
     this.camera.position.set(
-      this.focus.x + Math.sin(az) * cosPo * this.radius,
+      fx + Math.sin(az) * cosPo * this.radius,
       this.focus.y + Math.sin(po) * this.radius + 1.2,
       this.focus.z + Math.cos(az) * cosPo * this.radius,
     )
-    this.camera.lookAt(this.focus)
+    this.camera.lookAt(fx, this.focus.y, this.focus.z)
   }
 }
