@@ -396,7 +396,7 @@ sequence with a 400ms fade and an immediately full scan radius.
       `id-token: write` permissions.
 - [ ] Step 3: Write `README.md` describing the effects and how to run it.
 - [ ] Step 4: Commit.
-- [ ] Step 5: **Confirm with the user**, then `gh repo create nicholasferrer/portfolio
+- [ ] Step 5: **Confirm with the user**, then `gh repo create portfolio
       --public --source=. --remote=origin --push`.
 - [ ] Step 6: Enable Pages via `gh api` with `build_type=workflow`; report the live URL.
 

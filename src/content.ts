@@ -77,7 +77,7 @@ const projects: Project[] = [
 ]
 
 const links: Link[] = [
-  { label: 'GitHub', href: 'https://github.com/nicholasferrer' },
+  { label: 'GitHub', href: 'https://github.com/heisenico' },
   { label: 'Email', href: 'mailto:hello@example.com' },
   { label: 'LinkedIn', href: 'https://www.linkedin.com/' },
 ]

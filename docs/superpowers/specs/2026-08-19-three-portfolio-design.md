@@ -218,7 +218,7 @@ front-end engineer ships initially; replacing it is a single-file edit with no m
 
 ## Delivery
 
-Public GitHub repository `portfolio` under `nicholasferrer`, with a GitHub Actions workflow
+Public GitHub repository `portfolio` under `heisenico`, with a GitHub Actions workflow
 building on push to `main` and deploying to GitHub Pages. Nothing is pushed without explicit
 confirmation first.
 
