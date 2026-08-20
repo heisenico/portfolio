@@ -29,7 +29,7 @@ export class Ground {
   readonly mesh: LineSegments
   private material: ShaderMaterial
 
-  constructor(origin: Vector3, y = -2.6, color = 0x2f7f9c) {
+  constructor(origin: Vector3, y = -2.6, color = 0x2f9c6a) {
     const positions: number[] = []
     const distances: number[] = []
     const radii: number[] = []

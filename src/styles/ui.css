@@ -47,7 +47,7 @@ button {
   font-size: clamp(0.66rem, 1.1vw, 0.78rem);
   letter-spacing: 0.22em;
   text-transform: uppercase;
-  color: var(--scan);
+  color: var(--green);
   margin: 0 0 calc(var(--step) * 3);
   opacity: 0.85;
 }
@@ -64,7 +64,7 @@ button {
 .hero .role {
   font-size: clamp(1.05rem, 2.6vw, 1.6rem);
   font-weight: 300;
-  color: var(--scan);
+  color: var(--green);
   margin: calc(var(--step) * 2) 0 0;
   letter-spacing: -0.01em;
 }
@@ -180,7 +180,7 @@ button {
 .card:focus-visible {
   box-shadow:
     0 26px 54px -26px rgba(0, 0, 0, 0.95),
-    0 3px 18px -6px color-mix(in srgb, var(--scan) 48%, transparent);
+    0 3px 18px -6px color-mix(in srgb, var(--green) 48%, transparent);
 }
 
 .card:hover::before,
@@ -199,7 +199,7 @@ button {
 }
 
 .card-index {
-  color: var(--scan);
+  color: var(--green);
 }
 
 .card h3 {
@@ -230,7 +230,7 @@ button {
   font-size: clamp(1.5rem, 3vw, 2rem);
   font-weight: 300;
   letter-spacing: -0.03em;
-  color: var(--scan-hot);
+  color: var(--green-hot);
   line-height: 1;
 }
 
@@ -266,7 +266,7 @@ button {
   border-radius: 100px;
   color: var(--ink-dim);
   border: 1px solid var(--rule);
-  background: color-mix(in srgb, var(--scan) 5%, transparent);
+  background: color-mix(in srgb, var(--green) 5%, transparent);
 }
 
 /* ---------- Contact ---------- */
@@ -293,7 +293,7 @@ button {
 }
 
 .link:hover {
-  color: var(--scan-hot);
+  color: var(--green-hot);
 }
 
 .link::after {

@@ -23,7 +23,7 @@ export class ScanPulse {
   readonly mesh: Mesh
   private material: ShaderMaterial
 
-  constructor(origin: Vector3, color = 0x8ceaff) {
+  constructor(origin: Vector3, color = 0x8cffc0) {
     // Unit sphere, scaled per frame — one geometry for every radius.
     const geometry = new SphereGeometry(1, 48, 32)
 

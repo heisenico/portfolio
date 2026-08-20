@@ -36,8 +36,8 @@ const POP_DISTANCE = 1.4
 const SETTLE_DISTANCE = 4.0
 const MARKER_REST_ALPHA = 0.42
 
-export const SCAN_REST_COLOR = 0x63e2ff
-export const SCAN_EDGE_COLOR = 0xe8fdff
+export const SCAN_REST_COLOR = 0x4fe08f
+export const SCAN_EDGE_COLOR = 0xd9ffe9
 
 export class ScanReveal {
   readonly group = new Group()
