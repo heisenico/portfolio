@@ -127,3 +127,58 @@ describe('generateBranches', () => {
     expect(maxOffAxis).toBeGreaterThan(0.2)
   })
 })
+
+describe('branch records', () => {
+  it('gives every branch an id and a parent that precedes it', () => {
+    const t = generateBranches({ seed: 3 })
+    expect(t.branches.length).toBeGreaterThan(10)
+    for (const b of t.branches) {
+      expect(Number.isInteger(b.id)).toBe(true)
+      // Only the two trunks are their own root.
+      expect(b.parentId === -1 || b.parentId < b.id).toBe(true)
+    }
+  })
+
+  it('covers every vertex exactly once', () => {
+    const t = generateBranches({ seed: 4 })
+    const vertexCount = t.positions.length / 3
+    const owned = new Set<number>()
+    for (const b of t.branches) {
+      for (let v = b.vertexStart; v <= b.vertexEnd; v++) {
+        expect(owned.has(v)).toBe(false)
+        owned.add(v)
+      }
+    }
+    expect(owned.size).toBe(vertexCount)
+  })
+
+  it('tags each vertex with its owning branch', () => {
+    const t = generateBranches({ seed: 5 })
+    expect(t.branchIds.length).toBe(t.positions.length / 3)
+    for (const b of t.branches) {
+      expect(t.branchIds[b.vertexStart]).toBe(b.id)
+      expect(t.branchIds[b.vertexEnd]).toBe(b.id)
+    }
+  })
+
+  it('reports a usable geometry per branch', () => {
+    const t = generateBranches({ seed: 6 })
+    for (const b of t.branches) {
+      expect(b.length).toBeGreaterThan(0)
+      expect(b.along.length()).toBeCloseTo(1, 5)
+      expect(b.start.distanceTo(b.tip)).toBeGreaterThan(0)
+    }
+  })
+
+  it('is deterministic in branch order for a seed', () => {
+    const key = (t: ReturnType<typeof generateBranches>) =>
+      t.branches.map((b) => `${b.id}:${b.parentId}:${b.depth}`)
+    expect(key(generateBranches({ seed: 7 }))).toEqual(key(generateBranches({ seed: 7 })))
+  })
+
+  it('exposes enough mid-depth branches to hang posts on', () => {
+    const t = generateBranches({ seed: 20260819 })
+    const usable = t.branches.filter((b) => b.depth >= 2 && b.depth <= 4)
+    expect(usable.length).toBeGreaterThanOrEqual(12)
+  })
+})
