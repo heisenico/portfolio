@@ -11,7 +11,9 @@
 
   --ink: #e8f2f7;
   --ink-dim: #93a7b4;
-  --ink-faint: #5d707c;
+  /* Lightened from #5d707c, which measured 3.14:1 on the lifted card interior.
+     It carries small text (years, metric labels, footer), so it needs 4.5:1. */
+  --ink-faint: #7b94a4;
 
   --rule: color-mix(in srgb, var(--scan) 22%, transparent);
 
@@ -95,4 +97,27 @@ body {
   outline: 2px solid var(--scan);
   outline-offset: 3px;
   border-radius: 4px;
+}
+
+/* Without JavaScript the page has no content at all, since the DOM is built at
+   runtime. Say so plainly instead of showing an empty black screen. */
+.noscript {
+  position: relative;
+  z-index: 5;
+  max-width: 46ch;
+  margin: 0 auto;
+  padding: 22vh var(--gutter) 0;
+}
+.noscript h1 {
+  font-size: clamp(2rem, 7vw, 3.4rem);
+  font-weight: 500;
+  letter-spacing: -0.03em;
+  margin: 0 0 calc(var(--step) * 2);
+}
+.noscript p {
+  color: var(--ink-dim);
+  line-height: 1.6;
+}
+.noscript a {
+  color: var(--scan);
 }

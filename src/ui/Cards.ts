@@ -59,7 +59,7 @@ export class Cards {
       <h1>${identity.name}</h1>
       <p class="role">${identity.role}</p>
       <p class="blurb">${identity.blurb}</p>
-      <div class="meta"><span>${identity.location}</span><span>Available for work</span></div>
+      <div class="meta"><span>${identity.location}</span><span>${identity.availability}</span></div>
     `
 
     const work = document.createElement('section')
@@ -83,9 +83,16 @@ export class Cards {
               : ''
             // Alternating depth so neighbouring cards never drift in lockstep.
             const depth = (1.9 + (i % 3) * 0.55).toFixed(2)
+            // A focusable element that does nothing on activation is a
+            // keyboard trap in spirit: only link out when there is somewhere
+            // to go, and otherwise leave the card out of the tab order.
+            const tag = project.href ? 'a' : 'article'
+            const attrs = project.href
+              ? ` href="${project.href}" target="_blank" rel="noopener noreferrer"`
+              : ''
             return `
               <li>
-                <article class="card glass" tabindex="0" style="--depth:${depth}">
+                <${tag} class="card glass"${attrs} style="--depth:${depth}">
                   <div class="card-top">
                     <span class="card-index">${project.index}</span>
                     <span>${project.year}</span>
@@ -94,7 +101,7 @@ export class Cards {
                   <p>${project.summary}</p>
                   ${metric}
                   <ul class="tags">${tags}</ul>
-                </article>
+                </${tag}>
               </li>`
           })
           .join('')}
@@ -128,7 +135,7 @@ export class Cards {
     const cue = document.createElement('div')
     cue.className = 'cue'
     cue.setAttribute('aria-hidden', 'true')
-    cue.textContent = 'Scroll'
+    cue.textContent = footer.cue
     this.cue = cue
 
     this.root.append(hero, work, contact, foot)
