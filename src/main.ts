@@ -1,7 +1,6 @@
 import './styles/base.css'
 import './styles/glass.css'
 import './styles/ui.css'
-import './styles/scan.css'
 
 import { Raycaster, Vector2, Vector3 } from 'three'
 import { CameraRig } from './core/CameraRig'

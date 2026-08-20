@@ -16,14 +16,15 @@ export const site = {
   perfil: {
     nome: 'Nicholas Ferrer',
     papel: 'Engenheiro de software',
-    lugar: 'Do Rio, morando no interior',
+    /** Carioca, e dividido entre os dois lugares — sem fazer disso um tema. */
+    lugar: 'Carioca, entre a roça e a cidade',
     empresa: 'Base Exchange',
   },
 
   nav: { home: 'Início', blog: 'Blog' },
 
   rodape: {
-    nota: 'Uma árvore, duas páginas. O gato é procedural e não gosta de ser observado.',
+    nota: 'O gato é procedural e não gosta de ser observado.',
     cue: 'Role',
   },
 

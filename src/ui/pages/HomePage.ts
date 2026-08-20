@@ -1,10 +1,15 @@
 /**
- * A página inicial: a árvore vista de fora, e a pessoa.
+ * A página inicial.
  *
- * A ordem das seções é uma decisão de produto, não de layout. Um site pessoal
- * responde, nesta ordem: quem é isso, o que faz, no que está metido, e como
- * falar com ele. O bloco de aprendizado fica entre "o que faço" e o convite,
- * porque uma pessoa visivelmente no meio de aprender alguma coisa *é* o convite.
+ * Uma coluna só, estreita, em cima do mundo. A versão anterior espalhava doze
+ * painéis de vidro alternando de lado; era muita moldura pra pouca informação,
+ * e a moldura competia com a árvore atrás. Agora existe uma superfície só, e
+ * ela existe por um motivo funcional: segurar a leitura em cima de uma cena
+ * que se mexe.
+ *
+ * A ordem responde, nesta sequência: quem é, o que faz, o que está aprendendo,
+ * onde encontrar. O bloco de aprendizado fica no meio porque é a parte que
+ * muda com o tempo — é o que faz o site valer uma segunda visita.
  */
 
 import { anosDe, aprendizado } from '../../content/aprendizado'
@@ -12,14 +17,14 @@ import { site } from '../../content/site'
 import { sobre } from '../../content/sobre'
 import type { Page } from '../PageHost'
 
-/** Evento emitido ao passar o mouse numa habilidade; o tronco escuta. */
+/** Emitido ao passar o mouse numa habilidade; o tronco escuta. */
 export interface SkillHoverDetail {
   index: number | null
 }
 
 /**
- * A cópia é nossa, não é entrada de usuário — mas ela vai ser editada à mão
- * muitas vezes, e um `<` perdido não deve virar marcação.
+ * A cópia é nossa, não é entrada de usuário — mas vai ser editada à mão muitas
+ * vezes, e um `<` perdido não deve virar marcação.
  */
 function esc(value: string): string {
   return value.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
@@ -36,109 +41,98 @@ export class HomePage implements Page {
     const hero = document.createElement('header')
     hero.className = 'hero'
     hero.innerHTML = `
-      <p class="eyebrow">${esc(perfil.nome)}</p>
-      <h1 class="manchete">${esc(sobre.manchete)}</h1>
-      <p class="sub">${esc(sobre.sub)}</p>
-      <div class="meta">
+      <h1>${esc(perfil.nome)}</h1>
+      <p class="lead">${esc(sobre.lead)}</p>
+      <p class="meta">
         <span>${esc(perfil.papel)}</span>
         <span>${esc(perfil.lugar)}</span>
-        <span>${esc(perfil.empresa)}</span>
-      </div>
+      </p>
     `
 
-    const sections = sobre.secoes.map((secao, i) => {
-      const el = document.createElement('section')
-      el.className = 'secao'
-      el.setAttribute('aria-labelledby', `sec-${secao.id}`)
-      // Alternating depth so neighbouring panes never drift in lockstep.
-      el.innerHTML = `
-        <div class="secao-pane glass" style="--depth:${(1.6 + (i % 3) * 0.5).toFixed(2)}">
+    const sheet = document.createElement('div')
+    sheet.className = 'folha material'
+
+    sheet.innerHTML = `
+      ${sobre.secoes
+        .map(
+          (secao) => `
+        <section class="bloco" aria-labelledby="sec-${secao.id}">
           <h2 id="sec-${secao.id}">${esc(secao.titulo)}</h2>
-          ${secao.corpo.map((p) => `<p>${esc(p)}</p>`).join('')}
-        </div>
-      `
-      return el
-    })
+          <div class="prosa">${secao.corpo.map((p) => `<p>${esc(p)}</p>`).join('')}</div>
+        </section>`,
+        )
+        .join('')}
 
-    const aprender = document.createElement('section')
-    aprender.className = 'secao aprendizado'
-    aprender.setAttribute('aria-labelledby', 'sec-aprendizado')
-    aprender.innerHTML = `
-      <h2 id="sec-aprendizado" class="secao-titulo">Sempre aprendendo</h2>
-      <div class="aprendendo-grid">
-        <div class="aprendendo glass is-agora" style="--depth:2.1">
-          <span class="quando">Agora</span>
-          <h3>${esc(aprendizado.agora.nome)}</h3>
-          <p>${esc(aprendizado.agora.porque)}</p>
-        </div>
-        <div class="aprendendo glass is-depois" style="--depth:1.7">
-          <span class="quando">Depois</span>
-          <h3>${esc(aprendizado.depois.nome)}</h3>
-          <p>${esc(aprendizado.depois.porque)}</p>
-        </div>
-      </div>
-      <h3 class="ja-titulo">Já aprendi</h3>
-      <ul class="habilidades">
-        ${aprendizado.jaAprendi
-          .map((h, i) => {
-            const anos = anosDe(h)
-            return `
-              <li class="habilidade" data-skill-index="${i}">
-                <span class="hab-nome">${esc(h.nome)}</span>
-                <span class="hab-rule" aria-hidden="true"></span>
-                <span class="hab-anos">${anos} ${anos === 1 ? 'ano' : 'anos'}</span>
-                <span class="hab-desde">desde ${h.desde}</span>
-                ${h.nota ? `<span class="hab-nota">${esc(h.nota)}</span>` : ''}
-              </li>`
-          })
-          .join('')}
-      </ul>
-    `
+      <section class="bloco" aria-labelledby="sec-aprendendo">
+        <h2 id="sec-aprendendo">Aprendendo</h2>
+        <dl class="agenda">
+          <dt><span class="ponto is-agora" aria-hidden="true"></span>Agora</dt>
+          <dd>
+            ${esc(aprendizado.agora.nome)}
+            <span class="porque">${esc(aprendizado.agora.porque)}</span>
+          </dd>
+          <dt><span class="ponto" aria-hidden="true"></span>Depois</dt>
+          <dd>
+            ${esc(aprendizado.depois.nome)}
+            <span class="porque">${esc(aprendizado.depois.porque)}</span>
+          </dd>
+        </dl>
 
-    const onde = document.createElement('section')
-    onde.className = 'secao'
-    onde.setAttribute('aria-labelledby', 'sec-onde')
-    onde.innerHTML = `
-      <h2 id="sec-onde" class="secao-titulo">Onde me achar</h2>
-      <ul class="links">
-        ${links
-          .map(
-            (link) => `
+        <ul class="habilidades">
+          ${aprendizado.jaAprendi
+            .map((h, i) => {
+              const anos = anosDe(h)
+              return `
+                <li class="habilidade" data-skill-index="${i}">
+                  <span class="hab-nome">${esc(h.nome)}</span>
+                  <span class="hab-anos">${anos} ${anos === 1 ? 'ano' : 'anos'}</span>
+                </li>`
+            })
+            .join('')}
+        </ul>
+      </section>
+
+      <section class="bloco" aria-labelledby="sec-onde">
+        <h2 id="sec-onde">Onde me achar</h2>
+        <ul class="links">
+          ${links
+            .map(
+              (link) => `
             <li>
-              <a class="link glass" href="${link.href}"${
+              <a href="${link.href}"${
                 link.href.startsWith('http') ? ' target="_blank" rel="noopener noreferrer"' : ''
               }>
                 <span class="link-rotulo">${esc(link.rotulo)}</span>
                 ${link.nota ? `<span class="link-nota">${esc(link.nota)}</span>` : ''}
               </a>
             </li>`,
-          )
-          .join('')}
-      </ul>
+            )
+            .join('')}
+        </ul>
+      </section>
+
+      <section class="bloco convite">
+        <p>${esc(sobre.convite)}
+          <a href="mailto:nicholasferrer@hotmail.com">nicholasferrer@hotmail.com</a>
+        </p>
+      </section>
     `
 
-    const convite = document.createElement('section')
-    convite.className = 'secao convite'
-    convite.innerHTML = `
-      <div class="convite-pane glass" style="--depth:2.4">
-        <h2>${esc(sobre.convite.titulo)}</h2>
-        <p>${esc(sobre.convite.corpo)}</p>
-        <a class="convite-cta" href="mailto:nicholasferrer@hotmail.com">Me manda um e-mail</a>
-      </div>
-    `
+    const wrap = document.createElement('div')
+    wrap.className = 'coluna'
+    wrap.appendChild(sheet)
 
     const foot = document.createElement('footer')
     foot.className = 'page-foot'
     foot.innerHTML = `<span>${esc(rodape.nota)}</span><span>${new Date().getFullYear()}</span>`
 
-    root.append(hero, ...sections, aprender, onde, convite, foot)
+    root.append(hero, wrap, foot)
 
     this.skillRows = Array.from(root.querySelectorAll<HTMLElement>('.habilidade'))
     for (const row of this.skillRows) {
-      // Pointer only, deliberately. Lighting the trunk ring is decoration —
-      // the name, the years and the note are all already there as text — so
-      // putting these rows in the tab order would buy a flourish at the cost
-      // of three focus stops that do nothing when activated.
+      // Pointer only, deliberately. Acender o anel no tronco é decoração — o
+      // nome e os anos já estão ali como texto — então colocar estas linhas na
+      // ordem de tabulação custaria três paradas de foco que não fazem nada.
       row.addEventListener('pointerenter', this.onSkillEnter)
       row.addEventListener('pointerleave', this.onSkillLeave)
     }
@@ -154,17 +148,15 @@ export class HomePage implements Page {
   }
 
   private emitSkill(index: number | null): void {
-    document.dispatchEvent(
-      new CustomEvent<SkillHoverDetail>('skill-hover', { detail: { index } }),
-    )
+    document.dispatchEvent(new CustomEvent<SkillHoverDetail>('skill-hover', { detail: { index } }))
   }
 
   update(): void {
-    // Nothing per-frame: PageHost owns the parallax and the glass sheen.
+    // Nada por frame: PageHost cuida do parallax e do brilho do material.
   }
 
   get panes(): HTMLElement[] {
-    return this.root ? Array.from(this.root.querySelectorAll<HTMLElement>('.glass')) : []
+    return this.root ? Array.from(this.root.querySelectorAll<HTMLElement>('.material')) : []
   }
 
   unmount(): void {

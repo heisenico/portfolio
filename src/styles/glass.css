@@ -1,107 +1,63 @@
 /*
- * Liquid glass surface.
+ * O material.
  *
- * Four layers stack to make a pane read as thick glass rather than a tinted
- * box: the refracted/blurred backdrop, a specular rim that catches a virtual
- * key light, a pointer-tracked sheen, and inner shading for depth.
+ * Antes eram doze painéis de vidro flutuando com brilho especular, rim conico
+ * e sombra pesada — decoração, não função. Agora existe uma superfície só, e
+ * ela tem um trabalho: manter o texto legível em cima de uma cena 3D que se
+ * mexe. Vidro raro e com propósito, em vez de vidro por padrão.
  *
- * `.lg-refract` and `.lg-fallback` are set by LiquidGlass.ts after feature
- * detection. Only the backdrop line differs between them.
+ * A refração continua sendo o que separa vidro de fosco: o `feDisplacementMap`
+ * entorta o fundo na borda e deixa o miolo reto. Só que agora com muito menos
+ * volume.
  */
 
-.glass {
+.material {
   position: relative;
   isolation: isolate;
-  border-radius: var(--glass-radius, 22px);
-  background:
-    linear-gradient(
-      158deg,
-      color-mix(in srgb, var(--green) 7%, transparent),
-      color-mix(in srgb, #000 18%, transparent) 58%
-    );
-  box-shadow:
-    0 18px 40px -24px rgba(0, 0, 0, 0.9),
-    0 2px 10px -6px color-mix(in srgb, var(--green) 30%, transparent);
-  transition:
-    transform 520ms cubic-bezier(0.22, 1, 0.36, 1),
-    box-shadow 520ms cubic-bezier(0.22, 1, 0.36, 1);
+  border-radius: var(--radius);
+  /*
+   * 84%, medido e não estimado. A 62% o texto secundário caía pra 2.55:1
+   * quando o tronco aceso passava por trás — a superfície é translúcida, então
+   * o fundo do texto é variável, e o pior caso é o que manda. A 84% o mundo
+   * ainda atravessa e todo o texto passa de 4.5:1.
+   */
+  background: color-mix(in srgb, var(--bg-deep) 84%, transparent);
+  border: 1px solid var(--rule);
 }
 
-/* Chromium: the backdrop is genuinely bent at the rim by the SVG lens. */
-.lg-refract .glass {
-  backdrop-filter: url(#lg-displace) blur(5px) saturate(185%) brightness(1.06);
-  -webkit-backdrop-filter: blur(5px) saturate(185%) brightness(1.06);
+/* Chromium: o fundo é de fato entortado na borda pela lente SVG. */
+.lg-refract .material {
+  backdrop-filter: url(#lg-displace) blur(18px) saturate(135%);
+  -webkit-backdrop-filter: blur(18px) saturate(135%);
 }
 
 /*
- * Safari and Firefox: SVG filter references are not honoured inside
- * backdrop-filter, so this keeps everything except the refraction. A heavier
- * blur compensates a little for the missing edge distortion.
+ * Safari e Firefox não honram referência a filtro SVG dentro de
+ * backdrop-filter. Perde-se a refração; o desfoque e a saturação ficam.
  */
-.lg-fallback .glass {
-  backdrop-filter: blur(17px) saturate(180%) brightness(1.05);
-  -webkit-backdrop-filter: blur(17px) saturate(180%) brightness(1.05);
+.lg-fallback .material {
+  backdrop-filter: blur(22px) saturate(130%);
+  -webkit-backdrop-filter: blur(22px) saturate(130%);
 }
 
-/* No backdrop-filter at all: fall back to an opaque pane so text stays legible. */
-.lg-no-backdrop .glass {
-  background: color-mix(in srgb, var(--bg) 88%, var(--green) 4%);
+/* Sem backdrop-filter: painel opaco, pra que o texto continue legível. */
+.lg-no-backdrop .material {
+  background: color-mix(in srgb, var(--bg-deep) 94%, transparent);
 }
 
-/* Specular rim. A conic gradient means the highlight is strongest on two
-   opposite edges, the way a lit bevel behaves, rather than an even outline. */
-.glass::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  padding: 1px;
-  background: conic-gradient(
-    from 205deg,
-    transparent 0deg,
-    rgba(255, 255, 255, 0.72) 38deg,
-    color-mix(in srgb, var(--green) 60%, transparent) 96deg,
-    transparent 150deg,
-    transparent 214deg,
-    color-mix(in srgb, var(--green) 70%, transparent) 262deg,
-    rgba(255, 255, 255, 0.45) 300deg,
-    transparent 350deg
-  );
-  -webkit-mask:
-    linear-gradient(#000 0 0) content-box,
-    linear-gradient(#000 0 0);
-  -webkit-mask-composite: xor;
-  mask:
-    linear-gradient(#000 0 0) content-box,
-    linear-gradient(#000 0 0);
-  mask-composite: exclude;
-  opacity: 0.85;
-  pointer-events: none;
-  z-index: 2;
-}
-
-/* Inner shading and the pointer-tracked sheen. */
-.glass::after {
+/*
+ * Um único realce no topo, do jeito que uma borda iluminada se comporta.
+ * O rim conico girando em volta do painel era efeito, não luz.
+ */
+.material::before {
   content: '';
   position: absolute;
   inset: 0;
   border-radius: inherit;
   pointer-events: none;
-  z-index: 1;
-  background: radial-gradient(
-    circle at var(--mx, 50%) var(--my, 0%),
-    rgba(255, 255, 255, 0.16),
-    transparent 46%
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--ink) 7%, transparent),
+    transparent 38%
   );
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.24),
-    inset 0 -24px 36px -28px rgba(0, 0, 0, 0.95);
-  transition: opacity 400ms ease;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .glass,
-  .glass::after {
-    transition: none;
-  }
 }

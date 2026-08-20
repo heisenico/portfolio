@@ -1,473 +1,294 @@
 /*
- * Layout da página.
+ * Layout.
  *
- * O documento rola normalmente e as seções ficam no fluxo; o mundo atrás é
- * acoplado por um deslocamento de transform, não posicionando cada elemento a
- * partir de um ponto 3D projetado. Manter layout de verdade é o que deixa a
- * página responsiva, selecionável e navegável pelo teclado.
- *
- * Instrument Serif tem um peso só. Toda a hierarquia aqui vem de tamanho,
- * itálico e cor — `font-weight` não teria o que mover.
+ * Coluna única e estreita. A hierarquia vem de tamanho, peso e espaço — não de
+ * cor e não de moldura. O verde aparece em três lugares no máximo; o resto é
+ * tinta sobre o mundo.
  */
 
 #ui {
   --parallax-x: 0px;
   --parallax-y: 0px;
-  transition:
-    opacity 240ms ease,
-    transform 240ms cubic-bezier(0.22, 1, 0.36, 1);
+  transition: opacity 220ms ease;
 }
 
-#ui.is-leaving {
+#ui.is-leaving,
+#ui.is-entering,
+#ui.is-waiting {
   opacity: 0;
-  transform: translateY(-8px);
-}
-
-#ui.is-entering {
-  opacity: 0;
-  transform: translateY(8px);
 }
 
 #ui > * {
   pointer-events: none;
 }
 
-/* Só o que é de fato interativo recebe ponteiro, pra que o mundo continue
-   ouvindo pointermove em todo o resto da tela. */
-.link,
-.convite-cta,
-.habilidade,
+/* Só o que é interativo recebe ponteiro, pra que o mundo continue ouvindo
+   pointermove no resto da tela. */
 a,
-button {
+button,
+.habilidade {
   pointer-events: auto;
 }
 
 /* ---------- Hero ---------- */
 
+/*
+ * O palco: uma faixa centrada e larga, com o texto ancorado à esquerda dentro
+ * dela. A árvore ocupa a direita (ver o deslocamento em CameraRig). Centrar a
+ * coluna estreita deixava uma margem morta enorme dos dois lados e o texto
+ * boiando no meio.
+ */
+.hero,
+.coluna,
+.page-foot {
+  max-width: 1180px;
+  margin-inline: auto;
+  padding-inline: var(--gutter);
+}
+
 .hero {
-  min-height: 100svh;
+  min-height: 92svh;
   display: grid;
   align-content: center;
-  padding: 0 var(--gutter);
-  max-width: 1240px;
-  margin: 0 auto;
-  transform: translate3d(calc(var(--parallax-x) * 1.4), calc(var(--parallax-y) * 1.4), 0);
+  transform: translate3d(calc(var(--parallax-x) * 0.8), calc(var(--parallax-y) * 0.8), 0);
 }
 
-.eyebrow {
-  font-family: var(--font-mono);
-  font-size: var(--step--1);
-  letter-spacing: 0.24em;
-  text-transform: uppercase;
-  color: var(--green);
-  margin: 0 0 calc(var(--step) * 3);
+.hero > * {
+  max-width: var(--measure);
 }
 
-.manchete {
-  font-family: var(--font-display);
-  font-weight: 400;
-  font-size: var(--step-6);
-  line-height: 0.98;
-  letter-spacing: -0.02em;
+.hero h1 {
+  font-size: var(--text-2xl);
+  font-weight: 500;
+  line-height: 1.05;
+  letter-spacing: var(--track-tight);
   margin: 0;
-  max-width: 16ch;
-  text-wrap: balance;
+  color: var(--ink);
 }
 
-.sub {
-  font-family: var(--font-display);
-  font-style: italic;
-  font-size: var(--step-2);
-  line-height: 1.3;
+.hero .lead {
+  font-size: var(--text-lg);
+  font-weight: 400;
+  line-height: 1.45;
+  letter-spacing: var(--track-snug);
   color: var(--ink-dim);
-  margin: calc(var(--step) * 3) 0 0;
-  max-width: 34ch;
+  margin: var(--space-4) 0 0;
+  max-width: 30rem;
   text-wrap: pretty;
 }
 
 .hero .meta {
   display: flex;
   flex-wrap: wrap;
-  gap: calc(var(--step) * 3);
-  margin-top: calc(var(--step) * 6);
-  font-family: var(--font-mono);
-  font-size: var(--step--1);
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
+  gap: var(--space-2) var(--space-4);
+  margin: var(--space-6) 0 0;
+  font-size: var(--text-sm);
   color: var(--ink-faint);
 }
 
-.hero .meta span::before {
-  content: '';
-  display: inline-block;
-  width: 20px;
-  height: 1px;
-  background: var(--rule);
-  vertical-align: middle;
-  margin-right: calc(var(--step) * 1.5);
+/* Um ponto separador, em vez de régua e caixa-alta. */
+.hero .meta span + span::before {
+  content: '·';
+  margin-right: var(--space-4);
+  color: var(--rule);
 }
 
-/* Itens lado a lado colidem assim que cada um precisa quebrar sozinho. */
-@media (max-width: 720px) {
-  .hero .meta {
-    flex-direction: column;
-    gap: calc(var(--step) * 1.5);
-  }
+/* ---------- A coluna ---------- */
 
-  /*
-   * A árvore desce pra baixo do texto numa tela estreita (ver CameraRig), então
-   * aqui basta um sopro de véu no topo pra garantir contraste se a copa subir
-   * demais. Escurecer a cena inteira custava a imagem toda pra salvar três
-   * linhas de texto.
-   */
-  .hero {
-    position: relative;
-  }
-
-  .hero::before {
-    content: '';
-    position: absolute;
-    inset: -10% -100vw 30%;
-    z-index: -1;
-    pointer-events: none;
-    background: linear-gradient(
-      180deg,
-      color-mix(in srgb, var(--bg-deep) 30%, transparent) 0%,
-      transparent 100%
-    );
-  }
+.coluna {
+  padding-bottom: var(--space-9);
+  transform: translate3d(calc(var(--parallax-x) * 1.15), calc(var(--parallax-y) * 1.15), 0);
 }
 
-/* ---------- Seções ---------- */
-
-.secao {
-  max-width: 1240px;
-  margin: 0 auto;
-  padding: clamp(48px, 9vh, 110px) var(--gutter);
-  transform: translate3d(var(--parallax-x), var(--parallax-y), 0);
-}
-
-.secao h2,
-.secao-titulo {
-  font-family: var(--font-display);
-  font-weight: 400;
-  font-size: var(--step-3);
-  line-height: 1.1;
-  letter-spacing: -0.015em;
-  margin: 0 0 calc(var(--step) * 3);
-  color: var(--ink);
-}
-
-.secao-pane {
+.folha {
   max-width: var(--measure);
-  padding: clamp(24px, 3vw, 40px);
-  transform: translate3d(
-    calc(var(--parallax-x) * var(--depth, 1)),
-    calc(var(--parallax-y) * var(--depth, 1)),
-    0
-  );
+  padding: clamp(24px, 4vw, 40px);
 }
 
-.secao-pane h2 {
-  margin-bottom: calc(var(--step) * 2);
+.bloco + .bloco {
+  margin-top: var(--space-7);
+  padding-top: var(--space-7);
+  border-top: 1px solid var(--rule);
 }
 
-.secao-pane p {
-  font-size: var(--step-0);
-  line-height: 1.7;
+/*
+ * Títulos de seção pequenos e em caixa normal. A versão anterior usava
+ * versalete com tracking largo em cima de cada bloco, que é exatamente o
+ * andaime que aparece em toda página gerada.
+ */
+.bloco h2 {
+  font-size: var(--text-sm);
+  font-weight: 500;
+  letter-spacing: 0;
+  color: var(--ink-faint);
+  margin: 0 0 var(--space-4);
+}
+
+.prosa p {
+  font-size: var(--text-base);
+  line-height: 1.65;
+  letter-spacing: var(--track-snug);
   color: var(--ink-dim);
-  margin: 0 0 calc(var(--step) * 2);
+  margin: 0 0 var(--space-4);
   text-wrap: pretty;
 }
 
-.secao-pane p:last-child {
+.prosa p:last-child {
   margin-bottom: 0;
 }
 
-/* Seções alternam de lado, pra que a árvore atrás nunca fique totalmente
-   coberta e a leitura ganhe um ritmo. */
-.secao:nth-of-type(even) .secao-pane {
-  margin-left: auto;
-}
+/* ---------- Aprendendo ---------- */
 
-/* ---------- Aprendizado ---------- */
-
-.aprendendo-grid {
+.agenda {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
-  gap: clamp(14px, 2vw, 22px);
-  margin-bottom: calc(var(--step) * 8);
+  grid-template-columns: auto 1fr;
+  gap: var(--space-3) var(--space-5);
+  margin: 0 0 var(--space-6);
+  align-items: baseline;
 }
 
-.aprendendo {
-  --glass-radius: 18px;
-  padding: clamp(20px, 2.4vw, 28px);
-  transform: translate3d(
-    calc(var(--parallax-x) * var(--depth, 1)),
-    calc(var(--parallax-y) * var(--depth, 1)),
-    0
-  );
-}
-
-.aprendendo .quando {
-  display: inline-flex;
+.agenda dt {
+  display: flex;
   align-items: center;
-  gap: 8px;
-  font-family: var(--font-mono);
-  font-size: var(--step--1);
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
+  gap: var(--space-2);
+  font-size: var(--text-sm);
   color: var(--ink-faint);
 }
 
-.aprendendo .quando::before {
-  content: '';
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-}
-
-/* Cheio e pulsando: está acontecendo agora. */
-.aprendendo.is-agora .quando {
-  color: var(--green);
-}
-
-.aprendendo.is-agora .quando::before {
-  background: var(--green);
-  box-shadow: 0 0 10px 2px color-mix(in srgb, var(--green) 60%, transparent);
-  animation: pulso 2.4s ease-in-out infinite;
-}
-
-/* Vazio: ainda não começou. */
-.aprendendo.is-depois .quando::before {
-  border: 1px solid var(--ink-faint);
-}
-
-@keyframes pulso {
-  0%,
-  100% {
-    opacity: 1;
-    transform: scale(1);
-  }
-  50% {
-    opacity: 0.45;
-    transform: scale(0.8);
-  }
-}
-
-.aprendendo h3 {
-  font-family: var(--font-display);
-  font-weight: 400;
-  font-size: var(--step-2);
-  line-height: 1.15;
-  margin: calc(var(--step) * 2) 0 calc(var(--step));
+.agenda dd {
+  margin: 0;
+  font-size: var(--text-base);
+  letter-spacing: var(--track-snug);
   color: var(--ink);
 }
 
-.aprendendo p {
-  margin: 0;
-  font-size: var(--step--1);
-  line-height: 1.6;
-  color: var(--ink-dim);
+.porque {
+  display: block;
+  font-size: var(--text-sm);
+  color: var(--ink-faint);
+  margin-top: 2px;
 }
 
-.ja-titulo {
-  font-family: var(--font-mono);
-  font-size: var(--step--1);
-  font-weight: 400;
-  letter-spacing: 0.2em;
-  text-transform: uppercase;
-  color: var(--ink-faint);
-  margin: 0 0 calc(var(--step) * 3);
+.ponto {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  border: 1px solid var(--ink-faint);
+  flex: none;
+}
+
+/* Cheio: está acontecendo. Vazio: ainda não começou. */
+.ponto.is-agora {
+  background: var(--green);
+  border-color: var(--green);
 }
 
 .habilidades {
   list-style: none;
   margin: 0;
   padding: 0;
-  max-width: var(--measure);
 }
 
 .habilidade {
-  display: grid;
-  grid-template-columns: auto 1fr auto auto;
+  display: flex;
   align-items: baseline;
-  gap: calc(var(--step) * 1.5);
-  padding: calc(var(--step) * 2) 0;
-  border-bottom: 1px solid color-mix(in srgb, var(--green) 8%, transparent);
+  justify-content: space-between;
+  gap: var(--space-4);
+  padding: var(--space-3) 0;
+  font-size: var(--text-base);
+  letter-spacing: var(--track-snug);
   cursor: default;
 }
 
-.hab-nome {
-  font-family: var(--font-display);
-  font-size: var(--step-1);
-  color: var(--ink);
-  transition: color 260ms ease;
+.habilidade + .habilidade {
+  border-top: 1px solid var(--rule);
 }
 
-.hab-rule {
-  height: 1px;
-  background: var(--rule);
-  opacity: 0.5;
-  transition: opacity 260ms ease;
+.hab-nome {
+  color: var(--ink);
 }
 
 .hab-anos {
   font-family: var(--font-mono);
-  font-size: var(--step--1);
+  font-size: var(--text-xs);
+  font-variant-numeric: tabular-nums;
+  color: var(--ink-faint);
+  transition: color 200ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.habilidade:hover .hab-anos {
   color: var(--green);
-}
-
-.hab-desde {
-  font-family: var(--font-mono);
-  font-size: var(--step--1);
-  color: var(--ink-faint);
-}
-
-.hab-nota {
-  grid-column: 1 / -1;
-  font-size: var(--step--1);
-  color: var(--ink-faint);
-  font-style: italic;
-  margin-top: 2px;
-}
-
-.habilidade:hover .hab-nome {
-  color: var(--green-hot);
-}
-
-.habilidade:hover .hab-rule {
-  opacity: 1;
-}
-
-@media (max-width: 560px) {
-  .habilidade {
-    grid-template-columns: 1fr auto;
-  }
-  .hab-rule {
-    display: none;
-  }
-  .hab-desde {
-    grid-column: 1 / -1;
-  }
 }
 
 /* ---------- Links ---------- */
 
 .links {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr));
-  gap: clamp(12px, 1.6vw, 18px);
   list-style: none;
   margin: 0;
   padding: 0;
 }
 
-.link {
-  --glass-radius: 16px;
+.links li + li {
+  border-top: 1px solid var(--rule);
+}
+
+.links a {
   display: flex;
-  flex-direction: column;
-  gap: 6px;
-  padding: clamp(16px, 1.8vw, 22px);
-  color: var(--ink);
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-4);
+  padding: var(--space-3) 0;
   text-decoration: none;
-  height: 100%;
+  color: var(--ink);
+  font-size: var(--text-base);
+  letter-spacing: var(--track-snug);
 }
 
 .link-rotulo {
-  font-family: var(--font-display);
-  font-size: var(--step-1);
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  transition: color 260ms ease;
-}
-
-.link-rotulo::after {
-  content: '↗';
-  font-family: var(--font-sans);
-  font-size: 0.7em;
-  opacity: 0.5;
-  transition: transform 320ms cubic-bezier(0.22, 1, 0.36, 1);
-}
-
-.link:hover .link-rotulo {
-  color: var(--green-hot);
-}
-
-.link:hover .link-rotulo::after {
-  transform: translate(3px, -3px);
-  opacity: 1;
+  transition: color 200ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .link-nota {
-  font-size: var(--step--1);
-  line-height: 1.5;
+  font-size: var(--text-sm);
   color: var(--ink-faint);
+  text-align: right;
+}
+
+.links a:hover .link-rotulo {
+  color: var(--green);
 }
 
 /* ---------- Convite ---------- */
 
-.convite-pane {
-  padding: clamp(28px, 4vw, 52px);
-  max-width: var(--measure);
-  margin: 0 auto;
-  text-align: center;
-  transform: translate3d(
-    calc(var(--parallax-x) * var(--depth, 1)),
-    calc(var(--parallax-y) * var(--depth, 1)),
-    0
-  );
-}
-
-.convite-pane h2 {
-  font-size: var(--step-4);
-  margin-bottom: calc(var(--step) * 2);
-}
-
-.convite-pane p {
-  font-size: var(--step-0);
-  line-height: 1.65;
+.convite p {
+  margin: 0;
+  font-size: var(--text-base);
+  line-height: 1.6;
+  letter-spacing: var(--track-snug);
   color: var(--ink-dim);
-  margin: 0 auto calc(var(--step) * 4);
-  max-width: 42ch;
 }
 
-.convite-cta {
-  display: inline-block;
-  font-family: var(--font-mono);
-  font-size: var(--step--1);
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--bg-deep);
-  background: var(--green);
-  padding: 14px 26px;
-  border-radius: 100px;
-  text-decoration: none;
-  transition:
-    transform 320ms cubic-bezier(0.22, 1, 0.36, 1),
-    box-shadow 320ms ease;
+.convite a {
+  color: var(--green);
+  text-decoration: underline;
+  text-underline-offset: 0.22em;
+  text-decoration-thickness: 1px;
+  text-decoration-color: color-mix(in srgb, var(--green) 40%, transparent);
 }
 
-.convite-cta:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 10px 30px -10px color-mix(in srgb, var(--green) 70%, transparent);
+.convite a:hover {
+  text-decoration-color: var(--green);
 }
 
 /* ---------- Rodapé ---------- */
 
 .page-foot {
-  max-width: 1240px;
-  margin: 0 auto;
-  padding: 0 var(--gutter) clamp(40px, 8vh, 90px);
+  padding-bottom: var(--space-8);
   display: flex;
   flex-wrap: wrap;
-  gap: calc(var(--step) * 2);
+  gap: var(--space-3);
   justify-content: space-between;
-  align-items: center;
-  font-family: var(--font-mono);
-  font-size: var(--step--1);
-  letter-spacing: 0.06em;
+  font-size: var(--text-xs);
   color: var(--ink-faint);
 }
 
@@ -476,67 +297,49 @@ button {
 .cue {
   position: fixed;
   left: 50%;
-  bottom: 26px;
+  bottom: 22px;
   translate: -50% 0;
-  z-index: 4;
-  font-family: var(--font-mono);
-  font-size: var(--step--1);
-  letter-spacing: 0.24em;
-  text-transform: uppercase;
+  z-index: var(--z-cue);
+  font-size: var(--text-xs);
   color: var(--ink-faint);
   pointer-events: none;
-  transition: opacity 500ms ease;
-}
-
-.cue::after {
-  content: '';
-  display: block;
-  width: 1px;
-  height: 26px;
-  margin: 10px auto 0;
-  background: linear-gradient(180deg, var(--rule), transparent);
-  animation: cue-drift 2.6s ease-in-out infinite;
+  transition: opacity 400ms ease;
 }
 
 .cue.is-gone {
   opacity: 0;
 }
 
-@keyframes cue-drift {
-  0%,
-  100% {
-    transform: translateY(0);
-    opacity: 0.9;
+@media (max-width: 560px) {
+  .links a,
+  .habilidade {
+    flex-direction: column;
+    gap: 2px;
   }
-  50% {
-    transform: translateY(6px);
-    opacity: 0.35;
+
+  .link-nota {
+    text-align: left;
+  }
+
+  /* Empilhado: o separador vira recuo pendurado quando a linha quebra. */
+  .hero .meta {
+    flex-direction: column;
+    gap: var(--space-1);
+  }
+
+  .hero .meta span + span::before {
+    content: none;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
   #ui,
-  .convite-cta,
-  .hab-nome,
-  .hab-rule,
+  .hab-anos,
   .link-rotulo {
     transition: none;
   }
-  .cue::after,
-  .aprendendo.is-agora .quando::before {
-    animation: none;
-  }
   .hero,
-  .secao,
-  .secao-pane,
-  .aprendendo,
-  .convite-pane {
+  .coluna {
     transform: none;
   }
-}
-
-/* O conteúdo espera atrás da varredura; o intro tira `is-waiting` quando a
-   frente de onda já passou pela árvore. */
-#ui.is-waiting {
-  opacity: 0;
 }

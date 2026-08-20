@@ -1,56 +1,77 @@
 /*
  * Design tokens.
  *
- * Fonts are self-hosted rather than fetched from Google: it removes a
- * third-party request from the critical path, works under a strict CSP, and
- * stops the page handing a visitor's IP to another origin before it has
- * painted anything.
+ * The thesis: the world behind the page is the drama, so the page itself goes
+ * quiet. Small, precise type over a living scene. The confidence to keep text
+ * small is the whole effect — scale it up and the interface starts competing
+ * with the thing it is sitting on.
  *
- * Instrument Serif ships one weight. Hierarchy therefore comes from size,
- * italic and colour — `font-weight` has nothing to move.
+ * One family, two voices: Geist for everything, Geist Mono for the few places
+ * where figures need to line up. Self-hosted, so the page makes no third-party
+ * request before it has painted.
  */
 
-@import '@fontsource/instrument-serif/latin-ext-400.css';
-@import '@fontsource/instrument-serif/latin-ext-400-italic.css';
-@import '@fontsource-variable/instrument-sans/index.css';
+@import '@fontsource-variable/geist/index.css';
 @import '@fontsource-variable/geist-mono/index.css';
 
 :root {
-  /* Backgrounds carry a green undertone rather than the old blue, so the
-     wireframe reads as one lit environment instead of green-on-blue. */
   --bg-deep: #030705;
   --bg: #050b08;
   --bg-card: #0b1710;
   --bg-lifted: #14231a;
 
-  /* Every one of these clears WCAG AA on all three surfaces above; the
-     tightest is --ink-faint on --bg-lifted at 5.45:1. */
+  /* Measured against all three surfaces; the tightest is --ink-faint on
+     --bg-lifted at 5.45:1, which clears AA for normal text. */
   --ink: #e8f5ec;
   --ink-dim: #9fbfae;
   --ink-faint: #7d9c8b;
   --green: #4fe08f;
   --green-hot: #d9ffe9;
-  /* The single warm accent. One warm note against an all-green scene stops the
-     image reading as a monochrome filter. */
+  /* The single warm accent, reserved for the cat. */
   --amber: #ffc27a;
 
-  --rule: color-mix(in srgb, var(--green) 20%, transparent);
+  /* Hairlines, not borders. */
+  --rule: color-mix(in srgb, var(--ink) 12%, transparent);
 
-  --font-display: 'Instrument Serif', Georgia, 'Times New Roman', serif;
-  --font-sans: 'Instrument Sans Variable', system-ui, -apple-system, sans-serif;
+  --font-sans:
+    'Geist Variable', system-ui, -apple-system, 'Segoe UI', sans-serif;
   --font-mono: 'Geist Mono Variable', ui-monospace, 'SF Mono', Menlo, monospace;
 
-  /* Fluid scale: 1.25 ratio at the small end, 1.333 at the large. */
-  --step--1: clamp(0.79rem, 0.77rem + 0.09vw, 0.84rem);
-  --step-0: clamp(1rem, 0.96rem + 0.18vw, 1.12rem);
-  --step-1: clamp(1.25rem, 1.18rem + 0.34vw, 1.49rem);
-  --step-2: clamp(1.56rem, 1.44rem + 0.6vw, 1.99rem);
-  --step-3: clamp(1.95rem, 1.75rem + 1vw, 2.65rem);
-  --step-4: clamp(2.44rem, 2.11rem + 1.63vw, 3.53rem);
-  --step-5: clamp(3.05rem, 2.54rem + 2.56vw, 4.7rem);
-  --step-6: clamp(3.82rem, 3.03rem + 3.93vw, 6.26rem);
+  /*
+   * A compact scale. The old one topped out near 100px, which is a poster, not
+   * a page. Body sits at 16px and the largest thing on screen is roughly 44px.
+   */
+  --text-xs: 0.75rem;
+  --text-sm: 0.8125rem;
+  --text-base: 0.9375rem;
+  --text-md: 1rem;
+  --text-lg: 1.125rem;
+  --text-xl: clamp(1.25rem, 1.1rem + 0.6vw, 1.5rem);
+  --text-2xl: clamp(1.75rem, 1.4rem + 1.4vw, 2.75rem);
 
-  --step: 8px;
-  --gutter: clamp(20px, 5vw, 72px);
-  --measure: 62ch;
+  /* Large type needs negative tracking to stop looking loose; small type
+     needs none at all. */
+  --track-tight: -0.028em;
+  --track-snug: -0.014em;
+
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 48px;
+  --space-8: 72px;
+  --space-9: 112px;
+
+  --gutter: clamp(20px, 5vw, 40px);
+  /* Narrow. A short measure is most of what makes a page feel considered. */
+  --measure: 34rem;
+  --radius: 14px;
+
+  /* Semantic z-scale, so nothing ever reaches for 9999. */
+  --z-canvas: 0;
+  --z-content: 2;
+  --z-veil: 3;
+  --z-cue: 4;
 }

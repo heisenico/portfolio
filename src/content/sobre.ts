@@ -1,8 +1,9 @@
 /**
  * A página inicial em prosa.
  *
- * Rascunho: a estrutura é o que importa aqui. Reescreva com as suas palavras
- * sem medo — nada no layout depende destas frases.
+ * Escrita pra ser lida rápido e sem esforço. Frase simples, sem virar aforismo
+ * — a versão anterior caía sempre no mesmo ritmo de "afirmação séria, negação
+ * curta", que soa esperto na primeira vez e cansa na terceira.
  */
 
 export interface Secao {
@@ -12,39 +13,26 @@ export interface Secao {
 }
 
 export const sobre = {
-  manchete: 'Saí da cidade pra ficar perto do silêncio.',
-  sub: 'Continuo escrevendo código. Só que agora tem mais passarinho do lado de fora.',
+  lead: 'Cuido de arquitetura e direção de front-end na Base Exchange, com React, Next.js e JavaScript.',
 
   secoes: [
     {
-      id: 'quem',
-      titulo: 'Quem eu sou',
+      id: 'sobre',
+      titulo: 'Sobre',
       corpo: [
-        'Sou o Nicholas, carioca. Engenheiro de software, remoto, morando no interior — troquei a cidade por um lugar onde dá pra ouvir o vento.',
-        'Sou uma pessoa criativa que gosta de programar. As duas coisas na mesma frase, sem hierarquia entre elas.',
+        'Trabalho com interface há tempo suficiente pra saber que a decisão de arquitetura e a decisão de design quase sempre são a mesma decisão, tomada duas vezes.',
+        'Boa parte da minha carreira aconteceu dentro de empresa, em time, resolvendo problema de gente de verdade. É esse tipo de trabalho que eu gosto de fazer.',
       ],
     },
     {
-      id: 'trabalho',
-      titulo: 'O que eu faço',
+      id: 'fora',
+      titulo: 'Fora do trabalho',
       corpo: [
-        'Lidero arquitetura e direção de front-end na Base Exchange, com React, Next.js e JavaScript.',
-        'A parte que me interessa é onde a decisão de arquitetura e a decisão de design são a mesma decisão — só que ninguém percebeu ainda.',
-      ],
-    },
-    {
-      id: 'gosto',
-      titulo: 'O que eu gosto',
-      corpo: [
-        'Ler. Ver filme. Aprender coisa que eu ainda não sei fazer.',
-        'Não tenho rede social — parei de gostar. Sobrou um canal no YouTube que uso como diário, onde também falo de JavaScript e guardo playlist boa.',
+        'Leio, vejo filme e passo tempo demais aprendendo coisa que eu ainda não sei fazer.',
+        'Não uso rede social. Mantenho um canal no YouTube que funciona como diário, e onde também falo de JavaScript.',
       ],
     },
   ] satisfies Secao[],
 
-  convite: {
-    titulo: 'Vamos fazer alguma coisa?',
-    corpo:
-      'Se você quer trabalho criativo — de engenharia a design, ou qualquer coisa no meio — me chama.',
-  },
+  convite: 'Pra trabalho criativo, de engenharia a design:',
 }

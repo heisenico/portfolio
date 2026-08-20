@@ -84,7 +84,7 @@ body {
    runtime. Say so plainly instead of showing an empty black screen. */
 .noscript {
   position: relative;
-  z-index: 5;
+  z-index: var(--z-content);
   max-width: 46ch;
   margin: 0 auto;
   padding: 22vh var(--gutter) 0;
