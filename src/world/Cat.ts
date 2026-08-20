@@ -41,8 +41,8 @@ const HIP_INSET = 0.18
 const TAIL_SEGMENTS = 8
 const TAIL_SEGMENT_LENGTH = 0.16
 
-export const CAT_COLOR = 0x061722
-export const CAT_RIM = 0x8ceaff
+export const CAT_COLOR = 0x07160f
+export const CAT_RIM = 0xffc27a
 
 export class Cat {
   readonly group = new Group()

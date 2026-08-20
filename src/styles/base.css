@@ -1,28 +1,9 @@
-/* Foundations: tokens, reset, and the two fixed layers (canvas + UI overlay). */
+/* Foundations: reset, and the two fixed layers (canvas + UI overlay).
+   Design tokens live in tokens.css. */
 
-:root {
-  --bg: #04060a;
-  --bg-deep: #010204;
+@import './tokens.css';
 
-  --scan: #7fe9ff;
-  --scan-hot: #d9fbff;
-  --amber: #ffb268;
-  --violet: #9b8cff;
 
-  --ink: #e8f2f7;
-  --ink-dim: #93a7b4;
-  /* Lightened from #5d707c, which measured 3.14:1 on the lifted card interior.
-     It carries small text (years, metric labels, footer), so it needs 4.5:1. */
-  --ink-faint: #7b94a4;
-
-  --rule: color-mix(in srgb, var(--scan) 22%, transparent);
-
-  --font-display: 'Space Grotesk', system-ui, -apple-system, 'Segoe UI', sans-serif;
-  --font-mono: 'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, monospace;
-
-  --step: 8px;
-  --gutter: clamp(20px, 5vw, 72px);
-}
 
 *,
 *::before,
@@ -39,7 +20,7 @@ body {
   margin: 0;
   background: var(--bg-deep);
   color: var(--ink);
-  font-family: var(--font-display);
+  font-family: var(--font-sans);
   font-synthesis-weight: none;
   -webkit-font-smoothing: antialiased;
   overflow-x: hidden;
@@ -89,12 +70,12 @@ body {
 }
 
 ::selection {
-  background: color-mix(in srgb, var(--scan) 40%, transparent);
-  color: var(--scan-hot);
+  background: color-mix(in srgb, var(--green) 40%, transparent);
+  color: var(--green-hot);
 }
 
 :focus-visible {
-  outline: 2px solid var(--scan);
+  outline: 2px solid var(--green);
   outline-offset: 3px;
   border-radius: 4px;
 }
@@ -119,5 +100,5 @@ body {
   line-height: 1.6;
 }
 .noscript a {
-  color: var(--scan);
+  color: var(--green);
 }

@@ -37,7 +37,7 @@ export class Motes {
     private quality: Quality,
     scanOrigin: Vector3,
     seed = 1337,
-    color = 0x7fd8ff,
+    color = 0x7fffb8,
   ) {
     this.allocated = quality.allocation.motes
     const rng = mulberry32(seed)

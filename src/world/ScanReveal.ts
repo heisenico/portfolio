@@ -36,8 +36,8 @@ const POP_DISTANCE = 1.4
 const SETTLE_DISTANCE = 4.0
 const MARKER_REST_ALPHA = 0.42
 
-export const SCAN_REST_COLOR = 0x63e2ff
-export const SCAN_EDGE_COLOR = 0xe8fdff
+export const SCAN_REST_COLOR = 0x4fe08f
+export const SCAN_EDGE_COLOR = 0xd9ffe9
 
 export class ScanReveal {
   readonly group = new Group()
@@ -56,6 +56,7 @@ export class ScanReveal {
     lineGeometry.setAttribute('position', new BufferAttribute(data.positions, 3))
     lineGeometry.setAttribute('aDist', new BufferAttribute(data.distances, 1))
     lineGeometry.setAttribute('aDepth', new BufferAttribute(data.depths, 1))
+    lineGeometry.setAttribute('aBranchId', new BufferAttribute(data.branchIds, 1))
 
     this.lineMaterial = new ShaderMaterial({
       vertexShader: branchVertex,
@@ -73,6 +74,8 @@ export class ScanReveal {
           uOpacity: { value: 1 },
           uGain: { value: 1.35 },
           uHotGain: { value: 3.1 },
+          // -1 means "nothing singled out".
+          uLitBranch: { value: -1 },
         },
       ]),
       transparent: true,
@@ -119,6 +122,11 @@ export class ScanReveal {
 
     this.group.add(this.lines, this.markers)
     this.setRadius(0)
+  }
+
+  /** Single out one branch, or `null` to clear. */
+  setLitBranch(id: number | null): void {
+    this.lineMaterial.uniforms['uLitBranch']!.value = id ?? -1
   }
 
   setRadius(radius: number): void {

@@ -32,11 +32,37 @@ export interface BranchData {
   bounds: number
   segmentCount: number
   markerCount: number
+  /** Every branch, addressable. */
+  branches: BranchRecord[]
+  /** Per-vertex owning branch id, parallel to `distances`. */
+  branchIds: Float32Array
   /** Mid-height of the tree, so the camera can aim at its centre of mass. */
   centreY: number
   /** Half-extents about the tree's centre, for framing. */
   halfWidth: number
   halfHeight: number
+}
+
+/**
+ * One grown branch, addressable on its own.
+ *
+ * Without this the tree is a single soup of vertices and nothing can say
+ * "that branch" — which is what the blog needs in order for a post to *be* a
+ * branch rather than merely sit near one.
+ */
+export interface BranchRecord {
+  id: number
+  /** -1 for the two trunks. */
+  parentId: number
+  depth: number
+  /** Inclusive vertex range this branch owns, indexing `positions` / 3. */
+  vertexStart: number
+  vertexEnd: number
+  start: Vector3
+  tip: Vector3
+  /** Unit direction from start to tip. */
+  along: Vector3
+  length: number
 }
 
 export interface Perch {
@@ -148,14 +174,23 @@ interface GrowContext {
   markerDistances: number[]
   markerSeeds: number[]
   candidates: PerchCandidate[]
+  branches: BranchRecord[]
+  branchIds: number[]
+  nextId: number
   maxDepth: number
   decay: number
   bounds: number
 }
 
-function pushSegment(ctx: GrowContext, a: Vector3, b: Vector3, depth: number): void {
-  pushVertex(ctx, a, depth)
-  pushVertex(ctx, b, depth)
+function pushSegment(
+  ctx: GrowContext,
+  a: Vector3,
+  b: Vector3,
+  depth: number,
+  branchId: number,
+): void {
+  pushVertex(ctx, a, depth, branchId)
+  pushVertex(ctx, b, depth, branchId)
 }
 
 /** Ring of points around `centre`, in the plane spanned by `normal` x `dir`. */
@@ -183,8 +218,9 @@ function cloneRing(ring: Vector3[]): Vector3[] {
   return ring.map((v) => v.clone())
 }
 
-function pushVertex(ctx: GrowContext, p: Vector3, depth: number): void {
+function pushVertex(ctx: GrowContext, p: Vector3, depth: number, branchId: number): void {
   ctx.positions.push(p.x, p.y, p.z)
+  ctx.branchIds.push(branchId)
   const d = p.distanceTo(ctx.origin)
   ctx.distances.push(d)
   ctx.depths.push(depth)
@@ -214,7 +250,12 @@ function grow(
   direction: Vector3,
   length: number,
   depth: number,
+  parentId: number,
 ): void {
+  const id = ctx.nextId++
+  const vertexStart = ctx.positions.length / 3
+  const branchOrigin = start.clone()
+
   const dir = direction.clone().normalize()
   const cursor = start.clone()
   const step = length / SUB_SEGMENTS
@@ -255,8 +296,8 @@ function grow(
       const ring = ringAt(next, dir, normal, radius, scratchRing)
 
       for (let i = 0; i < RING_SEGMENTS; i++) {
-        pushSegment(ctx, previousRing[i]!, ring[i]!, depth)
-        pushSegment(ctx, ring[i]!, ring[(i + 1) % RING_SEGMENTS]!, depth)
+        pushSegment(ctx, previousRing[i]!, ring[i]!, depth, id)
+        pushSegment(ctx, ring[i]!, ring[(i + 1) % RING_SEGMENTS]!, depth, id)
       }
       previousRing = cloneRing(ring)
 
@@ -264,7 +305,7 @@ function grow(
         pushMarker(ctx, ring[Math.floor(ctx.rng() * RING_SEGMENTS)]!, randRange(ctx.rng, 0.07, 0.15))
       }
     } else {
-      pushSegment(ctx, cursor, next, depth)
+      pushSegment(ctx, cursor, next, depth, id)
 
       // Markers thin out toward the twigs so the canopy does not turn to soup.
       if (ctx.rng() < 0.5 - depth * 0.05) {
@@ -276,6 +317,20 @@ function grow(
   }
 
   const tip = cursor.clone()
+
+  ctx.branches.push({
+    id,
+    parentId,
+    depth,
+    vertexStart,
+    // Inclusive, so a branch that somehow emitted nothing collapses to an
+    // empty range rather than silently claiming its neighbour's first vertex.
+    vertexEnd: Math.max(vertexStart, ctx.positions.length / 3 - 1),
+    start: branchOrigin,
+    tip: tip.clone(),
+    along: dir.clone(),
+    length: branchOrigin.distanceTo(tip),
+  })
 
   ctx.candidates.push({ position: tip.clone(), along: dir.clone(), depth })
 
@@ -305,7 +360,7 @@ function grow(
     childDir.y += 0.22
     childDir.normalize()
 
-    grow(ctx, tip, childDir, length * ctx.decay * randRange(ctx.rng, 0.86, 1.12), depth + 1)
+    grow(ctx, tip, childDir, length * ctx.decay * randRange(ctx.rng, 0.86, 1.12), depth + 1, id)
   }
 }
 
@@ -329,6 +384,9 @@ export function generateBranches(options: BranchOptions = {}): BranchData {
     markerDistances: [],
     markerSeeds: [],
     candidates: [],
+    branches: [],
+    branchIds: [],
+    nextId: 0,
     maxDepth: depth,
     decay,
     bounds: 0,
@@ -336,8 +394,8 @@ export function generateBranches(options: BranchOptions = {}): BranchData {
 
   // Two trunks from a shared base gives an asymmetric silhouette that reads far
   // better in a wireframe than a single symmetric fork.
-  grow(ctx, new Vector3(0, -2.4, 0), new Vector3(0.06, 1, 0.03), trunkLength, 0)
-  grow(ctx, new Vector3(0, -1.2, 0), new Vector3(-0.34, 1, -0.16), trunkLength * 0.72, 1)
+  grow(ctx, new Vector3(0, -2.4, 0), new Vector3(0.06, 1, 0.03), trunkLength, 0, -1)
+  grow(ctx, new Vector3(0, -1.2, 0), new Vector3(-0.34, 1, -0.16), trunkLength * 0.72, 1, -1)
 
   let minY = Infinity
   let maxY = -Infinity
@@ -358,6 +416,8 @@ export function generateBranches(options: BranchOptions = {}): BranchData {
     markerScales: new Float32Array(ctx.markerScales),
     markerDistances: new Float32Array(ctx.markerDistances),
     markerSeeds: new Float32Array(ctx.markerSeeds),
+    branches: ctx.branches,
+    branchIds: new Float32Array(ctx.branchIds),
     perches: selectPerches(ctx.candidates),
     bounds: ctx.bounds,
     segmentCount: ctx.positions.length / 6,

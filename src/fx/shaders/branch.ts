@@ -10,15 +10,18 @@
 export const branchVertex = /* glsl */ `
 attribute float aDist;
 attribute float aDepth;
+attribute float aBranchId;
 
 varying float vDist;
 varying float vDepth;
+varying float vBranchId;
 
 #include <fog_pars_vertex>
 
 void main() {
   vDist = aDist;
   vDepth = aDepth;
+  vBranchId = aBranchId;
 
   vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
   gl_Position = projectionMatrix * mvPosition;
@@ -38,9 +41,11 @@ uniform vec3 uEdgeColor;
 uniform float uOpacity;
 uniform float uGain;
 uniform float uHotGain;
+uniform float uLitBranch;
 
 varying float vDist;
 varying float vDepth;
+varying float vBranchId;
 
 #include <fog_pars_fragment>
 
@@ -64,6 +69,12 @@ void main() {
   // rest state, which is why the wavefront failed to read as a wavefront.
   float rest = uRest * (0.82 + ripple * 0.18) * depthFade;
   float crest = pow(wave, 2.2) * uHotGain * depthFade;
+
+  // One branch can be singled out — this is how a blog post says "that's me".
+  // Compared with a tolerance because the id travels as a float varying.
+  if (uLitBranch >= 0.0 && abs(vBranchId - uLitBranch) < 0.5) {
+    crest += 0.9;
+  }
 
   vec3 color = uRestColor * rest + uEdgeColor * crest;
   float alpha = clamp(rest + crest, 0.0, 1.0) * uOpacity;

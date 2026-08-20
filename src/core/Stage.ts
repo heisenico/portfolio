@@ -17,7 +17,7 @@ import {
 } from 'three'
 import type { Quality } from './Quality'
 
-export const BG_COLOR = 0x04060a
+export const BG_COLOR = 0x030705
 export const FOG_DENSITY = 0.019
 
 export interface StageOptions {

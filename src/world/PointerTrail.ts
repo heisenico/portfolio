@@ -54,7 +54,7 @@ export class PointerTrail {
   private lastPointer = new Vector3()
   private hasLast = false
 
-  constructor(quality: Quality, color = 0xa8f0ff) {
+  constructor(quality: Quality, color = 0xa8ffd0) {
     this.capacity = quality.allocation.trail
 
     this.positions = new Float32Array(this.capacity * 3)

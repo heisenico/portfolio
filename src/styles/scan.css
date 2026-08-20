@@ -23,7 +23,7 @@
 
 .card > .scan-border rect {
   fill: none;
-  stroke: var(--scan);
+  stroke: var(--green);
   stroke-width: 1.2;
   stroke-dasharray: 100;
   stroke-dashoffset: 100;
@@ -39,13 +39,13 @@
   background: linear-gradient(
     90deg,
     transparent,
-    var(--scan-hot) 18%,
-    var(--scan-hot) 82%,
+    var(--green-hot) 18%,
+    var(--green-hot) 82%,
     transparent
   );
   box-shadow:
-    0 0 12px 2px color-mix(in srgb, var(--scan) 65%, transparent),
-    0 0 3px 0 var(--scan-hot);
+    0 0 12px 2px color-mix(in srgb, var(--green) 65%, transparent),
+    0 0 3px 0 var(--green-hot);
 }
 
 /* Chromatic split: two offset ghosts of the line, tinted opposite ways. */
