@@ -135,12 +135,12 @@ export class HomePage implements Page {
 
     this.skillRows = Array.from(root.querySelectorAll<HTMLElement>('.habilidade'))
     for (const row of this.skillRows) {
+      // Pointer only, deliberately. Lighting the trunk ring is decoration —
+      // the name, the years and the note are all already there as text — so
+      // putting these rows in the tab order would buy a flourish at the cost
+      // of three focus stops that do nothing when activated.
       row.addEventListener('pointerenter', this.onSkillEnter)
       row.addEventListener('pointerleave', this.onSkillLeave)
-      // Keyboard users get the same cross-link as the pointer does.
-      row.tabIndex = 0
-      row.addEventListener('focus', this.onSkillEnter)
-      row.addEventListener('blur', this.onSkillLeave)
     }
   }
 
@@ -171,8 +171,6 @@ export class HomePage implements Page {
     for (const row of this.skillRows) {
       row.removeEventListener('pointerenter', this.onSkillEnter)
       row.removeEventListener('pointerleave', this.onSkillLeave)
-      row.removeEventListener('focus', this.onSkillEnter)
-      row.removeEventListener('blur', this.onSkillLeave)
     }
     this.skillRows = []
     this.emitSkill(null)

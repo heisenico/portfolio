@@ -113,6 +113,29 @@ button {
     flex-direction: column;
     gap: calc(var(--step) * 1.5);
   }
+
+  /*
+   * A árvore desce pra baixo do texto numa tela estreita (ver CameraRig), então
+   * aqui basta um sopro de véu no topo pra garantir contraste se a copa subir
+   * demais. Escurecer a cena inteira custava a imagem toda pra salvar três
+   * linhas de texto.
+   */
+  .hero {
+    position: relative;
+  }
+
+  .hero::before {
+    content: '';
+    position: absolute;
+    inset: -10% -100vw 30%;
+    z-index: -1;
+    pointer-events: none;
+    background: linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--bg-deep) 30%, transparent) 0%,
+      transparent 100%
+    );
+  }
 }
 
 /* ---------- Seções ---------- */
@@ -309,13 +332,11 @@ button {
   margin-top: 2px;
 }
 
-.habilidade:hover .hab-nome,
-.habilidade:focus-visible .hab-nome {
+.habilidade:hover .hab-nome {
   color: var(--green-hot);
 }
 
-.habilidade:hover .hab-rule,
-.habilidade:focus-visible .hab-rule {
+.habilidade:hover .hab-rule {
   opacity: 1;
 }
 

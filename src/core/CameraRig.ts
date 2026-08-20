@@ -43,13 +43,17 @@ export class CameraRig {
   private halfWidth = 8
   private halfHeight = 10
   /**
-   * World-space nudge applied to the look-at point on wide screens.
+   * World-space nudge applied to the look-at point, to clear room for text.
    *
-   * Moving the *focus* left pushes the subject right on screen, which clears a
-   * column for the headline. On narrow screens there is no column to clear, so
-   * the shift is dropped and the tree stays centred.
+   * Wide screens get a horizontal push: moving the focus left puts the tree on
+   * the right and leaves a column for the headline. Narrow screens have no
+   * column to clear, so the push goes vertical instead — raising the focus
+   * drops the tree into the lower half, under the text rather than behind it.
+   * Dimming the tree to win that contrast was the wrong trade: it cost the
+   * whole image to save three lines of type.
    */
-  private shift = 0
+  private shiftX = 0
+  private shiftY = 0
 
   private azimuth = 0
   private polar = 0
@@ -77,9 +81,9 @@ export class CameraRig {
 
   /** Recompute the orbit distance. Call whenever the projection changes. */
   refit(): void {
-    // Only wide viewports have room for text beside the subject.
     const wide = this.camera.aspect > 1.15
-    this.shift = wide ? -this.halfWidth * 0.42 : 0
+    this.shiftX = wide ? -this.halfWidth * 0.42 : 0
+    this.shiftY = wide ? 0 : this.halfHeight * 0.28
 
     const vFov = (this.camera.fov * Math.PI) / 180
     const hHalfAngle = Math.atan(Math.tan(vFov / 2) * this.camera.aspect)
@@ -115,12 +119,13 @@ export class CameraRig {
     const po = this.polar + driftPo
 
     const cosPo = Math.cos(po)
-    const fx = this.focus.x + this.shift
+    const fx = this.focus.x + this.shiftX
+    const fy = this.focus.y + this.shiftY
     this.camera.position.set(
       fx + Math.sin(az) * cosPo * this.radius,
-      this.focus.y + Math.sin(po) * this.radius + 1.2,
+      fy + Math.sin(po) * this.radius + 1.2,
       this.focus.z + Math.cos(az) * cosPo * this.radius,
     )
-    this.camera.lookAt(fx, this.focus.y, this.focus.z)
+    this.camera.lookAt(fx, fy, this.focus.z)
   }
 }
