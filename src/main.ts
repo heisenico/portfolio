@@ -178,8 +178,15 @@ loop.add((dt, elapsed) => {
   scan.update(dt, elapsed)
 
   // Arrastar a tela empurra o vento. `push` nunca é chamado sob movimento
-  // reduzido, que é o que faz `Wind.push` ler como um no-op de fora.
-  if (!quality.reducedMotion && pointer.isDown) {
+  // reduzido, que é o que faz `Wind.push` ler como um no-op de fora. Também
+  // não é chamado em `/blog/:slug`: lá os galhos entortam com `uWind`
+  // (`branch.ts`), mas o mundo sob medida do post pende as próprias peças
+  // de um `Group` em coordenadas locais e trava `uWind` em zero — arrastar
+  // pra selecionar texto no artigo entortaria o galho por baixo da rua sem
+  // mover a rua junto, descolando os dois. `wind.update` abaixo continua
+  // rodando sempre, então um vento já em curso ao entrar num post decai
+  // sozinho em vez de travar em zero.
+  if (!quality.reducedMotion && pointer.isDown && router.current.name !== 'post') {
     if (dragging) wind.push(pointer.ndc.x - dragPrev.x, pointer.ndc.y - dragPrev.y)
     dragPrev.copy(pointer.ndc)
     dragging = true
