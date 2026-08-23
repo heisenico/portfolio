@@ -2341,8 +2341,11 @@ describe('assignBranches', () => {
   })
 
   it('aguenta mais posts do que galhos ideais sem repetir nem cair', () => {
-    const muitos = assignBranches(posts(400), arvore.branches)
-    expect(new Set(muitos.map((a) => a.branch.id)).size).toBe(400)
+    // A árvore tem 329 galhos, 61 deles de profundidade 2..4. 120 força as
+    // passadas de reserva sem chegar perto de esgotar a árvore. Medido, não
+    // chutado — a contagem sai de `generateBranches` com a seed padrão.
+    const muitos = assignBranches(posts(120), arvore.branches)
+    expect(new Set(muitos.map((a) => a.branch.id)).size).toBe(120)
   })
 
   it('explode quando a árvore não tem galho pra todo mundo', () => {
@@ -3640,7 +3643,7 @@ git commit -m "feat: the first post grows a street on a twig"
 
 **Files:**
 - Create: `src/ui/Nav.ts`
-- Modify: `index.html`, `src/styles/ui.css`, `src/main.ts`, `src/core/Router.ts`
+- Modify: `index.html`, `src/styles/ui.css`, `src/main.ts`
 
 **Consumes:** `Router`, `RouteName`, `href` from `src/core/routes.ts`,
 `site.nav`.
@@ -3802,7 +3805,8 @@ git add -A && git commit -m "feat: liquid-glass segmented navigation"
 **Files:**
 - Create: `src/world/Wind.ts`, `src/world/Fireflies.ts`,
   `src/fx/shaders/fireflies.ts`, `src/world/__tests__/Wind.test.ts`
-- Modify: `src/fx/shaders/branch.ts`, `src/world/ScanReveal.ts`, `src/main.ts`,
+- Modify: `src/fx/shaders/branch.ts`, `src/fx/shaders/twig.ts`,
+  `src/world/PostWorld.ts`, `src/world/ScanReveal.ts`, `src/main.ts`,
   `content/worlds/como-cheguei-aqui.ts` (step 3 — the two new uniforms)
 
 **Produces:**
@@ -3904,6 +3908,15 @@ Task 9's pieces use the same fragment/vertex pair, so they now declare
 `uWind` and `uWindTime` too. They are left at zero: a street on a twig that
 sways with the canopy would read as an earthquake. Set them explicitly to
 zero in `fazerPeca` rather than relying on the default.
+
+`src/fx/shaders/twig.ts` is a copy of this same pair and needs the identical
+two uniforms — and, unlike Task 9's street, it must actually receive the
+wind. A generated post's twigs hang off a branch that now sways; leaving them
+rigid detaches them from the branch they are growing out of, in close-up,
+which is the one place it would be obvious. `GeneratedPostWorld.update` takes
+the same `wind.vector` and `elapsed` that `ScanReveal.setWind` gets. Route it
+through `PostWorldContext` — add `wind: Wind` to the context in
+`src/world/PostWorld.ts` — rather than importing a module-level singleton.
 
 - [ ] **Step 4: Implement `Fireflies`**
 
