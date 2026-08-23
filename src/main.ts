@@ -21,6 +21,7 @@ import { NotFoundPage } from './ui/pages/NotFoundPage'
 import { PostPage } from './ui/pages/PostPage'
 import { Intro } from './ui/Intro'
 import { installLiquidGlass } from './ui/LiquidGlass'
+import { Nav } from './ui/Nav'
 import { assignBranches, BranchLabels } from './world/BranchLabels'
 import { generateBranches } from './world/BranchSystem'
 import { Ground } from './world/Ground'
@@ -33,6 +34,7 @@ import { PointerTrail } from './world/PointerTrail'
 import { ScanReveal } from './world/ScanReveal'
 import { TrunkRings } from './world/TrunkRings'
 import { agruparPaixoes, paixoes } from './content/paixoes'
+import { site } from './content/site'
 import type { PaixaoHoverDetail } from './ui/pages/HomePage'
 
 const canvas = document.getElementById('stage') as HTMLCanvasElement
@@ -101,6 +103,7 @@ const host = new PageHost(document.getElementById('ui') as HTMLElement, quality)
 const porSlug = new Map(atribuicoes.map((a) => [a.slug, a]))
 
 const router = new Router((match) => {
+  nav.setActive(match.name)
   switch (match.name) {
     case 'home':
       void host.show(new HomePage())
@@ -125,6 +128,9 @@ const router = new Router((match) => {
       void host.show(new NotFoundPage(rig, branches))
   }
 })
+
+const nav = new Nav(site.nav)
+document.getElementById('nav')?.appendChild(nav.el)
 
 const intro = new Intro(
   scan,
