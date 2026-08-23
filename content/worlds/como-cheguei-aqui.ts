@@ -174,6 +174,26 @@ const FIGURA_MONTAGEM = 0.05
 const CLARAO_PICO = 0.975
 /** Teto do clarão sob movimento reduzido — contrato item 6. */
 const CLARAO_REDUZIDO = 0.15
+/**
+ * Teto do clarão sem movimento reduzido.
+ *
+ * Contra uma página quase preta, ~0.6 ainda lê como clarão inconfundível —
+ * não precisa de 1.0 (tela cheia) pra bater o efeito. `prefers-reduced-motion`
+ * é sinal de movimento, não de fotossensibilidade: um leitor sem essa
+ * preferência marcada não abriu mão de proteção contra flash, então o teto
+ * aqui existe pra ninguém receber uma tela de opacidade 1.0 de surpresa.
+ */
+const CLARAO_PICO_TETO = 0.6
+/**
+ * Subida máxima de opacidade do clarão por segundo — WCAG 2.3.1.
+ *
+ * O clarão é guiado por `progress`, isto é, por rolagem. Sem isso, arrastar a
+ * scrollbar rápido pela janela `clarao` sobe a opacidade mais rápido que três
+ * vezes por segundo, que é o limite da regra. 1/0.3 mantém a subida mais lenta
+ * que isso não importa quão rápido `progress` ande; a descida (contrato:
+ * "sobe até 0.975 e some") continua livre — escurecer rápido não pisca.
+ */
+const CLARAO_SUBIDA_POR_SEGUNDO = 1 / 0.3
 /** A rua some junto com o clarão. */
 const SUMICO_DE = 0.972
 const SUMICO_ATE = 1.0
@@ -770,7 +790,14 @@ class Rua implements PostWorldModule {
     const pico =
       beat(progress, JANELAS.clarao[0], CLARAO_PICO) *
       (1 - beat(progress, CLARAO_PICO, JANELAS.clarao[1]))
-    const opacidade = (reduzido ? pico * CLARAO_REDUZIDO : pico).toFixed(3)
+    const alvo = pico * (reduzido ? CLARAO_REDUZIDO : CLARAO_PICO_TETO)
+    // A opacidade só é limitada na subida: arrastar a barra de rolagem rápido
+    // não pode empurrar o clarão pra cima mais rápido que o teto de segurança
+    // acima, mas descer rápido (o `pico` caindo) não é risco e passa direto.
+    const atual = Number(m.claraoOpacidade)
+    const opacidadeNum =
+      alvo > atual ? Math.min(alvo, atual + CLARAO_SUBIDA_POR_SEGUNDO * dt) : alvo
+    const opacidade = opacidadeNum.toFixed(3)
     if (opacidade !== m.claraoOpacidade) {
       m.clarao.style.opacity = opacidade
       m.claraoOpacidade = opacidade
