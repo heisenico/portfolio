@@ -136,12 +136,6 @@ const PROFUNDIDADE_MAX = 6
  */
 const BANDA_FRACAO = 0.22
 const BANDA_MINIMA = 0.1
-/**
- * A frente de onda passa um pouco além do último vértice, senão a peça termina
- * de montar exatamente quando a banda clara ainda está em cima dela e o último
- * segmento nunca chega a assentar.
- */
-const TRANSBORDO = 1.08
 
 /* --------------------------------------------------------------- timeline */
 
@@ -429,8 +423,10 @@ interface Peca {
   /** Trecho do progresso em que ela se monta. */
   de: number
   ate: number
-  /** Vértice mais distante da origem local — o quanto a frente de onda anda. */
+  /** Vértice mais distante da origem local. */
   alcance: number
+  /** Largura da frente acesa desta peça. Ver `uScanRadius` em `update`. */
+  banda: number
 }
 
 /**
@@ -467,6 +463,8 @@ function fazerPeca(
     if (d > alcance) alcance = d
   }
 
+  const banda = Math.max(BANDA_MINIMA, alcance * BANDA_FRACAO)
+
   const geometria = new BufferGeometry()
   geometria.setAttribute('position', new BufferAttribute(posicoes, 3))
   geometria.setAttribute('aDist', new BufferAttribute(distancias, 1))
@@ -483,7 +481,7 @@ function fazerPeca(
       UniformsLib.fog,
       {
         uScanRadius: { value: 0 },
-        uBand: { value: Math.max(BANDA_MINIMA, alcance * BANDA_FRACAO) },
+        uBand: { value: banda },
         uRest: { value: REPOUSO },
         uMaxDepth: { value: PROFUNDIDADE_MAX },
         uTime: { value: 0 },
@@ -504,7 +502,7 @@ function fazerPeca(
   const linhas = new LineSegments(geometria, material)
   linhas.frustumCulled = false
 
-  return { linhas, material, geometria, de, ate, alcance }
+  return { linhas, material, geometria, de, ate, alcance, banda }
 }
 
 /* ---------------------------------------------------------------- figuras */
@@ -693,9 +691,10 @@ class Rua implements PostWorldModule {
     // teria sobrado nada pendurado na cena nem no DOM.
     ctx.scene.add(raiz)
     ctx.overlay.append(clarao)
-    raiz.updateMatrixWorld(true)
-    for (const f of figuras) f.grupo.localToWorld(f.mundo.set(0, CABECA_Y, 0))
 
+    // Registrado no mesmo fôlego em que foi pendurado: entre uma coisa e a
+    // outra, um throw deixaria a raiz na cena com `dispose()` sem nada pra
+    // desfazer.
     this.ctx = ctx
     this.montagem = {
       raiz,
@@ -711,6 +710,9 @@ class Rua implements PostWorldModule {
       corBorda: new Color(VERDE_QUENTE),
       aux: new Vector3(),
     }
+
+    raiz.updateMatrixWorld(true)
+    for (const f of figuras) f.grupo.localToWorld(f.mundo.set(0, CABECA_Y, 0))
   }
 
   update(dt: number, elapsed: number, progress: number): void {
@@ -730,7 +732,11 @@ class Rua implements PostWorldModule {
 
     for (const peca of m.pecas) {
       const t = beat(progress, peca.de, peca.ate)
-      peca.material.uniforms['uScanRadius']!.value = t * peca.alcance * TRANSBORDO
+      // Duas bandas além do último vértice, que é a mesma regra do
+      // `ScanReveal` (`maxRadius = bounds + BAND * 2`). Parar no último
+      // vértice deixa a frente clara em cima dele: o shader só devolve `wave`
+      // a zero quando `lead >= uBand`, e a peça nunca chegaria a assentar.
+      peca.material.uniforms['uScanRadius']!.value = t * (peca.alcance + 2 * peca.banda)
       peca.material.uniforms['uOpacity']!.value = sumico
       ;(peca.material.uniforms['uRestColor']!.value as Color).copy(m.corRepouso)
       ;(peca.material.uniforms['uEdgeColor']!.value as Color).copy(m.corBorda)
@@ -778,6 +784,12 @@ class Rua implements PostWorldModule {
     if (m.figuras.length === 0) return
 
     if (!reduzido) {
+      // Quem atualiza `matrixWorldInverse` é o `render`, que roda depois desta
+      // função — sem isto o frustum é o do quadro passado enquanto
+      // `anguloAlvo` lê a posição deste, e uma figura entrando em cena rápido
+      // seria julgada fora e viraria na borda da tela. Que é exatamente a
+      // única coisa que este beat existe pra impedir.
+      camera.updateMatrixWorld()
       m.frustum.setFromProjectionMatrix(
         m.matriz.multiplyMatrices(camera.projectionMatrix, camera.matrixWorldInverse),
       )

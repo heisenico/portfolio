@@ -4,7 +4,7 @@
  * Each vertex knows how far it sits from the scan origin. The fragment shader
  * compares that against the wavefront radius, which gives three zones at once:
  * unreached (discarded), the bright leading band, and the dim settled wireframe
- * behind it. That single comparison is the whole Death Stranding read.
+ * behind it. That single comparison is the whole look.
  */
 
 export const branchVertex = /* glsl */ `
