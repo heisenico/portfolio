@@ -1,14 +1,17 @@
 /**
- * Anéis no tronco — um por ano de cada habilidade.
+ * Anéis no tronco — um por paixão, agrupados por categoria.
  *
- * Uma árvore guarda os anos dela em anéis, e ele também. Cada habilidade vira
- * uma faixa de círculos empilhados no tronco: um círculo por ano. Surf desde
- * 2014 é uma faixa grossa; yoga desde 2024 é um par de fios. A leitura é
- * imediata e não precisa de legenda — a espessura *é* o tempo.
+ * A versão anterior desenhava um círculo por ano, e o tronco virava um gráfico
+ * de barras vertical: doze anos de surf eram uma faixa grossa, um ano de yoga
+ * era um fio. Tirar os anos tira essa base, e o anel passa a ser uma coisa
+ * contável em vez de medida — uma paixão, um anel.
  *
- * As faixas sobem em ordem cronológica: a mais antiga embaixo.
+ * As bandas sobem na ordem de `CATEGORIAS`, com um vão maior entre bandas do
+ * que entre anéis. É esse vão que faz a pilha ter forma.
  *
- * Passar o mouse na habilidade na página acende o anel dela no mundo.
+ * Passar o mouse na paixão na página acende o anel dela no mundo. É o único
+ * elo direto entre o DOM e a cena, e existe pra que a página e o mundo sejam
+ * duas vistas do mesmo fato em vez de duas camadas empilhadas.
  */
 
 import {
@@ -20,22 +23,17 @@ import {
   LineBasicMaterial,
   LineLoop,
 } from 'three'
-import { anosDe, type Habilidade } from '../content/aprendizado'
+import { alturasDosAneis, type Grupo } from '../content/paixoes'
 import { clamp01, damp } from '../util/tween'
 
 /** Segments per circle. Low enough to stay cheap, high enough to read round. */
 const SEGMENTS = 72
-/**
- * Rings hug the trunk at a constant radius and stack *vertically*, one per
- * year. Growing them concentrically instead made a twelve-year skill merge
- * into a solid disc floating around the trunk — a halo, not rings.
- */
 const RING_RADIUS = 0.86
-const YEAR_RISE = 0.17
-/** Gap between one skill's band and the next. */
-const BAND_GAP = 0.62
-/** Where the oldest skill starts, just above the roots. */
-const FIRST_HEIGHT = -1.9
+/** Trecho do tronco que os anéis ocupam, seja qual for a contagem. */
+const DE = -1.9
+const ATE = 1.3
+/** O vão entre bandas vale este tanto de passo de anel. */
+const FOLGA = 2.2
 
 const REST_OPACITY = 0.3
 const LIT_OPACITY = 0.9
@@ -46,52 +44,44 @@ export class TrunkRings {
   private materials: LineBasicMaterial[] = []
   private targets: number[] = []
   private current: number[] = []
+  private geometry = circleGeometry(RING_RADIUS)
   private restColor = new Color(0x4fe08f)
   private litColor = new Color(0xd9ffe9)
   private highlighted: number | null = null
 
-  constructor(skills: Habilidade[], hoje = new Date()) {
-    let cursorY = FIRST_HEIGHT
+  constructor(grupos: Grupo[]) {
+    const alturas = alturasDosAneis(
+      grupos.map((g) => g.itens.length),
+      DE,
+      ATE,
+      FOLGA,
+    )
 
-    skills.forEach((skill) => {
-      const anos = anosDe(skill, hoje)
-      if (skill.desde === 0 || anos <= 0) {
-        // A sentinel year must never reach the screen: a ring drawn from a
-        // placeholder would silently claim something untrue about a person.
-        throw new Error(`TrunkRings: "${skill.nome}" precisa de um ano real em "desde"`)
-      }
+    grupos.forEach((grupo, g) => {
+      grupo.itens.forEach((_paixao, i) => {
+        // Um material por anel: o realce é por paixão, não por banda.
+        const material = new LineBasicMaterial({
+          color: this.restColor.clone(),
+          transparent: true,
+          opacity: REST_OPACITY,
+          depthWrite: false,
+          blending: AdditiveBlending,
+        })
+        this.materials.push(material)
+        this.targets.push(REST_OPACITY)
+        this.current.push(REST_OPACITY)
 
-      const material = new LineBasicMaterial({
-        color: this.restColor.clone(),
-        transparent: true,
-        opacity: REST_OPACITY,
-        depthWrite: false,
-        blending: AdditiveBlending,
-      })
-      this.materials.push(material)
-      this.targets.push(REST_OPACITY)
-      this.current.push(REST_OPACITY)
-
-      const band = new Group()
-      band.position.y = cursorY
-
-      for (let year = 0; year < anos; year++) {
-        const ring = new LineLoop(circleGeometry(RING_RADIUS), material)
+        const ring = new LineLoop(this.geometry, material)
         ring.rotation.x = Math.PI / 2
-        ring.position.y = year * YEAR_RISE
-        band.add(ring)
-      }
-
-      // Stack the next skill above this one, so the trunk reads bottom-up in
-      // chronological order.
-      cursorY += anos * YEAR_RISE + BAND_GAP
-      this.group.add(band)
+        ring.position.y = alturas[g]![i]!
+        this.group.add(ring)
+      })
     })
 
     this.group.frustumCulled = false
   }
 
-  /** Light one skill's band, or `null` to clear. */
+  /** Acende uma paixão pelo índice achatado, ou `null` pra apagar tudo. */
   setHighlight(index: number | null): void {
     this.highlighted = index
     for (let i = 0; i < this.targets.length; i++) {
@@ -100,8 +90,8 @@ export class TrunkRings {
   }
 
   /**
-   * @param reveal 0..1 across the intro sweep — the rings arrive with the tree
-   *        rather than being there before it exists.
+   * @param reveal 0..1 ao longo da varredura de entrada — os anéis chegam com
+   *        a árvore em vez de estarem lá antes dela existir.
    */
   update(dt: number, elapsed: number, reveal: number): void {
     const gate = clamp01((reveal - 0.35) / 0.4)
@@ -110,7 +100,7 @@ export class TrunkRings {
       const material = this.materials[i]!
       this.current[i] = damp(this.current[i]!, this.targets[i]!, 9, dt)
 
-      // A slow breath, phase-offset per band so they never pulse in unison.
+      // Uma respiração lenta, defasada por anel pra nunca pulsarem juntos.
       const breath = 1 + Math.sin(elapsed * 0.7 + i * 1.9) * 0.08
       material.opacity = this.current[i]! * gate * breath
 
@@ -120,10 +110,7 @@ export class TrunkRings {
   }
 
   dispose(): void {
-    this.group.traverse((object) => {
-      const line = object as Partial<LineLoop>
-      line.geometry?.dispose()
-    })
+    this.geometry.dispose()
     for (const material of this.materials) material.dispose()
   }
 }

@@ -12,6 +12,7 @@
 
 import { describe, expect, it } from 'vitest'
 import { aprendizado } from '../aprendizado'
+import { CATEGORIAS, paixoes } from '../paixoes'
 import { site } from '../site'
 import { sobre } from '../sobre'
 
@@ -51,6 +52,8 @@ describe('todo texto do site é minúsculo', () => {
     ...textosVisiveis(site),
     ...textosVisiveis(sobre),
     ...textosVisiveis(aprendizado),
+    ...textosVisiveis(paixoes),
+    ...textosVisiveis(CATEGORIAS),
   ]
 
   // Se o caminhador parar de achar as strings, o teste passa por vazio. Este

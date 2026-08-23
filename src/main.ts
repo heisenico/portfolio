@@ -23,8 +23,8 @@ import { Motes } from './world/Motes'
 import { PointerTrail } from './world/PointerTrail'
 import { ScanReveal } from './world/ScanReveal'
 import { TrunkRings } from './world/TrunkRings'
-import { aprendizado } from './content/aprendizado'
-import type { SkillHoverDetail } from './ui/pages/HomePage'
+import { agruparPaixoes, paixoes } from './content/paixoes'
+import type { PaixaoHoverDetail } from './ui/pages/HomePage'
 
 const canvas = document.getElementById('stage') as HTMLCanvasElement
 
@@ -48,7 +48,7 @@ const motes = new Motes(quality, SCAN_ORIGIN)
 const trail = new PointerTrail(quality)
 const cat = new Cat()
 const catBrain = new CatBrain(branches.perches)
-const rings = new TrunkRings(aprendizado.jaAprendi)
+const rings = new TrunkRings(agruparPaixoes(paixoes))
 stage.scene.add(
   scan.group,
   pulse.mesh,
@@ -59,10 +59,10 @@ stage.scene.add(
   rings.group,
 )
 
-// The page and the world are two views of the same fact: hovering a skill in
-// the DOM lights its band of years on the trunk.
-document.addEventListener('skill-hover', (event) => {
-  rings.setHighlight((event as CustomEvent<SkillHoverDetail>).detail.index)
+// A página e o mundo são duas vistas do mesmo fato: passar o mouse numa
+// paixão acende o anel dela no tronco.
+document.addEventListener('paixao-hover', (event) => {
+  rings.setHighlight((event as CustomEvent<PaixaoHoverDetail>).detail.index)
 })
 
 // Hover test against the cat's forgiving proxy rather than its assembled parts.

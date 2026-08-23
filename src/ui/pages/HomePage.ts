@@ -12,13 +12,14 @@
  * muda com o tempo — é o que faz o site valer uma segunda visita.
  */
 
-import { anosDe, aprendizado } from '../../content/aprendizado'
+import { aprendizado } from '../../content/aprendizado'
+import { agruparPaixoes, paixoes } from '../../content/paixoes'
 import { site } from '../../content/site'
 import { sobre } from '../../content/sobre'
 import type { Page } from '../PageHost'
 
-/** Emitido ao passar o mouse numa habilidade; o tronco escuta. */
-export interface SkillHoverDetail {
+/** Emitido ao passar o mouse numa paixão; o tronco escuta. */
+export interface PaixaoHoverDetail {
   index: number | null
 }
 
@@ -32,7 +33,7 @@ function esc(value: string): string {
 
 export class HomePage implements Page {
   private root: HTMLElement | null = null
-  private skillRows: HTMLElement[] = []
+  private paixaoRows: HTMLElement[] = []
 
   mount(root: HTMLElement): void {
     this.root = root
@@ -51,6 +52,28 @@ export class HomePage implements Page {
 
     const sheet = document.createElement('div')
     sheet.className = 'folha material'
+
+    const grupos = agruparPaixoes(paixoes)
+    let indice = 0
+    const paixoesHtml = grupos
+      .map(
+        (grupo) => `
+          <div class="grupo">
+            <h3 class="grupo-rotulo">${esc(grupo.rotulo)}</h3>
+            <ul class="paixoes">
+              ${grupo.itens
+                .map(
+                  (p) => `
+                    <li class="paixao" data-paixao-index="${indice++}">
+                      <span class="paixao-nome">${esc(p.nome)}</span>
+                      ${p.nota ? `<span class="paixao-nota">${esc(p.nota)}</span>` : ''}
+                    </li>`,
+                )
+                .join('')}
+            </ul>
+          </div>`,
+      )
+      .join('')
 
     sheet.innerHTML = `
       ${sobre.secoes
@@ -78,18 +101,7 @@ export class HomePage implements Page {
           </dd>
         </dl>
 
-        <ul class="habilidades">
-          ${aprendizado.jaAprendi
-            .map((h, i) => {
-              const anos = anosDe(h)
-              return `
-                <li class="habilidade" data-skill-index="${i}">
-                  <span class="hab-nome">${esc(h.nome)}</span>
-                  <span class="hab-anos">${anos} ${anos === 1 ? 'ano' : 'anos'}</span>
-                </li>`
-            })
-            .join('')}
-        </ul>
+        ${paixoesHtml}
       </section>
 
       <section class="bloco" aria-labelledby="sec-onde">
@@ -128,27 +140,29 @@ export class HomePage implements Page {
 
     root.append(hero, wrap, foot)
 
-    this.skillRows = Array.from(root.querySelectorAll<HTMLElement>('.habilidade'))
-    for (const row of this.skillRows) {
+    this.paixaoRows = Array.from(root.querySelectorAll<HTMLElement>('.paixao'))
+    for (const row of this.paixaoRows) {
       // Pointer only, deliberately. Acender o anel no tronco é decoração — o
-      // nome e os anos já estão ali como texto — então colocar estas linhas na
-      // ordem de tabulação custaria três paradas de foco que não fazem nada.
-      row.addEventListener('pointerenter', this.onSkillEnter)
-      row.addEventListener('pointerleave', this.onSkillLeave)
+      // nome já está ali como texto — então colocar estas linhas na ordem de
+      // tabulação custaria uma parada de foco que não faz nada.
+      row.addEventListener('pointerenter', this.onPaixaoEnter)
+      row.addEventListener('pointerleave', this.onPaixaoLeave)
     }
   }
 
-  private onSkillEnter = (event: Event): void => {
-    const index = Number((event.currentTarget as HTMLElement).dataset['skillIndex'])
-    this.emitSkill(Number.isFinite(index) ? index : null)
+  private onPaixaoEnter = (event: Event): void => {
+    const index = Number((event.currentTarget as HTMLElement).dataset['paixaoIndex'])
+    this.emitPaixao(Number.isFinite(index) ? index : null)
   }
 
-  private onSkillLeave = (): void => {
-    this.emitSkill(null)
+  private onPaixaoLeave = (): void => {
+    this.emitPaixao(null)
   }
 
-  private emitSkill(index: number | null): void {
-    document.dispatchEvent(new CustomEvent<SkillHoverDetail>('skill-hover', { detail: { index } }))
+  private emitPaixao(index: number | null): void {
+    document.dispatchEvent(
+      new CustomEvent<PaixaoHoverDetail>('paixao-hover', { detail: { index } }),
+    )
   }
 
   update(): void {
@@ -160,12 +174,12 @@ export class HomePage implements Page {
   }
 
   unmount(): void {
-    for (const row of this.skillRows) {
-      row.removeEventListener('pointerenter', this.onSkillEnter)
-      row.removeEventListener('pointerleave', this.onSkillLeave)
+    for (const row of this.paixaoRows) {
+      row.removeEventListener('pointerenter', this.onPaixaoEnter)
+      row.removeEventListener('pointerleave', this.onPaixaoLeave)
     }
-    this.skillRows = []
-    this.emitSkill(null)
+    this.paixaoRows = []
+    this.emitPaixao(null)
     this.root = null
   }
 }
