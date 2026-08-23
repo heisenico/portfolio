@@ -324,6 +324,14 @@ export class BranchLabels {
   }
 
   update(dt: number, elapsed: number, _camera: PerspectiveCamera): void {
+    // Chamado sem condição em toda rota (`main.ts`), mas só `/blog` deixa o
+    // grupo visível — em `/`, `/blog/:slug` e o 404 isto amortecia cor,
+    // recomputava o bob e resubia um buffer da GPU todo frame por nada. O
+    // amortecimento (`r.atual`) simplesmente pausa e retoma de onde parou
+    // quando o grupo volta a ficar visível: nada consome o valor enquanto
+    // escondido (`hitTest` só roda em `/blog`, e `setHighlight` já zera o
+    // alvo antes do grupo sumir), então pausar não descola nada.
+    if (!this.group.visible) return
     if (this.rotulos.length === 0) return
 
     const positions = this.lineGeometry.attributes['position'] as BufferAttribute
