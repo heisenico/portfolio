@@ -1,6 +1,7 @@
 import './styles/base.css'
 import './styles/glass.css'
 import './styles/ui.css'
+import './styles/prose.css'
 import './styles/motion.css'
 
 import { Raycaster, Vector2, Vector3 } from 'three'
@@ -16,6 +17,8 @@ import { Router } from './core/Router'
 import { PageHost } from './ui/PageHost'
 import { BlogPage } from './ui/pages/BlogPage'
 import { HomePage } from './ui/pages/HomePage'
+import { NotFoundPage } from './ui/pages/NotFoundPage'
+import { PostPage } from './ui/pages/PostPage'
 import { Intro } from './ui/Intro'
 import { installLiquidGlass } from './ui/LiquidGlass'
 import { assignBranches, BranchLabels } from './world/BranchLabels'
@@ -95,6 +98,8 @@ const glass = installLiquidGlass()
 
 const host = new PageHost(document.getElementById('ui') as HTMLElement, quality)
 
+const porSlug = new Map(atribuicoes.map((a) => [a.slug, a]))
+
 const router = new Router((match) => {
   switch (match.name) {
     case 'home':
@@ -103,10 +108,21 @@ const router = new Router((match) => {
     case 'blog':
       void host.show(new BlogPage(rig, labels, posts))
       return
+    case 'post': {
+      const slug = match.params['slug'] ?? ''
+      const post = posts.find((p) => p.slug === slug)
+      const atribuicao = porSlug.get(slug)
+      if (!post || !atribuicao) {
+        void host.show(new NotFoundPage(rig, branches))
+        return
+      }
+      void host.show(
+        new PostPage(post, atribuicao, rig, labels, stage.scene, stage.camera, quality),
+      )
+      return
+    }
     default:
-      // Post e 404 chegam na Task 8. Até lá, qualquer outra rota volta pra
-      // casa em vez de deixar a tela em branco.
-      router.navigate('/', true)
+      void host.show(new NotFoundPage(rig, branches))
   }
 })
 

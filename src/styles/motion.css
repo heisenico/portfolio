@@ -89,3 +89,25 @@ html[data-reveal-mode='js'] .bloco[data-reveal]::before {
 html[data-reveal-mode='js'] .bloco[data-reveal].is-in::before {
   transform: scaleX(1);
 }
+
+/* ---------- Fio de progresso da leitura ---------- */
+
+/*
+ * O fio de progresso é uma animação de rolagem pura: nenhum listener,
+ * nenhuma classe, nenhum frame de JS. A linha do tempo é a barra de rolagem
+ * do documento, e é só isso que ela precisa saber.
+ */
+@keyframes encher {
+  from { transform: scaleX(0); }
+  to   { transform: scaleX(1); }
+}
+
+html[data-reveal-mode='css'] .leitura-progresso {
+  animation: encher linear both;
+  animation-timeline: scroll(root block);
+}
+
+/* Sem linha do tempo de rolagem o fio ficaria parado e cheio, mentindo. */
+html:not([data-reveal-mode='css']) .leitura-progresso {
+  display: none;
+}
