@@ -21,6 +21,7 @@ import {
   ShaderMaterial,
   UniformsLib,
   UniformsUtils,
+  Vector2,
 } from 'three'
 import { branchFragment, branchVertex } from '../fx/shaders/branch'
 import { markerFragment, markerVertex } from '../fx/shaders/marker'
@@ -76,6 +77,8 @@ export class ScanReveal {
           uHotGain: { value: 3.1 },
           // -1 means "nothing singled out".
           uLitBranch: { value: -1 },
+          uWind: { value: new Vector2() },
+          uWindTime: { value: 0 },
         },
       ]),
       transparent: true,
@@ -99,6 +102,12 @@ export class ScanReveal {
     markerGeometry.setAttribute('aSeed', new InstancedBufferAttribute(data.markerSeeds, 1))
     quad.dispose()
 
+    // Deliberately no uWind/uWindTime here: markers sit on the geometry they
+    // were generated from (the unbent line positions), so bending one layer
+    // and not the other would separate a marker from the branch it decorates.
+    // The alternative — duplicating the bend into markerVertex too — buys
+    // correctness for a handful of pixels at the cost of a second shader; a
+    // known, accepted limitation.
     this.markerMaterial = new ShaderMaterial({
       vertexShader: markerVertex,
       fragmentShader: markerFragment,
@@ -133,6 +142,12 @@ export class ScanReveal {
     this.currentRadius = radius
     this.lineMaterial.uniforms['uScanRadius']!.value = radius
     this.markerMaterial.uniforms['uScanRadius']!.value = radius
+  }
+
+  /** Only the wireframe bends — see the comment by `markerMaterial`. */
+  setWind(vector: Vector2, time: number): void {
+    this.lineMaterial.uniforms['uWind']!.value.copy(vector)
+    this.lineMaterial.uniforms['uWindTime']!.value = time
   }
 
   get radius(): number {

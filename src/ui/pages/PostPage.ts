@@ -16,6 +16,7 @@ import { buildPath, href } from '../../core/routes'
 import { clamp01 } from '../../util/tween'
 import type { BranchLabels, PostBranch } from '../../world/BranchLabels'
 import { loadPostWorld, type PostWorldModule } from '../../world/PostWorld'
+import type { Wind } from '../../world/Wind'
 import type { Page } from '../PageHost'
 
 /** Quanto tempo dura o voo até o galho do post. */
@@ -68,6 +69,7 @@ export class PostPage implements Page {
     private scene: Scene,
     private camera: PerspectiveCamera,
     private quality: Quality,
+    private wind: Wind,
   ) {}
 
   mount(root: HTMLElement): void {
@@ -142,6 +144,7 @@ export class PostPage implements Page {
         quality: this.quality,
         rig: this.rig,
         overlay,
+        wind: this.wind,
       })
       this.world = world
     } catch (erro) {

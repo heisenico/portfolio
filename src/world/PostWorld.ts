@@ -17,6 +17,7 @@ import {
   ShaderMaterial,
   UniformsLib,
   UniformsUtils,
+  Vector2,
   Vector3,
   type PerspectiveCamera,
   type Scene,
@@ -28,6 +29,7 @@ import { twigFragment, twigVertex } from '../fx/shaders/twig'
 import { jitter, mulberry32, randRange } from '../util/rng'
 import { clamp01, damp, lerp } from '../util/tween'
 import type { BranchRecord } from './BranchSystem'
+import type { Wind } from './Wind'
 
 /** Tom base da casa, em graus. Todo mundo sai daqui e volta pra cá. */
 const VERDE = 150
@@ -146,6 +148,9 @@ export interface PostWorldContext {
   rig: CameraRig
   /** Onde um mundo pode pendurar overlay em DOM, se precisar de um. */
   overlay: HTMLElement
+  /** O mesmo vento que balança a copa — pra que os galhinhos gerados
+   *  balancem junto com o galho de onde nascem. */
+  wind: Wind
 }
 
 export interface PostWorldModule {
@@ -279,6 +284,8 @@ export class GeneratedPostWorld implements PostWorldModule {
           uHotGain: { value: TWIG_HOT_GAIN },
           uLit: { value: this.lit },
           uTwigLength: { value: TWIG_LENGTH },
+          uWind: { value: new Vector2() },
+          uWindTime: { value: 0 },
         },
       ]),
       transparent: true,
@@ -310,7 +317,16 @@ export class GeneratedPostWorld implements PostWorldModule {
     // O ripple do shader precisa de tempo real pra viajar — mas só quando o
     // movimento não está reduzido. Sob `reducedMotion`, `uTime` fica parado
     // no valor que já tinha, igual `uLit` e a cor já fazem nesta função.
-    if (!reduced) this.material.uniforms['uTime']!.value = elapsed
+    //
+    // O vento segue a mesma regra: o galhinho pendura no galho que a copa
+    // balança, e um galho rígido balançando um galhinho parado destacaria os
+    // dois — mas sob `reducedMotion` nem a copa se mexe, então o vento fica
+    // no que já tinha, igual tudo o mais aqui.
+    if (!reduced) {
+      this.material.uniforms['uTime']!.value = elapsed
+      ;(this.material.uniforms['uWind']!.value as Vector2).copy(this.ctx.wind.vector)
+      this.material.uniforms['uWindTime']!.value = elapsed
+    }
   }
 
   dispose(): void {

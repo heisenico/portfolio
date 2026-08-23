@@ -33,6 +33,8 @@ import { Motes } from './world/Motes'
 import { PointerTrail } from './world/PointerTrail'
 import { ScanReveal } from './world/ScanReveal'
 import { TrunkRings } from './world/TrunkRings'
+import { Fireflies } from './world/Fireflies'
+import { Wind } from './world/Wind'
 import { agruparPaixoes, paixoes } from './content/paixoes'
 import { site } from './content/site'
 import type { PaixaoHoverDetail } from './ui/pages/HomePage'
@@ -60,6 +62,8 @@ const trail = new PointerTrail(quality)
 const cat = new Cat()
 const catBrain = new CatBrain(branches.perches)
 const rings = new TrunkRings(agruparPaixoes(paixoes))
+const wind = new Wind()
+const fireflies = new Fireflies(quality)
 
 // O blog visto de dentro da árvore: cada post ganha um galho de verdade, uma
 // vez só no boot — não por rota, pra que a atribuição seja idêntica em /blog
@@ -80,6 +84,10 @@ stage.scene.add(
   labels.group,
 )
 
+// Sob `prefers-reduced-motion`, vagalumes não entram na cena — não é só uma
+// questão de deixar de animar, é não desenhar a criatura nenhuma.
+if (!quality.reducedMotion) stage.scene.add(fireflies.points)
+
 // A página e o mundo são duas vistas do mesmo fato: passar o mouse numa
 // paixão acende o anel dela no tronco.
 document.addEventListener('paixao-hover', (event) => {
@@ -94,6 +102,7 @@ let catHovered = false
 stage.onResize((size) => {
   motes.setDpr(size.dpr)
   trail.setDpr(size.dpr)
+  fireflies.setDpr(size.dpr)
 })
 
 const glass = installLiquidGlass()
@@ -120,7 +129,7 @@ const router = new Router((match) => {
         return
       }
       void host.show(
-        new PostPage(post, atribuicao, rig, labels, stage.scene, stage.camera, quality),
+        new PostPage(post, atribuicao, rig, labels, stage.scene, stage.camera, quality, wind),
       )
       return
     }
@@ -141,6 +150,11 @@ const intro = new Intro(
 
 let scanFrozen = false
 
+// Último NDC visto durante um arraste em curso, pra derivar o delta que
+// alimenta `wind.push` sem alocar um vetor novo a cada frame.
+const dragPrev = new Vector2()
+let dragging = false
+
 const post = new Post(stage, quality)
 
 // Frame the tree from its real extent, and refit whenever the viewport changes.
@@ -157,12 +171,26 @@ loop.add((dt, elapsed) => rig.update(dt, elapsed))
 loop.add((dt, elapsed) => {
   if (!scanFrozen) intro.update(dt)
   scan.update(dt, elapsed)
+
+  // Arrastar a tela empurra o vento. `push` nunca é chamado sob movimento
+  // reduzido, que é o que faz `Wind.push` ler como um no-op de fora.
+  if (!quality.reducedMotion && pointer.isDown) {
+    if (dragging) wind.push(pointer.ndc.x - dragPrev.x, pointer.ndc.y - dragPrev.y)
+    dragPrev.copy(pointer.ndc)
+    dragging = true
+  } else {
+    dragging = false
+  }
+  wind.update(dt)
+  scan.setWind(wind.vector, elapsed)
+
   pulse.update(dt, elapsed, scan.radius, scan.progress)
   ground.update(dt, elapsed, scan.radius)
   motes.update(dt, elapsed, pointer.world, scan.progress)
   trail.update(dt, pointer)
   rings.update(dt, elapsed, scan.progress)
   labels.update(dt, elapsed, stage.camera)
+  if (!quality.reducedMotion) fireflies.update(dt, elapsed, pointer.world)
 })
 
 // Raycast the labels only while /blog is the active route, so this and the
@@ -265,6 +293,8 @@ if (import.meta.env.DEV) {
   ground,
   branches,
   labels,
+  wind,
+  fireflies,
   get blogHoverSlug() {
     return blogHoverSlug
   },

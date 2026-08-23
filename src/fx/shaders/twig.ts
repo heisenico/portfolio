@@ -32,6 +32,9 @@ attribute float aDepth;
 attribute float aBranchId;
 attribute float aTwigIndex;
 
+uniform vec2 uWind;
+uniform float uWindTime;
+
 varying float vDist;
 varying float vDepth;
 varying float vBranchId;
@@ -45,7 +48,14 @@ void main() {
   vBranchId = aBranchId;
   vTwigIndex = aTwigIndex;
 
-  vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
+  // O balanço cresce com a altura acima das raízes, então o tronco segura e a
+  // copa se mexe. Balanço uniforme lê como a imagem inteira tremendo.
+  float sway = max(position.y + 2.4, 0.0) * 0.045;
+  float phase = uWindTime * 2.2 + position.y * 0.35;
+  vec3 bent = position;
+  bent.xz += uWind * sway * (0.75 + 0.25 * sin(phase));
+
+  vec4 mvPosition = modelViewMatrix * vec4(bent, 1.0);
   gl_Position = projectionMatrix * mvPosition;
 
   #include <fog_vertex>

@@ -10,6 +10,7 @@ import {
   twigLit,
   type PostWorldContext,
 } from '../PostWorld'
+import { Wind } from '../Wind'
 
 describe('twigLit', () => {
   it('no topo do texto nada está aceso', () => {
@@ -127,10 +128,11 @@ describe('orphanWorlds', () => {
 /**
  * Um `PostWorldContext` mínimo pra exercitar o ciclo de vida de
  * `GeneratedPostWorld`. `camera`, `rig` e `overlay` nunca são lidos por ela —
- * só `scene`, `branch`, `post` e `quality` são — então os três levam um
- * stub. `post` e `branch` são montados na mão, sem importar `Post` de
- * `virtual:posts` (que o vitest não resolve por design) nem `BranchRecord`:
- * a checagem estrutural do TypeScript basta.
+ * só `scene`, `branch`, `post`, `quality` e `wind` são — então os três
+ * primeiros levam um stub e `wind` leva um `Wind` de verdade, já que
+ * `update()` lê `wind.vector`. `post` e `branch` são montados na mão, sem
+ * importar `Post` de `virtual:posts` (que o vitest não resolve por design)
+ * nem `BranchRecord`: a checagem estrutural do TypeScript basta.
  */
 function contexto(reducedMotion: boolean): PostWorldContext {
   return {
@@ -161,6 +163,7 @@ function contexto(reducedMotion: boolean): PostWorldContext {
     quality: new Quality({}, reducedMotion),
     rig: {} as unknown as PostWorldContext['rig'],
     overlay: {} as unknown as PostWorldContext['overlay'],
+    wind: new Wind(),
   }
 }
 

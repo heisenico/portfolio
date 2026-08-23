@@ -30,6 +30,7 @@ import {
   ShaderMaterial,
   UniformsLib,
   UniformsUtils,
+  Vector2,
   Vector3,
   type PerspectiveCamera,
 } from 'three'
@@ -491,6 +492,12 @@ function fazerPeca(
         uGain: { value: GANHO },
         uHotGain: { value: GANHO_QUENTE },
         uLitBranch: { value: -1 },
+        // O mesmo par de sombreadores de `branch.ts` agora lê vento — mas as
+        // peças da rua penduram num Group ancorado na ponta do galho, em
+        // coordenadas locais. Um vento compartilhado com a copa rasgaria a
+        // rua fora do lugar; zero aqui é correção, não preguiça.
+        uWind: { value: new Vector2() },
+        uWindTime: { value: 0 },
       },
     ]),
     transparent: true,
