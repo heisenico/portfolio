@@ -34,8 +34,36 @@ const REDUCED_SCALE = 0.3
  * canopy on every viewport.
  */
 const FIT_MARGIN = 1.06
-const MIN_RADIUS = 12
-const MAX_RADIUS = 60
+/**
+ * Piso de segurança pra `radius`, não uma distância "normal" — só existe pra
+ * impedir a câmera de acabar dentro da própria geometria se algum
+ * enquadramento vier com meia-extensão perto de zero.
+ *
+ * `flyAlongBranch` tem seu próprio piso (`meia = max(..., 1.4)`), e o pior
+ * caso disso — vFov de 46°, altura mandando na distância — ainda pede ~3.5
+ * de raio (`1.4 * FIT_MARGIN / tan(23°)`). Este valor fica abaixo disso de
+ * propósito: se ficasse por cima, quem decidiria a distância de todo galho
+ * curto seria este piso, não as contas de `refit()` — e foi exatamente isso
+ * que aconteceu com o valor antigo (12, ajustado só pra copa da árvore
+ * inteira). A copa nunca chega perto de 3, então baixar o piso não move o
+ * enquadramento dela nem o do blog.
+ */
+export const MIN_RADIUS = 3
+export const MAX_RADIUS = 60
+
+/**
+ * Empurrão extra que `flyAlongBranch` pede em `refit()`, em fração do
+ * alcance horizontal da lente na distância de enquadramento — não da
+ * meia-largura do assunto. Ver o comentário de `refit()` pro porquê disso
+ * ser um número diferente do `0.42` de `shiftX`.
+ *
+ * 0.3 mede pra uma coluna de leitura de `--measure` (34rem) centrada: numa
+ * janela de referência de 1470px a borda dela fica a ~0.37 da metade da
+ * tela, e este termo contribui 0.3 sozinho, mais o `halfWidth * 0.42`
+ * herdado — o suficiente pra passar da borda com folga sem empurrar a rua
+ * pra fora do outro lado da lente.
+ */
+const GALHO_FOLGA = 0.3
 
 /** Quanto a órbita cresce da primeira à última linha da página. */
 const DOLLY_GANHO = 0.22
@@ -91,6 +119,85 @@ export function shortestAngle(de: number, para: number): number {
   return d
 }
 
+/**
+ * Distância de enquadramento pra caber as duas meia-extensões no fov da
+ * câmera, já com o piso/teto de `MIN_RADIUS`/`MAX_RADIUS` aplicado.
+ *
+ * Pura e testada à parte do resto de `refit()` porque é exatamente a conta
+ * que o `MIN_RADIUS` antigo (12, tunado só pra árvore inteira) atropelava
+ * pra qualquer assunto menor — um teste aqui prende o raio de um galho no
+ * lugar certo sem precisar montar uma `CameraRig` inteira, com câmera e
+ * ponteiro de verdade.
+ */
+export function fitRadius(
+  halfWidth: number,
+  halfHeight: number,
+  fovDeg: number,
+  aspect: number,
+): number {
+  const vFov = (fovDeg * Math.PI) / 180
+  const hHalfAngle = Math.atan(Math.tan(vFov / 2) * aspect)
+  // Distance at which each axis exactly fills its half-angle; take whichever
+  // is further so both fit.
+  const distance = Math.max(
+    (halfHeight * FIT_MARGIN) / Math.tan(vFov / 2),
+    (halfWidth * FIT_MARGIN) / Math.tan(hHalfAngle),
+  )
+  return Math.min(Math.max(distance, MIN_RADIUS), MAX_RADIUS)
+}
+
+export interface EmpurraoLateral {
+  shiftX: number
+  shiftZ: number
+}
+
+/**
+ * Empurrão lateral do ponto de mira, já girado pro X/Z do mundo no azimute
+ * de repouso.
+ *
+ * `-halfWidth * 0.42` é o termo herdado da árvore — mas é um deslocamento
+ * cru em X do *mundo*, e X do mundo só coincide com "direita da tela" quando
+ * o azimute de repouso é 0. É 0 pra sempre na árvore, na copa e no 404
+ * (`flyTo` nunca pede outro), então o termo sempre funcionou pra eles. Um
+ * galho não: `flyAlongBranch` pousa em qualquer azimute ao redor do tronco,
+ * e nesse caso um empurrão em X cru pode acabar quase todo na profundidade
+ * em vez de na largura da tela — foi o que mediu ~9px de deslocamento real
+ * numa tela de 1470px, praticamente nada.
+ *
+ * `folga` resolve isso em dois passos. Primeiro, o alvo: em vez de uma
+ * fração da meia-largura do *assunto* (que pra um galho é metade do próprio
+ * comprimento dele, sem relação nenhuma com a largura da coluna de leitura
+ * por cima), soma-se uma fração do alcance horizontal da *lente* na
+ * distância de enquadramento (`radius * tanH`). Como o deslocamento em tela
+ * que esse termo produz simplifica pra `folga` sozinho (os dois `radius *
+ * tanH` se cancelam), a mesma fração de tela nasce de qualquer raio — vale
+ * igual pro galho mais curto e pro mais comprido. Segundo, a direção: os
+ * dois termos somam em "direita da tela no azimute de repouso" e só então
+ * giram pro X/Z do mundo — a mesma trigonometria que já posiciona a câmera
+ * em `update()`, aplicada ao ponto de mira em vez de à órbita. Em
+ * `baseAzimuth = 0` o giro não faz nada (cos 0 = 1, sin 0 = 0): o termo
+ * herdado vira `shiftX` puro, `shiftZ` fica 0, e a árvore/copa/404 saem bit
+ * a bit como antes desta função existir.
+ */
+export function lateralShift(
+  halfWidth: number,
+  radius: number,
+  fovDeg: number,
+  aspect: number,
+  baseAzimuth: number,
+  folga: number,
+  wide: boolean,
+): EmpurraoLateral {
+  const vFov = (fovDeg * Math.PI) / 180
+  const hHalfAngle = Math.atan(Math.tan(vFov / 2) * aspect)
+  const alcanceHorizontal = radius * Math.tan(hHalfAngle)
+  const lateral = wide ? -halfWidth * 0.42 - folga * alcanceHorizontal : 0
+  return {
+    shiftX: lateral * Math.cos(baseAzimuth),
+    shiftZ: -lateral * Math.sin(baseAzimuth),
+  }
+}
+
 export class CameraRig {
   readonly focus = new Vector3(0, 7.4, 0)
   radius = 21
@@ -109,6 +216,12 @@ export class CameraRig {
    */
   private shiftX = 0
   private shiftY = 0
+  /**
+   * Componente em Z do mesmo empurrão lateral — ver `refit()`. Sempre 0 fora
+   * de um voo a galho: aí o azimute de repouso é 0 e o empurrão cabe inteiro
+   * em `shiftX`, exatamente como antes desta peça existir.
+   */
+  private shiftZ = 0
 
   private azimuth = 0
   private polar = 0
@@ -124,6 +237,16 @@ export class CameraRig {
   private baseAzimuth = 0
   private baseAzimuthDe = 0
   private baseAzimuthPara = 0
+
+  /**
+   * Fração do alcance horizontal da lente pedida como empurrão extra pra
+   * tirar o assunto de trás da coluna de leitura — ver `refit()` e
+   * `GALHO_FOLGA`. Interpola junto com o resto do voo, do mesmo jeito que
+   * `baseAzimuth` faz duas linhas abaixo.
+   */
+  private folga = 0
+  private folgaDe = 0
+  private folgaPara = 0
   private flight: { de: Enquadramento; para: Enquadramento; t: number; dur: number } | null = null
 
   constructor(
@@ -145,22 +268,30 @@ export class CameraRig {
     this.refit()
   }
 
-  /** Recompute the orbit distance. Call whenever the projection changes. */
+  /**
+   * Recompute the orbit distance. Call whenever the projection changes.
+   *
+   * The maths live in `fitRadius`/`lateralShift` — pure functions above,
+   * tested on their own — so this method is just wiring: read the camera and
+   * the current framing, write the fields `update()` consumes.
+   */
   refit(): void {
     const wide = this.camera.aspect > 1.15
-    this.shiftX = wide ? -this.halfWidth * 0.42 : 0
     this.shiftY = wide ? 0 : this.halfHeight * 0.28
 
-    const vFov = (this.camera.fov * Math.PI) / 180
-    const hHalfAngle = Math.atan(Math.tan(vFov / 2) * this.camera.aspect)
+    this.radius = fitRadius(this.halfWidth, this.halfHeight, this.camera.fov, this.camera.aspect)
 
-    // Distance at which each axis exactly fills its half-angle; take whichever
-    // is further so both fit.
-    const distance = Math.max(
-      (this.halfHeight * FIT_MARGIN) / Math.tan(vFov / 2),
-      (this.halfWidth * FIT_MARGIN) / Math.tan(hHalfAngle),
+    const { shiftX, shiftZ } = lateralShift(
+      this.halfWidth,
+      this.radius,
+      this.camera.fov,
+      this.camera.aspect,
+      this.baseAzimuth,
+      this.folga,
+      wide,
     )
-    this.radius = Math.min(Math.max(distance, MIN_RADIUS), MAX_RADIUS)
+    this.shiftX = shiftX
+    this.shiftZ = shiftZ
   }
 
   /** Enquadramento atual, copiado — quem recebe pode guardar sem alias. */
@@ -172,11 +303,13 @@ export class CameraRig {
     }
   }
 
-  private partir(para: Enquadramento, azimute: number, seconds: number): void {
+  private partir(para: Enquadramento, azimute: number, seconds: number, folga = 0): void {
     const dur = this.quality.reducedMotion ? 0 : seconds
 
     this.baseAzimuthDe = this.baseAzimuth
     this.baseAzimuthPara = azimute
+    this.folgaDe = this.folga
+    this.folgaPara = folga
 
     if (dur <= 0) {
       // Movimento reduzido não ganha uma versão lenta do voo: ganha o destino.
@@ -184,6 +317,7 @@ export class CameraRig {
       this.halfWidth = para.halfWidth
       this.halfHeight = para.halfHeight
       this.baseAzimuth = azimute
+      this.folga = folga
       this.flight = null
       this.refit()
       return
@@ -202,13 +336,16 @@ export class CameraRig {
    * O ponto de mira é o meio do galho e a meia-extensão é metade do
    * comprimento dele, com uma folga pra ele não encostar na borda. O azimute
    * de repouso fica perpendicular à direção do galho — olhar na direção do
-   * eixo dele enquadraria um ponto.
+   * eixo dele enquadraria um ponto. `GALHO_FOLGA` é o pedido de empurrão
+   * extra que `refit()` usa pra tirar o mundo do post de trás da coluna de
+   * leitura — ver o comentário lá pro porquê de não bastar reusar o `0.42`
+   * da árvore.
    */
   flyAlongBranch(branch: BranchRecord, seconds: number): void {
     const meio = branch.start.clone().add(branch.tip).multiplyScalar(0.5)
     const meia = Math.max(branch.length * 0.62, 1.4)
     const azimute = Math.atan2(branch.along.x, branch.along.z) + Math.PI / 2
-    this.partir({ focus: meio, halfWidth: meia, halfHeight: meia }, azimute, seconds)
+    this.partir({ focus: meio, halfWidth: meia, halfHeight: meia }, azimute, seconds, GALHO_FOLGA)
   }
 
   get flying(): boolean {
@@ -230,6 +367,7 @@ export class CameraRig {
       this.halfHeight = q.halfHeight
       this.baseAzimuth =
         this.baseAzimuthDe + shortestAngle(this.baseAzimuthDe, this.baseAzimuthPara) * k
+      this.folga = this.folgaDe + (this.folgaPara - this.folgaDe) * k
       // refit por frame: a distância sai do fov e do aspecto, e as
       // meia-extensões estão mudando o tempo todo durante o voo.
       this.refit()
@@ -266,11 +404,12 @@ export class CameraRig {
     const cosPo = Math.cos(po)
     const fx = this.focus.x + this.shiftX
     const fy = this.focus.y + this.shiftY + subida
+    const fz = this.focus.z + this.shiftZ
     this.camera.position.set(
       fx + Math.sin(az) * cosPo * raio,
       fy + Math.sin(po) * raio + 1.2,
-      this.focus.z + Math.cos(az) * cosPo * raio,
+      fz + Math.cos(az) * cosPo * raio,
     )
-    this.camera.lookAt(fx, fy, this.focus.z)
+    this.camera.lookAt(fx, fy, fz)
   }
 }
