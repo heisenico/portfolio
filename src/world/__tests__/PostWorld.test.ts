@@ -117,11 +117,14 @@ describe('orphanWorlds', () => {
     expect(orphanWorlds(['como-cheguei-aqui'], caminhos)).toEqual(['fantasma'])
   })
 
-  it('sem passar caminhos, usa o glob real — que hoje tem a rua do primeiro post', () => {
-    // O glob deixou de ser vazio quando `como-cheguei-aqui` ganhou mundo
-    // próprio. Com o slug dele entre os posts nada é órfão; sem, ele é.
-    expect(orphanWorlds(['como-cheguei-aqui'])).toEqual([])
-    expect(orphanWorlds(['qualquer-slug'])).toEqual(['como-cheguei-aqui'])
+  it('as duas direções: slug com mundo não é órfão, mundo sem slug é', () => {
+    // Caminho explícito, não o glob real (`paths` sem default) — um segundo
+    // mundo à mão que qualquer um adicione ao repo não pode deixar este
+    // teste vermelho. O ponto é a lógica de `orphanWorlds`, não o inventário
+    // atual de `content/worlds/`.
+    const caminhos = ['/content/worlds/como-cheguei-aqui.ts']
+    expect(orphanWorlds(['como-cheguei-aqui'], caminhos)).toEqual([])
+    expect(orphanWorlds(['qualquer-slug'], caminhos)).toEqual(['como-cheguei-aqui'])
   })
 })
 
