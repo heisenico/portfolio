@@ -264,7 +264,13 @@ export class BranchLabels {
     }
 
     if (typeof document !== 'undefined' && document.fonts?.ready) {
-      void document.fonts.ready.then(construir)
+      // Sem `.catch` isto é uma rejeição de promise não tratada — vira erro
+      // de console sozinho, contra o release gate de zero erro. `construir`
+      // pode jogar (`construirTextura` joga sem contexto 2d), e falha alta é
+      // o combinado do projeto: registra, não engole.
+      document.fonts.ready.then(construir).catch((erro: unknown) => {
+        console.error('[portfolio] falha construindo os rótulos do galho', erro)
+      })
     } else {
       construir()
     }

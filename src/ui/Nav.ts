@@ -31,6 +31,8 @@ export class Nav {
   readonly el: HTMLElement
   private readonly thumb: HTMLSpanElement
   private readonly anchors: HTMLAnchorElement[]
+  /** Última rota recebida, pra remedir o indicador depois que a webfont carregar. */
+  private ultimaRota: RouteName | null = null
 
   constructor(nav: { home: string; blog: string }) {
     this.el = document.createElement('div')
@@ -44,6 +46,25 @@ export class Nav {
       this.criarLink(buildPath('home'), nav.home),
       this.criarLink(buildPath('blog'), nav.blog),
     ]
+
+    // `--font-sans` troca de system-ui pra Geist com `font-display: swap`.
+    // Se `setActive` já rodou com a métrica de reserva, o indicador fica
+    // com tamanho/posição errados até a próxima navegação — remedir depois
+    // que a fonte resolve corrige isso sem esperar uma troca de rota.
+    // Mesma forma de `BranchLabels.ts` (`construirTextura` tem o mesmo
+    // problema com a largura do texto).
+    if (typeof document !== 'undefined' && document.fonts?.ready) {
+      document.fonts.ready
+        .then(() => {
+          if (this.ultimaRota) this.setActive(this.ultimaRota)
+        })
+        .catch((erro: unknown) => {
+          // Falha alta, não silenciosa — contrato do projeto. O indicador
+          // só fica com a métrica de reserva; não é fatal, mas precisa
+          // aparecer no console pra ser notado.
+          console.error('[portfolio] document.fonts.ready falhou pra remedir a pílula', erro)
+        })
+    }
   }
 
   private criarLink(path: string, rotulo: string): HTMLAnchorElement {
@@ -60,6 +81,7 @@ export class Nav {
    * `/blog/:slug`, por exemplo).
    */
   setActive(name: RouteName): void {
+    this.ultimaRota = name
     const index = activeIndex(name)
 
     for (let i = 0; i < this.anchors.length; i++) {
