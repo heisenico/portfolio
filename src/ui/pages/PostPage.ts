@@ -168,7 +168,11 @@ export class PostPage implements Page {
     this.elapsed += dt
 
     if (this.rectDirty) {
-      this.topo = this.articleEl.offsetTop
+      // `offsetTop` é relativo ao ancestral posicionado mais próximo (`#ui`),
+      // não ao documento — e `scrollY` é sempre documento. `getBoundingClientRect`
+      // é relativo à janela, então soma com `scrollY` do mesmo instante dá o
+      // topo em espaço de documento, que é o que `readingProgress` espera.
+      this.topo = this.articleEl.getBoundingClientRect().top + window.scrollY
       this.altura = this.articleEl.offsetHeight
       this.rectDirty = false
     }
