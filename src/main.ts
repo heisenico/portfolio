@@ -21,6 +21,7 @@ import { installLiquidGlass } from './ui/LiquidGlass'
 import { assignBranches, BranchLabels } from './world/BranchLabels'
 import { generateBranches } from './world/BranchSystem'
 import { Ground } from './world/Ground'
+import { orphanWorlds } from './world/PostWorld'
 import { ScanPulse } from './world/ScanPulse'
 import { Cat } from './world/Cat'
 import { CatBrain } from './world/CatBrain'
@@ -203,6 +204,15 @@ document.documentElement.classList.remove('is-booting')
 console.info(
   `[portfolio] tier=${quality.initialTier} glass=${glass.refraction ? 'refracting' : 'fallback'}`,
 )
+
+if (import.meta.env.DEV) {
+  const orfaos = orphanWorlds(posts.map((p) => p.slug))
+  if (orfaos.length) {
+    console.warn(
+      `[portfolio] mundo sem post: ${orfaos.join(', ')} — renomeou o post e esqueceu o mundo?`,
+    )
+  }
+}
 
 // Exposed for browser-driven verification.
 /**
