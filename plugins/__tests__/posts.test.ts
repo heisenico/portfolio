@@ -5,6 +5,7 @@ import {
   readingMinutes,
   slugFromFilename,
   splitFrontmatter,
+  stripHtmlComments,
 } from '../posts'
 
 const raw = `---
@@ -74,6 +75,20 @@ describe('countParagraphs', () => {
   })
 })
 
+describe('stripHtmlComments', () => {
+  it('remove um comentário HTML do html renderizado', () => {
+    expect(stripHtmlComments('<!-- nota do autor -->\n<p>oi</p>')).toBe('<p>oi</p>')
+  })
+
+  it('remove comentário de múltiplas linhas', () => {
+    expect(stripHtmlComments('<!--\nlinha um\nlinha dois\n-->\n<p>oi</p>')).toBe('<p>oi</p>')
+  })
+
+  it('não mexe em html sem comentário', () => {
+    expect(stripHtmlComments('<p>oi</p>')).toBe('<p>oi</p>')
+  })
+})
+
 describe('parsePost', () => {
   it('lê o cabeçalho', () => {
     const p = parsePost(raw, '2026-08-22-ola.md')
@@ -109,5 +124,20 @@ describe('parsePost', () => {
 
   it('explode com data em formato errado, em vez de ordenar errado em silêncio', () => {
     expect(() => parsePost('---\ntitulo: x\ndata: ontem\n---\nx', 'x.md')).toThrow(/AAAA-MM-DD/)
+  })
+
+  it('não deixa nota de andaime (comentário HTML) vazar pro html do post', () => {
+    const p = parsePost(raw, 'x.md')
+    expect(p.html).not.toContain('reescrever')
+    expect(p.html).not.toContain('<!--')
+  })
+
+  it('preserva `<!--` literal dentro de um bloco de código, escapado pelo marked', () => {
+    const comCodigo = raw.replace(
+      'terceiro parágrafo.',
+      'terceiro parágrafo.\n\n```html\n<!-- exemplo -->\n```',
+    )
+    const p = parsePost(comCodigo, 'x.md')
+    expect(p.html).toContain('&lt;!-- exemplo --&gt;')
   })
 })

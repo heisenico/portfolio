@@ -88,6 +88,19 @@ export function countParagraphs(markdown: string): number {
   return Math.max(1, blocos.length)
 }
 
+/**
+ * Tira comentário HTML do *HTML já renderizado* — nunca do markdown cru.
+ *
+ * `marked` escapa `<` pra `&lt;` dentro de bloco de código (cerca ou crase),
+ * então um `<!--` que apareça ali como texto literal já virou `&lt;!--` no
+ * HTML de saída e não bate nesse regex. Rodar a mesma limpeza no markdown
+ * cru, antes do parse, comeria um exemplo de comentário HTML que um post
+ * sobre HTML quisesse mostrar dentro de um bloco de código.
+ */
+export function stripHtmlComments(html: string): string {
+  return html.replace(/<!--[\s\S]*?-->\n?/g, '')
+}
+
 export function parsePost(raw: string, filename: string): Post {
   const { frontmatter, body } = splitFrontmatter(raw)
   const bruto = frontmatter ? (parseYaml(frontmatter) as Record<string, unknown> | null) : null
@@ -109,7 +122,7 @@ export function parsePost(raw: string, filename: string): Post {
     resumo: String(data['resumo'] ?? ''),
     tags: Array.isArray(data['tags']) ? data['tags'].map(String) : [],
     minutos: readingMinutes(body),
-    html: marked.parse(body, { async: false }),
+    html: stripHtmlComments(marked.parse(body, { async: false }) as string),
     paragrafos: countParagraphs(body),
     rascunho: data['rascunho'] === true,
   }
