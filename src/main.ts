@@ -4,17 +4,21 @@ import './styles/ui.css'
 import './styles/motion.css'
 
 import { Raycaster, Vector2, Vector3 } from 'three'
+import { posts } from 'virtual:posts'
 import { CameraRig } from './core/CameraRig'
 import { Loop } from './core/Loop'
 import { Pointer } from './core/Pointer'
 import { Quality } from './core/Quality'
+import { buildPath } from './core/routes'
 import { Stage } from './core/Stage'
 import { Post } from './fx/Post'
 import { Router } from './core/Router'
 import { PageHost } from './ui/PageHost'
+import { BlogPage } from './ui/pages/BlogPage'
 import { HomePage } from './ui/pages/HomePage'
 import { Intro } from './ui/Intro'
 import { installLiquidGlass } from './ui/LiquidGlass'
+import { assignBranches, BranchLabels } from './world/BranchLabels'
 import { generateBranches } from './world/BranchSystem'
 import { Ground } from './world/Ground'
 import { ScanPulse } from './world/ScanPulse'
@@ -50,6 +54,15 @@ const trail = new PointerTrail(quality)
 const cat = new Cat()
 const catBrain = new CatBrain(branches.perches)
 const rings = new TrunkRings(agruparPaixoes(paixoes))
+
+// O blog visto de dentro da árvore: cada post ganha um galho de verdade, uma
+// vez só no boot — não por rota, pra que a atribuição seja idêntica em /blog
+// e num carregamento frio de /blog/:slug.
+const labels = new BranchLabels(quality)
+const atribuicoes = assignBranches(posts, branches.branches)
+labels.setPosts(atribuicoes)
+labels.setVisible(false)
+
 stage.scene.add(
   scan.group,
   pulse.mesh,
@@ -58,6 +71,7 @@ stage.scene.add(
   trail.points,
   cat.group,
   rings.group,
+  labels.group,
 )
 
 // A página e o mundo são duas vistas do mesmo fato: passar o mouse numa
@@ -80,17 +94,19 @@ const glass = installLiquidGlass()
 
 const host = new PageHost(document.getElementById('ui') as HTMLElement, quality)
 
-/**
- * Milestone A serves one page. The blog routes land in Milestone B; until then
- * anything that is not home is rewritten to home rather than 404ing on a URL
- * that will shortly be real.
- */
 const router = new Router((match) => {
-  if (match.name !== 'home') {
-    router.navigate('/', true)
-    return
+  switch (match.name) {
+    case 'home':
+      void host.show(new HomePage())
+      return
+    case 'blog':
+      void host.show(new BlogPage(rig, labels, posts))
+      return
+    default:
+      // Post e 404 chegam na Task 8. Até lá, qualquer outra rota volta pra
+      // casa em vez de deixar a tela em branco.
+      router.navigate('/', true)
   }
-  void host.show(new HomePage())
 })
 
 const intro = new Intro(
@@ -123,6 +139,38 @@ loop.add((dt, elapsed) => {
   motes.update(dt, elapsed, pointer.world, scan.progress)
   trail.update(dt, pointer)
   rings.update(dt, elapsed, scan.progress)
+  labels.update(dt, elapsed, stage.camera)
+})
+
+// Raycast the labels only while /blog is the active route, so this and the
+// post page's own raycasting (Task 8) never both claim the cursor.
+let blogHoverSlug: string | null = null
+loop.add(() => {
+  if (router.current.name !== 'blog') {
+    if (blogHoverSlug !== null) {
+      blogHoverSlug = null
+      labels.setHighlight(null)
+      scan.setLitBranch(null)
+      document.body.style.cursor = ''
+    }
+    return
+  }
+
+  ndc.copy(pointer.ndc)
+  raycaster.setFromCamera(ndc, stage.camera)
+  const slug = labels.hitTest(raycaster)
+
+  if (slug !== blogHoverSlug) {
+    blogHoverSlug = slug
+    labels.setHighlight(slug)
+    scan.setLitBranch(labels.branchIdFor(slug))
+  }
+  document.body.style.cursor = slug ? 'pointer' : ''
+})
+
+canvas.addEventListener('click', () => {
+  if (router.current.name !== 'blog' || !blogHoverSlug) return
+  router.navigate(buildPath('post', { slug: blogHoverSlug }))
 })
 
 loop.add((dt, elapsed) => {
@@ -184,6 +232,10 @@ console.info(
   pulse,
   ground,
   branches,
+  labels,
+  get blogHoverSlug() {
+    return blogHoverSlug
+  },
   /**
    * Copy the current drawing buffer into a DOM image over the page.
    *
