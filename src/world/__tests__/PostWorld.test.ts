@@ -116,8 +116,11 @@ describe('orphanWorlds', () => {
     expect(orphanWorlds(['como-cheguei-aqui'], caminhos)).toEqual(['fantasma'])
   })
 
-  it('sem passar caminhos, usa o glob real — hoje vazio, então nunca acusa nada', () => {
-    expect(orphanWorlds(['qualquer-slug'])).toEqual([])
+  it('sem passar caminhos, usa o glob real — que hoje tem a rua do primeiro post', () => {
+    // O glob deixou de ser vazio quando `como-cheguei-aqui` ganhou mundo
+    // próprio. Com o slug dele entre os posts nada é órfão; sem, ele é.
+    expect(orphanWorlds(['como-cheguei-aqui'])).toEqual([])
+    expect(orphanWorlds(['qualquer-slug'])).toEqual(['como-cheguei-aqui'])
   })
 })
 
