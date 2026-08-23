@@ -13,26 +13,26 @@ export interface Secao {
 }
 
 export const sobre = {
-  lead: 'Cuido de arquitetura e direção de front-end na Base Exchange, com React, Next.js e JavaScript.',
+  lead: 'cuido de arquitetura e direção de front-end na base exchange, com react, next.js e javascript.',
 
   secoes: [
     {
       id: 'sobre',
-      titulo: 'Sobre',
+      titulo: 'sobre',
       corpo: [
-        'Trabalho com interface há tempo suficiente pra saber que a decisão de arquitetura e a decisão de design quase sempre são a mesma decisão, tomada duas vezes.',
-        'Boa parte da minha carreira aconteceu dentro de empresa, em time, resolvendo problema de gente de verdade. É esse tipo de trabalho que eu gosto de fazer.',
+        'trabalho com interface há tempo suficiente pra saber que a decisão de arquitetura e a decisão de design quase sempre são a mesma decisão, tomada duas vezes.',
+        'boa parte da minha carreira aconteceu dentro de empresa, em time, resolvendo problema de gente de verdade. é esse tipo de trabalho que eu gosto de fazer.',
       ],
     },
     {
       id: 'fora',
-      titulo: 'Fora do trabalho',
+      titulo: 'fora do trabalho',
       corpo: [
-        'Leio, vejo filme e passo tempo demais aprendendo coisa que eu ainda não sei fazer.',
-        'Não uso rede social. Mantenho um canal no YouTube que funciona como diário, e onde também falo de JavaScript.',
+        'leio, vejo filme e passo tempo demais aprendendo coisa que eu ainda não sei fazer.',
+        'não uso rede social. mantenho um canal no youtube que funciona como diário, e onde também falo de javascript.',
       ],
     },
   ] satisfies Secao[],
 
-  convite: 'Pra trabalho criativo, de engenharia a design:',
+  convite: 'pra trabalho criativo, de engenharia a design:',
 }

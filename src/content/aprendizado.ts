@@ -22,19 +22,19 @@ export interface Habilidade {
 
 export const aprendizado = {
   agora: {
-    nome: 'Edição de vídeo no Premiere',
-    porque: 'Pra contar melhor as coisas que eu faço.',
+    nome: 'edição de vídeo no premiere',
+    porque: 'pra contar melhor as coisas que eu faço.',
   } satisfies Aprendendo,
 
   depois: {
-    nome: 'Tocar sax',
-    porque: 'Porque sim.',
+    nome: 'tocar sax',
+    porque: 'porque sim.',
   } satisfies Aprendendo,
 
   jaAprendi: [
-    { nome: 'Surf', desde: 2014, nota: 'O mar não negocia.' },
-    { nome: 'Forró', desde: 2023, nota: 'Dançar é a única coisa que me tira da cabeça.' },
-    { nome: 'Yoga', desde: 2024 },
+    { nome: 'surf', desde: 2014, nota: 'o mar não negocia.' },
+    { nome: 'forró', desde: 2023, nota: 'dançar é a única coisa que me tira da cabeça.' },
+    { nome: 'yoga', desde: 2024 },
   ] satisfies Habilidade[],
 }
 

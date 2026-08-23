@@ -14,18 +14,18 @@ export interface Link {
 
 export const site = {
   perfil: {
-    nome: 'Nicholas Ferrer',
-    papel: 'Engenheiro de software',
+    nome: 'nicholas ferrer alencar',
+    papel: 'engenheiro de software',
     /** Carioca, e dividido entre os dois lugares — sem fazer disso um tema. */
-    lugar: 'Carioca, entre a roça e a cidade',
-    empresa: 'Base Exchange',
+    lugar: 'carioca, entre a roça e a cidade',
+    empresa: 'base exchange',
   },
 
-  nav: { home: 'Início', blog: 'Blog' },
+  nav: { home: 'início', blog: 'blog' },
 
   rodape: {
-    nota: 'O gato é procedural e não gosta de ser observado.',
-    cue: 'Role',
+    nota: 'o gato é procedural e não gosta de ser observado.',
+    cue: 'role',
   },
 
   /**
@@ -35,34 +35,34 @@ export const site = {
    */
   links: [
     {
-      rotulo: 'YouTube',
+      rotulo: 'youtube',
       href: 'https://www.youtube.com/@heisenico',
-      nota: 'Meu diário. Também falo de JavaScript e guardo playlist boa.',
+      nota: 'meu diário. também falo de javascript e guardo playlist boa.',
     },
     {
-      rotulo: 'Goodreads',
+      rotulo: 'goodreads',
       href: 'https://www.goodreads.com/user/show/203531558-nicholas',
-      nota: 'O que eu ando lendo.',
+      nota: 'o que eu ando lendo.',
     },
     {
-      rotulo: 'Letterboxd',
+      rotulo: 'letterboxd',
       href: 'https://letterboxd.com/nicholasferrer/',
-      nota: 'O que eu ando assistindo.',
+      nota: 'o que eu ando assistindo.',
     },
     {
-      rotulo: 'LinkedIn',
+      rotulo: 'linkedin',
       href: 'https://www.linkedin.com/in/ferrernicholas/',
-      nota: 'A parte formal.',
+      nota: 'a parte formal.',
     },
     {
-      rotulo: 'GitHub',
+      rotulo: 'github',
       href: 'https://github.com/heisenico',
-      nota: 'Onde este site mora.',
+      nota: 'onde este site mora.',
     },
     {
-      rotulo: 'E-mail',
+      rotulo: 'e-mail',
       href: 'mailto:nicholasferrer@hotmail.com',
-      nota: 'Pra falar de trabalho criativo.',
+      nota: 'pra falar de trabalho criativo.',
     },
   ] satisfies Link[],
 }

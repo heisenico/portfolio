@@ -64,14 +64,14 @@ export class HomePage implements Page {
         .join('')}
 
       <section class="bloco" aria-labelledby="sec-aprendendo">
-        <h2 id="sec-aprendendo">Aprendendo</h2>
+        <h2 id="sec-aprendendo">aprendendo</h2>
         <dl class="agenda">
-          <dt><span class="ponto is-agora" aria-hidden="true"></span>Agora</dt>
+          <dt><span class="ponto is-agora" aria-hidden="true"></span>agora</dt>
           <dd>
             ${esc(aprendizado.agora.nome)}
             <span class="porque">${esc(aprendizado.agora.porque)}</span>
           </dd>
-          <dt><span class="ponto" aria-hidden="true"></span>Depois</dt>
+          <dt><span class="ponto" aria-hidden="true"></span>depois</dt>
           <dd>
             ${esc(aprendizado.depois.nome)}
             <span class="porque">${esc(aprendizado.depois.porque)}</span>
@@ -93,7 +93,7 @@ export class HomePage implements Page {
       </section>
 
       <section class="bloco" aria-labelledby="sec-onde">
-        <h2 id="sec-onde">Onde me achar</h2>
+        <h2 id="sec-onde">onde me achar</h2>
         <ul class="links">
           ${links
             .map(
