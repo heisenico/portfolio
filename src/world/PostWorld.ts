@@ -26,7 +26,7 @@ import type { CameraRig } from '../core/CameraRig'
 import type { Quality } from '../core/Quality'
 import { twigFragment, twigVertex } from '../fx/shaders/twig'
 import { jitter, mulberry32, randRange } from '../util/rng'
-import { clamp01, damp } from '../util/tween'
+import { clamp01, damp, lerp } from '../util/tween'
 import type { BranchRecord } from './BranchSystem'
 
 /** Tom base da casa, em graus. Todo mundo sai daqui e volta pra cá. */
@@ -60,6 +60,22 @@ export function beat(progress: number, de: number, ate: number): number {
 }
 
 /**
+ * FNV-1a de 32 bits.
+ *
+ * Base de todo hash determinístico de string deste arquivo — `hueDaTag` e a
+ * semente do rng do galhinho usam o mesmo algoritmo; só o que cada um faz com
+ * o inteiro resultante muda.
+ */
+function fnv1a(s: string): number {
+  let h = 2166136261
+  for (let i = 0; i < s.length; i++) {
+    h ^= s.charCodeAt(i)
+    h = Math.imul(h, 16777619)
+  }
+  return h
+}
+
+/**
  * Tom derivado da primeira tag do post.
  *
  * A faixa é limitada de propósito: o contrato diz que o leitor entra no verde
@@ -68,29 +84,41 @@ export function beat(progress: number, de: number, ate: number): number {
  */
 export function hueDaTag(tag: string | undefined): number {
   if (!tag) return VERDE
-  let h = 2166136261
-  for (let i = 0; i < tag.length; i++) {
-    h ^= tag.charCodeAt(i)
-    h = Math.imul(h, 16777619)
-  }
-  return VERDE - DERIVA + (Math.abs(h) % (DERIVA * 2 + 1))
+  return VERDE - DERIVA + (Math.abs(fnv1a(tag)) % (DERIVA * 2 + 1))
 }
 
 /**
  * Hash determinístico de string pra semente do rng.
  *
- * Mesmo algoritmo de `hueDaTag` (FNV-1a), mas devolvendo o hash inteiro em
- * vez de um tom limitado — aqui o resultado semeia `mulberry32`, então a
- * faixa não importa, só a reprodutibilidade: o mesmo slug planta sempre o
- * mesmo galhinho.
+ * Mesmo `fnv1a` de `hueDaTag`, mas devolvendo o hash inteiro em vez de um tom
+ * limitado — aqui o resultado semeia `mulberry32`, então a faixa não importa,
+ * só a reprodutibilidade: o mesmo slug planta sempre o mesmo galhinho.
  */
 function hashSeed(s: string): number {
-  let h = 2166136261
-  for (let i = 0; i < s.length; i++) {
-    h ^= s.charCodeAt(i)
-    h = Math.imul(h, 16777619)
-  }
-  return h >>> 0
+  return fnv1a(s) >>> 0
+}
+
+/** Progresso em que a deriva de cor termina de entrar. */
+const HUE_ENTRA_ATE = 0.15
+/** Progresso em que a deriva começa a voltar pro verde. */
+const HUE_SAI_DE = 0.8
+/** Contrato do mundo: de volta ao verde a partir daqui — clause #3. */
+const HUE_VERDE_DESDE = 0.97
+
+/**
+ * Envelope de cor ao longo da leitura: verde no início, deriva pro tom da tag
+ * no meio, verde de novo a partir de `HUE_VERDE_DESDE`.
+ *
+ * O contrato do mundo diz que o leitor entra no verde da árvore e sai nele —
+ * a árvore é a única coisa no site que nunca muda, e é dela que o leitor
+ * decola e é a ela que volta. Uma tag escolhe pra onde a cor deriva, não se
+ * ela deriva: por isso isto é uma função de `progress`, não de `hueDaTag`
+ * sozinho.
+ */
+export function hueEnvelope(progress: number, hue: number): number {
+  const entra = beat(progress, 0, HUE_ENTRA_ATE)
+  const sai = 1 - beat(progress, HUE_SAI_DE, HUE_VERDE_DESDE)
+  return lerp(VERDE, hue, Math.min(entra, sai))
 }
 
 const UP = new Vector3(0, 1, 0)
@@ -135,25 +163,28 @@ const TWIG_SPREAD = 0.6
 
 /** Mesma sintonia visual do `ScanReveal` da árvore, pra que os galhinhos leiam
  *  como o mesmo material — não uma camada nova por cima. */
-const TWIG_BAND = 2.6
 const TWIG_REST = 0.46
 const TWIG_GAIN = 1.35
 const TWIG_HOT_GAIN = 3.1
 const TWIG_MAX_DEPTH = 6
-/** Bem além do alcance de qualquer galhinho: o gate de distância não é o que
- *  revela este mundo — ver o comentário de `twigFragment`. */
-const TWIG_SCAN_RADIUS = 40
+/** Largura da frente acesa, em unidades de mundo. Encolhida a partir do
+ *  `BAND = 2.6` do `ScanReveal`: aquele valor foi calibrado pra dezenas de
+ *  unidades de árvore e lia como plano nos ~1.4 de um galhinho inteiro. */
+const TWIG_BAND = 0.35
 
 /** Velocidade com que `uLit` persegue o alvo de leitura. */
 const LIT_LAMBDA = 6
+/** Velocidade com que a cor persegue o envelope — mais lenta que o
+ *  crescimento, pra que a deriva de tom nunca leia como um flash. */
+const HUE_LAMBDA = 4
 
 /**
  * O mundo padrão: derivado inteiramente do próprio post.
  *
  * O slug semeia o crescimento, `paragrafos` decide quantos galhinhos existem,
- * e a primeira tag escolhe o tom. Rolar a página avança `progress`, e os
- * galhinhos acendem em ordem — um por parágrafo — de modo que ler o texto é o
- * que faz o galho crescer.
+ * e a primeira tag escolhe o tom pra onde a cor deriva. Rolar a página avança
+ * `progress`, e os galhinhos acendem em ordem — um por parágrafo — de modo
+ * que ler o texto é o que faz o galho crescer.
  */
 export class GeneratedPostWorld implements PostWorldModule {
   private ctx: PostWorldContext | null = null
@@ -161,12 +192,16 @@ export class GeneratedPostWorld implements PostWorldModule {
   private material: ShaderMaterial | null = null
   private paragrafos = 0
   private lit = -1
+  private hueAlvo = VERDE
+  private hueAtual = VERDE
 
   build(ctx: PostWorldContext): void {
     this.ctx = ctx
     const paragrafos = ctx.post.paragrafos
     this.paragrafos = paragrafos
     this.lit = -1
+    this.hueAlvo = hueDaTag(ctx.post.tags[0])
+    this.hueAtual = VERDE
 
     const rng = mulberry32(hashSeed(ctx.post.slug))
     const along = ctx.branch.along
@@ -222,8 +257,7 @@ export class GeneratedPostWorld implements PostWorldModule {
     geometry.setAttribute('aBranchId', new BufferAttribute(new Float32Array(branchIds), 1))
     geometry.setAttribute('aTwigIndex', new BufferAttribute(new Float32Array(twigIndices), 1))
 
-    const hue = hueDaTag(ctx.post.tags[0])
-    const color = new Color().setHSL(hue / 360, 0.72, 0.6)
+    const color = new Color().setHSL(this.hueAtual / 360, 0.72, 0.6)
 
     this.material = new ShaderMaterial({
       vertexShader: twigVertex,
@@ -234,7 +268,6 @@ export class GeneratedPostWorld implements PostWorldModule {
       uniforms: UniformsUtils.merge([
         UniformsLib.fog,
         {
-          uScanRadius: { value: TWIG_SCAN_RADIUS },
           uBand: { value: TWIG_BAND },
           uRest: { value: TWIG_REST },
           uMaxDepth: { value: TWIG_MAX_DEPTH },
@@ -245,6 +278,7 @@ export class GeneratedPostWorld implements PostWorldModule {
           uGain: { value: TWIG_GAIN },
           uHotGain: { value: TWIG_HOT_GAIN },
           uLit: { value: this.lit },
+          uTwigLength: { value: TWIG_LENGTH },
         },
       ]),
       transparent: true,
@@ -261,9 +295,17 @@ export class GeneratedPostWorld implements PostWorldModule {
   update(dt: number, _elapsed: number, progress: number): void {
     if (!this.ctx || !this.material) return
 
+    const reduced = this.ctx.quality.reducedMotion
+
     const target = twigLit(progress, this.paragrafos)
-    this.lit = this.ctx.quality.reducedMotion ? target : damp(this.lit, target, LIT_LAMBDA, dt)
+    this.lit = reduced ? target : damp(this.lit, target, LIT_LAMBDA, dt)
     this.material.uniforms['uLit']!.value = this.lit
+
+    const hueTarget = hueEnvelope(progress, this.hueAlvo)
+    this.hueAtual = reduced ? hueTarget : damp(this.hueAtual, hueTarget, HUE_LAMBDA, dt)
+    const hue01 = this.hueAtual / 360
+    ;(this.material.uniforms['uRestColor']!.value as Color).setHSL(hue01, 0.72, 0.6)
+    ;(this.material.uniforms['uEdgeColor']!.value as Color).setHSL(hue01, 0.72, 0.6)
   }
 
   dispose(): void {
@@ -296,10 +338,17 @@ export async function loadPostWorld(post: Post): Promise<PostWorldModule> {
   return new GeneratedPostWorld()
 }
 
-/** Mundos à mão que não têm post correspondente. Quase sempre um rename. */
-export function orphanWorlds(slugs: string[]): string[] {
+/**
+ * Mundos à mão que não têm post correspondente. Quase sempre um rename.
+ *
+ * `paths` tem um default pro glob real do Vite e existe como parâmetro só pra
+ * que isto seja testável sem depender de arquivos de verdade em
+ * `content/worlds/` — o mesmo corte que `Quality.ts` faz entre `readHints` e
+ * `tierFromHints`.
+ */
+export function orphanWorlds(slugs: string[], paths: string[] = Object.keys(custom)): string[] {
   const existem = new Set(slugs)
-  return Object.keys(custom)
+  return paths
     .map((k) => k.slice(PREFIXO.length).replace(/\.ts$/, ''))
     .filter((s) => !existem.has(s))
 }

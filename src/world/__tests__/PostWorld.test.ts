@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { beat, hueDaTag, twigLit } from '../PostWorld'
+import { beat, hueDaTag, hueEnvelope, orphanWorlds, twigLit } from '../PostWorld'
 
 describe('twigLit', () => {
   it('no topo do texto nada está aceso', () => {
@@ -77,5 +77,36 @@ describe('hueDaTag', () => {
       expect(hueDaTag(tag)).toBeGreaterThanOrEqual(80)
       expect(hueDaTag(tag)).toBeLessThanOrEqual(220)
     }
+  })
+})
+
+describe('hueEnvelope', () => {
+  it('começa verde', () => {
+    expect(hueEnvelope(0, 200)).toBe(150)
+  })
+
+  it('chega no tom da tag no meio da leitura', () => {
+    expect(hueEnvelope(0.5, 200)).toBe(200)
+  })
+
+  it('volta pro verde a partir de 0.97', () => {
+    expect(hueEnvelope(0.97, 200)).toBe(150)
+    expect(hueEnvelope(1, 200)).toBe(150)
+  })
+})
+
+describe('orphanWorlds', () => {
+  it('sem mundo à mão nenhum, não sobra órfão pra lista que for', () => {
+    expect(orphanWorlds(['a', 'b'], [])).toEqual([])
+    expect(orphanWorlds([], [])).toEqual([])
+  })
+
+  it('acusa um mundo à mão cujo slug não está entre os posts', () => {
+    const caminhos = ['/content/worlds/como-cheguei-aqui.ts', '/content/worlds/fantasma.ts']
+    expect(orphanWorlds(['como-cheguei-aqui'], caminhos)).toEqual(['fantasma'])
+  })
+
+  it('sem passar caminhos, usa o glob real — hoje vazio, então nunca acusa nada', () => {
+    expect(orphanWorlds(['qualquer-slug'])).toEqual([])
   })
 })
