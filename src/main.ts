@@ -125,6 +125,11 @@ const router = new Router((match) => {
       const post = posts.find((p) => p.slug === slug)
       const atribuicao = porSlug.get(slug)
       if (!post || !atribuicao) {
+        // A rota bateu com /blog/:slug, mas nenhum post tem essa slug — a
+        // pílula já foi acesa em "blog" na primeira linha do handler; corrige
+        // aqui, porque a pílula não deve afirmar que você está numa página
+        // em que não está.
+        nav.setActive('notFound')
         void host.show(new NotFoundPage(rig, branches))
         return
       }
