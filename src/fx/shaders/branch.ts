@@ -62,8 +62,11 @@ varying float vBranchId;
 void main() {
   float lead = uScanRadius - vDist;
 
-  // Nothing beyond the wavefront exists yet.
-  if (lead < 0.0) discard;
+  // Nothing beyond the wavefront exists yet. Strictly <= and not just <: a
+  // vertex sitting exactly at its scan origin (vDist 0) would otherwise pass
+  // this check the instant uScanRadius is still 0, rendering at full crest
+  // before its window ever opens.
+  if (lead <= 0.0) discard;
 
   // 1 at the wavefront, falling to 0 over uBand behind it.
   float wave = 1.0 - smoothstep(0.0, uBand, lead);

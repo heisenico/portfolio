@@ -96,8 +96,11 @@ void main() {
   float front = grow * (uTwigLength + uBand * 2.0);
   float lead = front - vDist;
 
-  // Nada além da frente de crescimento existe ainda.
-  if (lead < 0.0) discard;
+  // Nada além da frente de crescimento existe ainda. <=, não só <: um
+  // vértice exatamente na origem de escaneamento da própria peça (vDist 0)
+  // passaria por essa checagem no instante em que a frente ainda é 0,
+  // acendendo antes da janela dele abrir — mesmo defeito do branch.ts.
+  if (lead <= 0.0) discard;
 
   // 1 bem na frente, caindo pra 0 ao longo de uBand atrás dela.
   float wave = 1.0 - smoothstep(0.0, uBand, lead);
