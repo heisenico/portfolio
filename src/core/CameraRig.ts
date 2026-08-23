@@ -333,17 +333,22 @@ export class CameraRig {
   /**
    * Emoldura um galho de lado.
    *
-   * O ponto de mira é o meio do galho e a meia-extensão é metade do
-   * comprimento dele, com uma folga pra ele não encostar na borda. O azimute
-   * de repouso fica perpendicular à direção do galho — olhar na direção do
-   * eixo dele enquadraria um ponto. `GALHO_FOLGA` é o pedido de empurrão
-   * extra que `refit()` usa pra tirar o mundo do post de trás da coluna de
-   * leitura — ver o comentário lá pro porquê de não bastar reusar o `0.42`
-   * da árvore.
+   * O ponto de mira é o meio do galho, mas a meia-extensão enquadrada não é a
+   * do galho em si — é a do mundo em miniatura que cresce na ponta dele (uma
+   * ruazinha de ~4×0.55×3.16 unidades). Enquadrar só o galho (0.62×
+   * comprimento) deixa a câmera perto demais pra caber essa rua: ela projeta
+   * larga demais na tela e o lado longe sai cortado da borda. `1.38`/`3.1`
+   * (o mesmo `0.62`/`1.4` escalados por ~2.22) empurram a distância de
+   * enquadramento de ~5 pra ~11 unidades — perto o bastante pra ler como
+   * cidadezinha, longe o bastante pra caber inteira. O azimute de repouso
+   * fica perpendicular à direção do galho — olhar na direção do eixo dele
+   * enquadraria um ponto. `GALHO_FOLGA` é o pedido de empurrão extra que
+   * `refit()` usa pra tirar o mundo do post de trás da coluna de leitura —
+   * ver o comentário lá pro porquê de não bastar reusar o `0.42` da árvore.
    */
   flyAlongBranch(branch: BranchRecord, seconds: number): void {
     const meio = branch.start.clone().add(branch.tip).multiplyScalar(0.5)
-    const meia = Math.max(branch.length * 0.62, 1.4)
+    const meia = Math.max(branch.length * 1.38, 3.1)
     const azimute = Math.atan2(branch.along.x, branch.along.z) + Math.PI / 2
     this.partir({ focus: meio, halfWidth: meia, halfHeight: meia }, azimute, seconds, GALHO_FOLGA)
   }

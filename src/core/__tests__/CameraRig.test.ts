@@ -95,12 +95,14 @@ describe('shortestAngle', () => {
 
 describe('fitRadius', () => {
   it('não trava mais num galho pequeno: o defeito medido em produção', () => {
-    // O post "como-cheguei-aqui": meia-extensão 1.99 (branch.length ≈ 3.2),
-    // igual ao que o relatório mediu. O MIN_RADIUS antigo (12) travava isto
-    // em 12, a 15+ unidades reais de câmera — o bug. O novo piso (3) não
-    // trava mais: o ajuste natural, ~4.97, decide.
-    const raio = fitRadius(1.99, 1.99, FOV, ASPECT)
-    expect(raio).toBeCloseTo(4.9694, 3)
+    // O post "como-cheguei-aqui": meia-extensão 4.416 (branch.length ≈ 3.2,
+    // `meia = max(length * 1.38, 3.1)` — enquadra a ruazinha na ponta do
+    // galho, não o galho em si). O MIN_RADIUS antigo (12) travava isto em
+    // 12, a 15+ unidades reais de câmera — o bug. O novo piso (3) não trava
+    // mais: o ajuste natural, ~11.03, decide — o alvo medido pro defeito de
+    // câmera-perto-demais (rua cortando a borda).
+    const raio = fitRadius(4.416, 4.416, FOV, ASPECT)
+    expect(raio).toBeCloseTo(11.0277, 3)
     expect(raio).toBeGreaterThan(MIN_RADIUS)
     expect(raio).toBeLessThan(12)
   })
