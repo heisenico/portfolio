@@ -115,7 +115,7 @@ const router = new Router((match) => {
   nav.setActive(match.name)
   switch (match.name) {
     case 'home':
-      void host.show(new HomePage())
+      void host.show(new HomePage(rig, branches))
       return
     case 'blog':
       void host.show(new BlogPage(rig, labels, posts))

@@ -10,13 +10,27 @@
  * A ordem responde, nesta sequência: quem é, o que faz, o que está aprendendo,
  * onde encontrar. O bloco de aprendizado fica no meio porque é a parte que
  * muda com o tempo — é o que faz o site valer uma segunda visita.
+ *
+ * É a rota de volta: quem chega de /blog ou de um post encontra a câmera onde
+ * a última rota a deixou, não em cima da árvore inteira. Voar de volta pro
+ * enquadramento do boot (mesmas extensões que `main.ts` usa pra enquadrar no
+ * carregamento) é o que faz `início` na navegação realmente voltar pra casa.
  */
 
+import { Vector3 } from 'three'
 import { aprendizado } from '../../content/aprendizado'
 import { agruparPaixoes, paixoes } from '../../content/paixoes'
 import { site } from '../../content/site'
 import { sobre } from '../../content/sobre'
+import type { CameraRig } from '../../core/CameraRig'
+import type { BranchData } from '../../world/BranchSystem'
 import type { Page } from '../PageHost'
+
+/**
+ * Quanto tempo dura o voo de volta pra árvore inteira. Mesma duração do 404,
+ * que faz o mesmo voo pro mesmo enquadramento.
+ */
+const VOO_SEGUNDOS = 1.1
 
 /** Emitido ao passar o mouse numa paixão; o tronco escuta. */
 export interface PaixaoHoverDetail {
@@ -34,6 +48,11 @@ function esc(value: string): string {
 export class HomePage implements Page {
   private root: HTMLElement | null = null
   private paixaoRows: HTMLElement[] = []
+
+  constructor(
+    private rig: CameraRig,
+    private branches: BranchData,
+  ) {}
 
   mount(root: HTMLElement): void {
     this.root = root
@@ -139,6 +158,13 @@ export class HomePage implements Page {
     foot.innerHTML = `<span>${esc(rodape.nota)}</span><span>${new Date().getFullYear()}</span>`
 
     root.append(hero, wrap, foot)
+
+    this.rig.flyTo(
+      new Vector3(0, this.branches.centreY, 0),
+      this.branches.halfWidth,
+      this.branches.halfHeight,
+      VOO_SEGUNDOS,
+    )
 
     this.paixaoRows = Array.from(root.querySelectorAll<HTMLElement>('.paixao'))
     for (const row of this.paixaoRows) {
