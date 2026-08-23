@@ -124,8 +124,12 @@ export function postsPlugin(): Plugin {
     let files: string[]
     try {
       files = (await readdir(dir)).filter((f) => f.endsWith('.md'))
-    } catch {
-      return []
+    } catch (err) {
+      // sem content/posts/ o blog só não tem post nenhum ainda — qualquer
+      // outro erro (permissão, disco) explode o build, como o resto do
+      // arquivo faz.
+      if ((err as NodeJS.ErrnoException).code === 'ENOENT') return []
+      throw err
     }
     const posts = await Promise.all(
       files.map(async (f) => parsePost(await readFile(join(dir, f), 'utf8'), f)),
