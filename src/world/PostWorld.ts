@@ -292,7 +292,7 @@ export class GeneratedPostWorld implements PostWorldModule {
     ctx.scene.add(this.lines)
   }
 
-  update(dt: number, _elapsed: number, progress: number): void {
+  update(dt: number, elapsed: number, progress: number): void {
     if (!this.ctx || !this.material) return
 
     const reduced = this.ctx.quality.reducedMotion
@@ -306,6 +306,11 @@ export class GeneratedPostWorld implements PostWorldModule {
     const hue01 = this.hueAtual / 360
     ;(this.material.uniforms['uRestColor']!.value as Color).setHSL(hue01, 0.72, 0.6)
     ;(this.material.uniforms['uEdgeColor']!.value as Color).setHSL(hue01, 0.72, 0.6)
+
+    // O ripple do shader precisa de tempo real pra viajar — mas só quando o
+    // movimento não está reduzido. Sob `reducedMotion`, `uTime` fica parado
+    // no valor que já tinha, igual `uLit` e a cor já fazem nesta função.
+    if (!reduced) this.material.uniforms['uTime']!.value = elapsed
   }
 
   dispose(): void {

@@ -1,5 +1,15 @@
 import { describe, expect, it } from 'vitest'
-import { beat, hueDaTag, hueEnvelope, orphanWorlds, twigLit } from '../PostWorld'
+import { Scene, Vector3, type ShaderMaterial } from 'three'
+import { Quality } from '../../core/Quality'
+import {
+  beat,
+  GeneratedPostWorld,
+  hueDaTag,
+  hueEnvelope,
+  orphanWorlds,
+  twigLit,
+  type PostWorldContext,
+} from '../PostWorld'
 
 describe('twigLit', () => {
   it('no topo do texto nada está aceso', () => {
@@ -108,5 +118,79 @@ describe('orphanWorlds', () => {
 
   it('sem passar caminhos, usa o glob real — hoje vazio, então nunca acusa nada', () => {
     expect(orphanWorlds(['qualquer-slug'])).toEqual([])
+  })
+})
+
+/**
+ * Um `PostWorldContext` mínimo pra exercitar o ciclo de vida de
+ * `GeneratedPostWorld`. `camera`, `rig` e `overlay` nunca são lidos por ela —
+ * só `scene`, `branch`, `post` e `quality` são — então os três levam um
+ * stub. `post` e `branch` são montados na mão, sem importar `Post` de
+ * `virtual:posts` (que o vitest não resolve por design) nem `BranchRecord`:
+ * a checagem estrutural do TypeScript basta.
+ */
+function contexto(reducedMotion: boolean): PostWorldContext {
+  return {
+    scene: new Scene(),
+    camera: {} as unknown as PostWorldContext['camera'],
+    branch: {
+      id: 3,
+      parentId: 1,
+      depth: 2,
+      vertexStart: 0,
+      vertexEnd: 1,
+      start: new Vector3(0, 7, 0),
+      tip: new Vector3(1, 8, 0),
+      along: new Vector3(0, 1, 0),
+      length: 1,
+    },
+    post: {
+      slug: 'teste',
+      titulo: 'teste',
+      data: '2026-01-01',
+      resumo: '',
+      tags: [],
+      minutos: 1,
+      html: '',
+      paragrafos: 3,
+      rascunho: false,
+    },
+    quality: new Quality({}, reducedMotion),
+    rig: {} as unknown as PostWorldContext['rig'],
+    overlay: {} as unknown as PostWorldContext['overlay'],
+  }
+}
+
+/** Espia o uniforme privado — o ponto desta função é só o teste, não uma
+ *  API pública nova: `GeneratedPostWorld` não tem motivo legítimo pra expor
+ *  `uTime` além disto. */
+function uTimeDe(mundo: GeneratedPostWorld): number {
+  const material = (mundo as unknown as { material: ShaderMaterial }).material
+  return material.uniforms['uTime']!.value as number
+}
+
+describe('GeneratedPostWorld — uTime', () => {
+  it('avança com o tempo quando o movimento não está reduzido', () => {
+    const mundo = new GeneratedPostWorld()
+    mundo.build(contexto(false))
+
+    mundo.update(1 / 60, 1, 0.5)
+    const primeiro = uTimeDe(mundo)
+    mundo.update(1 / 60, 2, 0.5)
+
+    expect(uTimeDe(mundo)).toBeGreaterThan(primeiro)
+    mundo.dispose()
+  })
+
+  it('fica parado sob movimento reduzido', () => {
+    const mundo = new GeneratedPostWorld()
+    mundo.build(contexto(true))
+
+    mundo.update(1 / 60, 1, 0.5)
+    const primeiro = uTimeDe(mundo)
+    mundo.update(1 / 60, 2, 0.5)
+
+    expect(uTimeDe(mundo)).toBe(primeiro)
+    mundo.dispose()
   })
 })
