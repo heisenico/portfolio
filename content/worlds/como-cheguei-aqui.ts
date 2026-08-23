@@ -591,6 +591,14 @@ class Rua implements PostWorldModule {
   private montagem: Montagem | null = null
 
   build(ctx: PostWorldContext): void {
+    // Defensivo: hoje `dispose()` sempre roda antes do próximo `build()`
+    // (`PostWorld.ts` troca de mundo assim), mas esta instância é reusada
+    // entre visitas — ver o comentário acima de `Montagem`. Sem isso, um
+    // `build()` chamado sem `dispose()` antes orfanaria a raiz e as peças
+    // da montagem anterior na cena, e esse é o padrão que todo mundo
+    // sob medida futuro copia deste arquivo.
+    if (this.montagem) this.dispose()
+
     const frente = new Vector3(ctx.branch.along.x, 0, ctx.branch.along.z)
     // Um galho perfeitamente vertical não tem direção horizontal; nesse caso
     // qualquer direção serve, e o que não serve é NaN.
