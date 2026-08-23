@@ -121,19 +121,45 @@ export class PostPage implements Page {
     this.rectDirty = true
   }
 
+  /**
+   * Um mundo à mão (`content/worlds/<slug>.ts`) pode jogar tanto no import
+   * dinâmico quanto em `build()`. Um throw sem captura aqui vira uma rejeição
+   * não tratada no console, bem no caminho normal de carregar um post — e o
+   * contrato de release é zero erro de console no load. A falha custa o
+   * mundo, não a página: o artigo já está montado e continua legível.
+   */
   private async montarMundo(overlay: HTMLElement): Promise<void> {
-    const world = await loadPostWorld(this.post)
-    if (!this.live) return
-    this.world = world
-    world.build({
-      scene: this.scene,
-      camera: this.camera,
-      branch: this.assignment.branch,
-      post: this.post,
-      quality: this.quality,
-      rig: this.rig,
-      overlay,
-    })
+    let world: PostWorldModule | null = null
+    try {
+      world = await loadPostWorld(this.post)
+      if (!this.live) return
+
+      world.build({
+        scene: this.scene,
+        camera: this.camera,
+        branch: this.assignment.branch,
+        post: this.post,
+        quality: this.quality,
+        rig: this.rig,
+        overlay,
+      })
+      this.world = world
+    } catch (erro) {
+      console.error(`[portfolio] mundo do post "${this.post.slug}" falhou ao montar`, erro)
+      if (world) {
+        try {
+          // Se `build()` foi quem jogou, pode ter deixado algo atado à cena
+          // pela metade — e o próprio `dispose()` de um mundo que não
+          // terminou de nascer pode falhar também.
+          world.dispose()
+        } catch (erroDispose) {
+          console.error(
+            `[portfolio] mundo do post "${this.post.slug}" falhou até ao desfazer`,
+            erroDispose,
+          )
+        }
+      }
+    }
   }
 
   update(dt: number): void {
