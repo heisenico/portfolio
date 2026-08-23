@@ -1,6 +1,7 @@
 import './styles/base.css'
 import './styles/glass.css'
 import './styles/ui.css'
+import './styles/motion.css'
 
 import { Raycaster, Vector2, Vector3 } from 'three'
 import { CameraRig } from './core/CameraRig'
@@ -136,7 +137,10 @@ loop.add((dt, elapsed) => {
   cat.setPose(catBrain.update(dt, catHovered))
   cat.update(dt, elapsed)
 })
-loop.add((dt) => host.update(dt, pointer))
+loop.add((dt) => {
+  host.update(dt, pointer)
+  rig.setScroll(host.scrollProgress)
+})
 loop.add(() => quality.sample(loop.frameMs))
 loop.add((dt, elapsed) => post.render(dt, elapsed))
 

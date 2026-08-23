@@ -108,7 +108,23 @@ button,
 .bloco + .bloco {
   margin-top: var(--space-7);
   padding-top: var(--space-7);
-  border-top: 1px solid var(--rule);
+}
+
+/* A régua entre blocos é um pseudo-elemento e não uma borda, porque ela se
+   desenha da esquerda pra direita quando o bloco entra — e `border-top` não
+   tem como sair de largura zero. */
+.bloco {
+  position: relative;
+}
+
+.bloco + .bloco::before {
+  content: '';
+  position: absolute;
+  inset-inline: 0;
+  top: 0;
+  height: 1px;
+  background: var(--rule);
+  transform-origin: left center;
 }
 
 /*

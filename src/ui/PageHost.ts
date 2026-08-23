@@ -12,6 +12,7 @@
 
 import type { Pointer } from '../core/Pointer'
 import type { Quality } from '../core/Quality'
+import { Reveal, detectRevealMode } from './Reveal'
 
 /** Drift of the content layer, in pixels, at full pointer deflection. */
 const PARALLAX_X = 26
@@ -29,11 +30,13 @@ export class PageHost {
   private active: Page | null = null
   private rects: DOMRect[] = []
   private rectsDirty = true
+  private reveal: Reveal
 
   constructor(
     private root: HTMLElement,
     private quality: Quality,
   ) {
+    this.reveal = new Reveal(detectRevealMode(quality.reducedMotion))
     addEventListener('resize', this.markDirty, { passive: true })
     addEventListener('scroll', this.markDirty, { passive: true })
   }
@@ -54,6 +57,7 @@ export class PageHost {
 
     this.active = page
     page.mount(this.root)
+    this.reveal.observe(this.root)
     this.rectsDirty = true
 
     this.root.classList.remove('is-leaving')
@@ -110,6 +114,7 @@ export class PageHost {
   dispose(): void {
     removeEventListener('resize', this.markDirty)
     removeEventListener('scroll', this.markDirty)
+    this.reveal.dispose()
     this.active?.unmount()
   }
 }

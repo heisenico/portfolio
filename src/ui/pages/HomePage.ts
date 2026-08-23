@@ -64,7 +64,7 @@ export class HomePage implements Page {
               ${grupo.itens
                 .map(
                   (p) => `
-                    <li class="paixao" data-paixao-index="${indice++}">
+                    <li class="paixao" data-reveal="linha" data-paixao-index="${indice++}">
                       <span class="paixao-nome">${esc(p.nome)}</span>
                       ${p.nota ? `<span class="paixao-nota">${esc(p.nota)}</span>` : ''}
                     </li>`,
@@ -79,14 +79,14 @@ export class HomePage implements Page {
       ${sobre.secoes
         .map(
           (secao) => `
-        <section class="bloco" aria-labelledby="sec-${secao.id}">
+        <section class="bloco" data-reveal aria-labelledby="sec-${secao.id}">
           <h2 id="sec-${secao.id}">${esc(secao.titulo)}</h2>
           <div class="prosa">${secao.corpo.map((p) => `<p>${esc(p)}</p>`).join('')}</div>
         </section>`,
         )
         .join('')}
 
-      <section class="bloco" aria-labelledby="sec-aprendendo">
+      <section class="bloco" data-reveal aria-labelledby="sec-aprendendo">
         <h2 id="sec-aprendendo">aprendendo</h2>
         <dl class="agenda">
           <dt><span class="ponto is-agora" aria-hidden="true"></span>agora</dt>
@@ -104,13 +104,13 @@ export class HomePage implements Page {
         ${paixoesHtml}
       </section>
 
-      <section class="bloco" aria-labelledby="sec-onde">
+      <section class="bloco" data-reveal aria-labelledby="sec-onde">
         <h2 id="sec-onde">onde me achar</h2>
         <ul class="links">
           ${links
             .map(
               (link) => `
-            <li>
+            <li data-reveal="linha">
               <a href="${link.href}"${
                 link.href.startsWith('http') ? ' target="_blank" rel="noopener noreferrer"' : ''
               }>
@@ -123,7 +123,7 @@ export class HomePage implements Page {
         </ul>
       </section>
 
-      <section class="bloco convite">
+      <section class="bloco convite" data-reveal>
         <p>${esc(sobre.convite)}
           <a href="mailto:nicholasferrer@hotmail.com">nicholasferrer@hotmail.com</a>
         </p>

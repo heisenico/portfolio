@@ -10,7 +10,7 @@
  */
 
 import { Vector3, type PerspectiveCamera } from 'three'
-import { damp } from '../util/tween'
+import { clamp01, damp, easeInOutCubic } from '../util/tween'
 import type { Pointer } from './Pointer'
 import type { Quality } from './Quality'
 
@@ -36,6 +36,23 @@ const FIT_MARGIN = 1.06
 const MIN_RADIUS = 12
 const MAX_RADIUS = 60
 
+/** Quanto a órbita cresce da primeira à última linha da página. */
+const DOLLY_GANHO = 0.22
+/** Quanto o ponto de mira sobe, em unidades de mundo. */
+const DOLLY_SUBIDA = 2.2
+
+/**
+ * Resposta da câmera à rolagem.
+ *
+ * A árvore recua e o olhar sobe conforme o leitor desce. Devagar e pouco: é
+ * pra parecer que a página tem profundidade, não que a câmera está num trilho.
+ * Puro e testado à parte porque a curva é a decisão, e o resto é encanamento.
+ */
+export function scrollDolly(t: number): { ganhoRaio: number; subida: number } {
+  const e = easeInOutCubic(clamp01(t))
+  return { ganhoRaio: 1 + DOLLY_GANHO * e, subida: DOLLY_SUBIDA * e }
+}
+
 export class CameraRig {
   readonly focus = new Vector3(0, 7.4, 0)
   radius = 21
@@ -59,6 +76,8 @@ export class CameraRig {
   private polar = 0
   private gain = 1
   private drift = 0
+  private scroll = 0
+  private scrollTarget = 0
 
   constructor(
     private camera: PerspectiveCamera,
@@ -97,6 +116,11 @@ export class CameraRig {
     this.radius = Math.min(Math.max(distance, MIN_RADIUS), MAX_RADIUS)
   }
 
+  /** 0 no topo da página, 1 no fim. Amortecido; pode ser chamado por frame. */
+  setScroll(t: number): void {
+    this.scrollTarget = clamp01(t)
+  }
+
   update(dt: number, elapsed: number): void {
     const reduced = this.quality.reducedMotion
     const scale = reduced ? REDUCED_SCALE : 1
@@ -118,13 +142,20 @@ export class CameraRig {
     const az = this.azimuth + driftAz
     const po = this.polar + driftPo
 
+    // Movimento reduzido tira o dolly inteiro: é deslocamento de câmera de
+    // corpo inteiro, que é exatamente a classe de movimento que incomoda.
+    this.scrollTarget = reduced ? 0 : this.scrollTarget
+    this.scroll = damp(this.scroll, this.scrollTarget, 2.6, dt)
+    const { ganhoRaio, subida } = scrollDolly(this.scroll)
+    const raio = this.radius * ganhoRaio
+
     const cosPo = Math.cos(po)
     const fx = this.focus.x + this.shiftX
-    const fy = this.focus.y + this.shiftY
+    const fy = this.focus.y + this.shiftY + subida
     this.camera.position.set(
-      fx + Math.sin(az) * cosPo * this.radius,
-      fy + Math.sin(po) * this.radius + 1.2,
-      this.focus.z + Math.cos(az) * cosPo * this.radius,
+      fx + Math.sin(az) * cosPo * raio,
+      fy + Math.sin(po) * raio + 1.2,
+      this.focus.z + Math.cos(az) * cosPo * raio,
     )
     this.camera.lookAt(fx, fy, this.focus.z)
   }
