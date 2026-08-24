@@ -103,8 +103,8 @@ no need to restart Vite.
 Every post gets a world automatically: `GeneratedPostWorld`
 (`src/world/PostWorld.ts`) grows a fan of twigs out of the branch tip, seeded
 deterministically from the post's slug, one twig per paragraph, with the pen
-pressure (line gain) derived from the post's first tag. Publishing never depends on anyone
-having built a scene by hand.
+pressure (line gain) derived from the post's first tag. Publishing never
+depends on anyone having built a scene by hand.
 
 A post can replace that with a hand-built world instead: export a
 `PostWorldModule` as the default export of `content/worlds/<slug>.ts`, where

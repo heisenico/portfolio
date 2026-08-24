@@ -65,6 +65,11 @@ de cor; `npm test`, `npm run typecheck` e `npm run build` passam.
 }
 ```
 
+`prefers-contrast: less` suaviza só os tokens do DOM: o papel do mundo continua
+`#ffffff`/`#000000` puros, porque o canvas limpa para `PAPER` e a inversão do
+passe final é binária. É aceitável — a halação que incomoda quem pede menos
+contraste é a do texto, e o texto é justamente o que os tokens governam.
+
 Somem: `--bg`, `--bg-card`, `--bg-lifted` (já mortos, zero `var()`),
 `--bg-deep` (vira `--paper`), `--ink-dim`, `--ink-faint` (a referência tem um
 preto só — hierarquia por tamanho, não por cor), `--green`, `--green-hot`,
@@ -178,7 +183,7 @@ novo para a inversão.
   As três camadas de progressive enhancement (`.lg-refract`, `.lg-fallback`,
   `.lg-no-backdrop`) ficam; `.lg-no-backdrop` vira `paper 94%`.
   Pior caso de contraste: tinta pura atrás do card a 84% de papel dá
-  `#d6d6d6`; `#000` sobre isso é 13.7:1.
+  `#d6d6d6`; `#000` sobre isso é 14.5:1.
 - Links: `color: inherit; text-decoration: underline; text-decoration-thickness:
   1px; text-underline-offset: 2px`. Sem cor de hover. O `--green 40%` dos
   sublinhados (`ui.css:310`, `prose.css:88`) vira `currentColor`.
@@ -280,7 +285,9 @@ toggle. Sem `localStorage`.
 ## 8. Acessibilidade
 
 - Contraste: todo texto é `--ink` sobre `--paper` (21:1) ou sobre card (pior
-  caso 13.7:1). Foco 21:1. `prefers-contrast: less` atendido (§1).
+  caso 14.5:1). Foco 21:1. `prefers-contrast: less` atendido (§1) — no DOM, que
+  é onde ele importa: o mundo atrás da página segue em papel puro, sem versão
+  suavizada, porque a inversão do passe final não tem meio-termo.
 - Tamanho em `rem`, entrelinha 1.4, layout sobrevive a `line-height: 1.5`
   forçado.
 - Sem `text-transform`; a regra da caixa-baixa fica.
@@ -293,7 +300,11 @@ toggle. Sem `localStorage`.
   tabela de contraste deixa de ser um markdown que ninguém roda.
 - Fora do escopo desta hatch, anotado para uma hatch de acessibilidade:
   skip link para `#ui`, `aria-live` na troca de rota, foco após navegação, e
-  o hover-dim de `.paixao` sem equivalente de teclado.
+  o hover-dim de `.paixao` sem equivalente de teclado. Some-se a isso o texto
+  do hero (`.hero`, `HomePage.ts`) e a deixa de rolagem (`.cue`): os dois
+  pousam direto no canvas, não num card, então o fundo deles é o mundo
+  invertido — linhas de tinta e sangria de bloom — e não papel. Estrutura que
+  já era assim antes desta hatch; fica para ser revista lá.
 
 ## 9. Testes e verificação
 
