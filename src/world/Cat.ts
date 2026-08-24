@@ -30,8 +30,9 @@ import {
   type BufferGeometry,
 } from 'three'
 import { catFragment, catVertex } from '../fx/shaders/cat'
+import type { Tema } from '../core/Quality'
 import type { CatPose } from './CatPose'
-import { AMBER, PAPER } from './palette'
+import { AMBER, AMBER_INVERTIDO, INK, PAPER } from './palette'
 
 /** Height of the hips above the feet when standing. */
 const STAND_HEIGHT = 0.66
@@ -41,6 +42,14 @@ const LEG_LENGTH = 0.48
 const HIP_INSET = 0.18
 const TAIL_SEGMENTS = 8
 const TAIL_SEGMENT_LENGTH = 0.16
+
+/**
+ * Layer própria. No papel, `Post` tira o gato da passada principal e o
+ * desenha depois do bloom: um corpo claro pré-inversão é a maior área
+ * brilhante da cena, e o bloom o transformaria numa mancha escura no papel.
+ * O `proxy` de hover fica na layer 0 — o raycaster só olha lá.
+ */
+export const CAT_LAYER = 1
 
 export class Cat {
   readonly group = new Group()
@@ -106,6 +115,8 @@ export class Cat {
     const holder = new Group()
     const mesh = new Mesh(geometry, this.material)
     const edges = new LineSegments(new EdgesGeometry(geometry, 24), this.edgeMaterial)
+    mesh.layers.set(CAT_LAYER)
+    edges.layers.set(CAT_LAYER)
     holder.add(mesh, edges)
     return holder
   }
@@ -196,6 +207,18 @@ export class Cat {
       parent = bone
       this.tailBones.push(bone)
     }
+  }
+
+  /**
+   * No papel o frame é invertido, então o gato recebe o negativo do que deve
+   * aparecer: corpo `INK` (sai preto), forro `AMBER_INVERTIDO` (sai #ffc27a),
+   * arestas `INK` (saem tinta). Na noite, o que sempre foi.
+   */
+  setTema(tema: Tema): void {
+    const papel = tema === 'papel'
+    ;(this.material.uniforms['uColor']!.value as Color).setHex(papel ? INK : PAPER)
+    ;(this.material.uniforms['uRim']!.value as Color).setHex(papel ? AMBER_INVERTIDO : AMBER)
+    this.edgeMaterial.color.setHex(papel ? INK : AMBER)
   }
 
   setPose(pose: CatPose): void {
