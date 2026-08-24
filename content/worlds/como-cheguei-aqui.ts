@@ -37,33 +37,26 @@ import {
 import { branchFragment, branchVertex } from '../../src/fx/shaders/branch'
 import { easeOutCubic, lerp } from '../../src/util/tween'
 import { beat, type PostWorldContext, type PostWorldModule } from '../../src/world/PostWorld'
+import { INK, INK_REST } from '../../src/world/palette'
 
 /* ------------------------------------------------------------------ cores */
 
 /*
- * Espelho exato de `src/styles/tokens.css`. Nenhuma cor nova entra na cena.
+ * Espelho exato de `src/world/palette.ts`. Nenhuma cor nova entra na cena —
+ * e nenhuma cor: o mundo é tinta, como a árvore. A única cor do site é o gato.
  */
-/** `--green` */
-const VERDE = 0x4fe08f
-/** `--green-hot` */
-const VERDE_QUENTE = 0xd9ffe9
-/** `--amber` */
-const AMBAR = 0xffc27a
+/** Linha em repouso, a mesma da árvore. */
+const TINTA = INK_REST
+/** Crista, borda, o que sangra. */
+const TINTA_ACESA = INK
 
 /*
- * Constantes de leitura, nunca mutadas: quem deriva de tom copia delas pra uma
- * cor da instância. O módulo é reaproveitado entre visitas, então mutar uma
+ * Constantes de leitura, nunca mutadas: quem deriva copia delas pra uma cor
+ * da instância. O módulo é reaproveitado entre visitas, então mutar uma
  * destas vazaria estado de uma leitura pra próxima.
  */
-const COR_VERDE = new Color(VERDE)
-const COR_VERDE_QUENTE = new Color(VERDE_QUENTE)
-const COR_AMBAR = new Color(AMBAR)
-/**
- * O âmbar não tem par "quente" em tokens.css. Em vez de inventar um hex, ele é
- * o próprio âmbar clareado na direção do `--green-hot` — que é justamente a
- * relação entre `--green` e `--green-hot`.
- */
-const COR_AMBAR_QUENTE = new Color(AMBAR).lerp(COR_VERDE_QUENTE, 0.5)
+const COR_TINTA = new Color(TINTA)
+const COR_TINTA_ACESA = new Color(TINTA_ACESA)
 
 /* ------------------------------------------------------------------ escala */
 
@@ -157,12 +150,12 @@ const JANELAS = {
   figuras: [0.52, 0.84],
   sirene: [0.8, 0.94],
   /**
-   * Volta pro verde antes do fim — contrato item 3.
+   * Volta pro traço da árvore antes do fim — contrato item 3.
    *
-   * Termina em 0.97 e não em 0.99 porque o contrato diz "verde de novo a
-   * partir de 0.97", que é o mesmo `HUE_VERDE_DESDE` que o mundo gerado
-   * respeita em `PostWorld.ts`. Acabar em 0.99 deixaria a rua um terço âmbar
-   * no ponto em que ela já devia ter voltado.
+   * Termina em 0.97 e não em 0.99 porque o contrato diz "pressão base de
+   * novo a partir de 0.97", que é o mesmo `PRESSAO_BASE_DESDE` que o mundo
+   * gerado respeita em `PostWorld.ts`. Acabar em 0.99 deixaria a rua um
+   * terço na tinta acesa no ponto em que ela já devia ter voltado.
    */
   regresso: [0.94, 0.97],
   clarao: [0.955, 1.0],
@@ -506,8 +499,8 @@ function fazerPeca(
         uRest: { value: REPOUSO },
         uMaxDepth: { value: PROFUNDIDADE_MAX },
         uTime: { value: 0 },
-        uRestColor: { value: new Color(VERDE) },
-        uEdgeColor: { value: new Color(VERDE_QUENTE) },
+        uRestColor: { value: new Color(TINTA) },
+        uEdgeColor: { value: new Color(TINTA_ACESA) },
         uOpacity: { value: 1 },
         uGain: { value: GANHO },
         uHotGain: { value: GANHO_QUENTE },
@@ -717,7 +710,7 @@ class Rua implements PostWorldModule {
     clarao.setAttribute('aria-hidden', 'true')
     clarao.style.position = 'fixed'
     clarao.style.inset = '0'
-    clarao.style.background = COR_VERDE_QUENTE.getStyle()
+    clarao.style.background = 'var(--ink)'
     clarao.style.opacity = '0'
     clarao.style.pointerEvents = 'none'
     clarao.style.setProperty('z-index', 'var(--z-veil)')
@@ -741,8 +734,8 @@ class Rua implements PostWorldModule {
       claraoOpacidade: '0',
       frustum: new Frustum(),
       matriz: new Matrix4(),
-      corRepouso: new Color(VERDE),
-      corBorda: new Color(VERDE_QUENTE),
+      corRepouso: new Color(TINTA),
+      corBorda: new Color(TINTA_ACESA),
       aux: new Vector3(),
     }
 
@@ -757,11 +750,10 @@ class Rua implements PostWorldModule {
 
     const reduzido = ctx.quality.reducedMotion
 
-    // Sai pro âmbar com a sirene e volta pro verde antes do fim — contrato
-    // item 3. O leitor sai por onde entrou.
+    // Sai pro traço pesado com a sirene e volta pro traço da árvore antes do
+    // fim — contrato cláusula 3. O leitor sai por onde entrou.
     const quente = beat(progress, ...JANELAS.sirene) * (1 - beat(progress, ...JANELAS.regresso))
-    m.corRepouso.copy(COR_VERDE).lerp(COR_AMBAR, quente * DERIVA_QUENTE)
-    m.corBorda.copy(COR_VERDE_QUENTE).lerp(COR_AMBAR_QUENTE, quente * DERIVA_QUENTE)
+    m.corRepouso.copy(COR_TINTA).lerp(COR_TINTA_ACESA, quente * DERIVA_QUENTE)
 
     const sumico = 1 - beat(progress, SUMICO_DE, SUMICO_ATE)
 

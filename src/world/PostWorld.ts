@@ -29,12 +29,16 @@ import { twigFragment, twigVertex } from '../fx/shaders/twig'
 import { jitter, mulberry32, randRange } from '../util/rng'
 import { clamp01, damp, lerp } from '../util/tween'
 import type { BranchRecord } from './BranchSystem'
+import { INK, INK_REST } from './palette'
 import type { Wind } from './Wind'
 
-/** Tom base da casa, em graus. Todo mundo sai daqui e volta pra cá. */
-const VERDE = 150
-/** Deriva máxima permitida pelo contrato do mundo. */
-const DERIVA = 70
+/** Pressão base da pena. Todo mundo sai daqui e volta pra cá. */
+const PRESSAO_BASE = 1
+/** Faixa permitida pelo contrato do mundo: de mão leve a mão pesada. */
+const PRESSAO_MIN = 0.8
+const PRESSAO_MAX = 1.3
+/** Quantos degraus a faixa tem — só pra tags distintas caírem em valores distintos. */
+const PRESSAO_DEGRAUS = 50
 
 /**
  * Quantos galhinhos estão acesos, como o shader espera ler.
@@ -64,9 +68,9 @@ export function beat(progress: number, de: number, ate: number): number {
 /**
  * FNV-1a de 32 bits.
  *
- * Base de todo hash determinístico de string deste arquivo — `hueDaTag` e a
- * semente do rng do galhinho usam o mesmo algoritmo; só o que cada um faz com
- * o inteiro resultante muda.
+ * Base de todo hash determinístico de string deste arquivo — `pressaoDaTag` e
+ * a semente do rng do galhinho usam o mesmo algoritmo; só o que cada um faz
+ * com o inteiro resultante muda.
  */
 function fnv1a(s: string): number {
   let h = 2166136261
@@ -78,49 +82,53 @@ function fnv1a(s: string): number {
 }
 
 /**
- * Tom derivado da primeira tag do post.
+ * Pressão da pena derivada da primeira tag do post.
  *
- * A faixa é limitada de propósito: o contrato diz que o leitor entra no verde
- * e sai no verde, e uma tag qualquer não pode levar um post pro roxo. Cada
- * assunto ganha um verde próprio, não uma paleta própria.
+ * O mundo é monocromático — tinta, como a árvore — então uma tag não escolhe
+ * cor: escolhe quanto a mão aperta. A faixa é limitada de propósito: o
+ * contrato diz que o leitor entra na pressão base e sai nela, e nenhuma tag
+ * pode apagar um galhinho nem transformá-lo em borrão. Cada assunto ganha um
+ * traço próprio, não uma paleta própria.
  */
-export function hueDaTag(tag: string | undefined): number {
-  if (!tag) return VERDE
-  return VERDE - DERIVA + (Math.abs(fnv1a(tag)) % (DERIVA * 2 + 1))
+export function pressaoDaTag(tag: string | undefined): number {
+  if (!tag) return PRESSAO_BASE
+  const degrau = Math.abs(fnv1a(tag)) % (PRESSAO_DEGRAUS + 1)
+  return PRESSAO_MIN + ((PRESSAO_MAX - PRESSAO_MIN) * degrau) / PRESSAO_DEGRAUS
 }
 
 /**
  * Hash determinístico de string pra semente do rng.
  *
- * Mesmo `fnv1a` de `hueDaTag`, mas devolvendo o hash inteiro em vez de um tom
- * limitado — aqui o resultado semeia `mulberry32`, então a faixa não importa,
- * só a reprodutibilidade: o mesmo slug planta sempre o mesmo galhinho.
+ * Mesmo `fnv1a` de `pressaoDaTag`, mas devolvendo o hash inteiro em vez de
+ * uma pressão limitada — aqui o resultado semeia `mulberry32`, então a faixa
+ * não importa, só a reprodutibilidade: o mesmo slug planta sempre o mesmo
+ * galhinho.
  */
 function hashSeed(s: string): number {
   return fnv1a(s) >>> 0
 }
 
-/** Progresso em que a deriva de cor termina de entrar. */
-const HUE_ENTRA_ATE = 0.15
-/** Progresso em que a deriva começa a voltar pro verde. */
-const HUE_SAI_DE = 0.8
-/** Contrato do mundo: de volta ao verde a partir daqui — clause #3. */
-const HUE_VERDE_DESDE = 0.97
+/** Progresso em que a deriva de pressão termina de entrar. */
+const PRESSAO_ENTRA_ATE = 0.15
+/** Progresso em que a deriva começa a voltar pra base. */
+const PRESSAO_SAI_DE = 0.8
+/** Contrato do mundo: de volta à base a partir daqui — cláusula 3. */
+const PRESSAO_BASE_DESDE = 0.97
 
 /**
- * Envelope de cor ao longo da leitura: verde no início, deriva pro tom da tag
- * no meio, verde de novo a partir de `HUE_VERDE_DESDE`.
+ * Envelope de pressão ao longo da leitura: base no início, deriva pra
+ * pressão da tag no meio, base de novo a partir de `PRESSAO_BASE_DESDE`.
  *
- * O contrato do mundo diz que o leitor entra no verde da árvore e sai nele —
+ * O contrato do mundo diz que o leitor entra na tinta da árvore e sai nela —
  * a árvore é a única coisa no site que nunca muda, e é dela que o leitor
- * decola e é a ela que volta. Uma tag escolhe pra onde a cor deriva, não se
- * ela deriva: por isso isto é uma função de `progress`, não de `hueDaTag`
+ * decola e é a ela que volta. Uma tag escolhe quanto a mão aperta, não se
+ * aperta: por isso isto é uma função de `progress`, não de `pressaoDaTag`
  * sozinho.
  */
-export function hueEnvelope(progress: number, hue: number): number {
-  const entra = beat(progress, 0, HUE_ENTRA_ATE)
-  const sai = 1 - beat(progress, HUE_SAI_DE, HUE_VERDE_DESDE)
-  return lerp(VERDE, hue, Math.min(entra, sai))
+export function pressaoEnvelope(progress: number, pressao: number): number {
+  const entra = beat(progress, 0, PRESSAO_ENTRA_ATE)
+  const sai = 1 - beat(progress, PRESSAO_SAI_DE, PRESSAO_BASE_DESDE)
+  return lerp(PRESSAO_BASE, pressao, Math.min(entra, sai))
 }
 
 const UP = new Vector3(0, 1, 0)
@@ -179,15 +187,15 @@ const TWIG_BAND = 0.35
 
 /** Velocidade com que `uLit` persegue o alvo de leitura. */
 const LIT_LAMBDA = 6
-/** Velocidade com que a cor persegue o envelope — mais lenta que o
- *  crescimento, pra que a deriva de tom nunca leia como um flash. */
-const HUE_LAMBDA = 4
+/** Velocidade com que a pressão persegue o envelope — mais lenta que o
+ *  crescimento, pra que a deriva nunca leia como um flash. */
+const PRESSAO_LAMBDA = 4
 
 /**
  * O mundo padrão: derivado inteiramente do próprio post.
  *
  * O slug semeia o crescimento, `paragrafos` decide quantos galhinhos existem,
- * e a primeira tag escolhe o tom pra onde a cor deriva. Rolar a página avança
+ * e a primeira tag escolhe a pressão da pena. Rolar a página avança
  * `progress`, e os galhinhos acendem em ordem — um por parágrafo — de modo
  * que ler o texto é o que faz o galho crescer.
  */
@@ -197,16 +205,16 @@ export class GeneratedPostWorld implements PostWorldModule {
   private material: ShaderMaterial | null = null
   private paragrafos = 0
   private lit = -1
-  private hueAlvo = VERDE
-  private hueAtual = VERDE
+  private pressaoAlvo = PRESSAO_BASE
+  private pressaoAtual = PRESSAO_BASE
 
   build(ctx: PostWorldContext): void {
     this.ctx = ctx
     const paragrafos = ctx.post.paragrafos
     this.paragrafos = paragrafos
     this.lit = -1
-    this.hueAlvo = hueDaTag(ctx.post.tags[0])
-    this.hueAtual = VERDE
+    this.pressaoAlvo = pressaoDaTag(ctx.post.tags[0])
+    this.pressaoAtual = PRESSAO_BASE
 
     const rng = mulberry32(hashSeed(ctx.post.slug))
     const along = ctx.branch.along
@@ -262,8 +270,6 @@ export class GeneratedPostWorld implements PostWorldModule {
     geometry.setAttribute('aBranchId', new BufferAttribute(new Float32Array(branchIds), 1))
     geometry.setAttribute('aTwigIndex', new BufferAttribute(new Float32Array(twigIndices), 1))
 
-    const color = new Color().setHSL(this.hueAtual / 360, 0.72, 0.6)
-
     this.material = new ShaderMaterial({
       vertexShader: twigVertex,
       fragmentShader: twigFragment,
@@ -277,10 +283,10 @@ export class GeneratedPostWorld implements PostWorldModule {
           uRest: { value: TWIG_REST },
           uMaxDepth: { value: TWIG_MAX_DEPTH },
           uTime: { value: 0 },
-          uRestColor: { value: color.clone() },
-          uEdgeColor: { value: color.clone() },
+          uRestColor: { value: new Color(INK_REST) },
+          uEdgeColor: { value: new Color(INK) },
           uOpacity: { value: 1 },
-          uGain: { value: TWIG_GAIN },
+          uGain: { value: TWIG_GAIN * PRESSAO_BASE },
           uHotGain: { value: TWIG_HOT_GAIN },
           uLit: { value: this.lit },
           uTwigLength: { value: TWIG_LENGTH },
@@ -308,15 +314,15 @@ export class GeneratedPostWorld implements PostWorldModule {
     this.lit = reduced ? target : damp(this.lit, target, LIT_LAMBDA, dt)
     this.material.uniforms['uLit']!.value = this.lit
 
-    const hueTarget = hueEnvelope(progress, this.hueAlvo)
-    this.hueAtual = reduced ? hueTarget : damp(this.hueAtual, hueTarget, HUE_LAMBDA, dt)
-    const hue01 = this.hueAtual / 360
-    ;(this.material.uniforms['uRestColor']!.value as Color).setHSL(hue01, 0.72, 0.6)
-    ;(this.material.uniforms['uEdgeColor']!.value as Color).setHSL(hue01, 0.72, 0.6)
+    const pressaoAlvo = pressaoEnvelope(progress, this.pressaoAlvo)
+    this.pressaoAtual = reduced
+      ? pressaoAlvo
+      : damp(this.pressaoAtual, pressaoAlvo, PRESSAO_LAMBDA, dt)
+    this.material.uniforms['uGain']!.value = TWIG_GAIN * this.pressaoAtual
 
     // O ripple do shader precisa de tempo real pra viajar — mas só quando o
     // movimento não está reduzido. Sob `reducedMotion`, `uTime` fica parado
-    // no valor que já tinha, igual `uLit` e a cor já fazem nesta função.
+    // no valor que já tinha, igual `uLit` e a pressão já fazem nesta função.
     //
     // O vento segue a mesma regra: o galhinho pendura no galho que a copa
     // balança, e um galho rígido balançando um galhinho parado destacaria os

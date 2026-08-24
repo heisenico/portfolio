@@ -1,5 +1,10 @@
+import { readdirSync, readFileSync } from 'node:fs'
+import { join } from 'node:path'
+import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
 import { AMBER, AMBER_INVERTIDO, INK, INK_FAINT, INK_REST, PAPER } from '../palette'
+
+const raiz = fileURLToPath(new URL('../../../', import.meta.url))
 
 function cinza(hex: number): boolean {
   const r = (hex >> 16) & 255
@@ -25,5 +30,20 @@ describe('palette', () => {
 
   it('o âmbar invertido é o complemento exato, pra sair certo depois do passe final', () => {
     expect(AMBER_INVERTIDO).toBe(0xffffff - AMBER)
+  })
+})
+
+describe('nenhuma cor fora da paleta', () => {
+  // `src/world/` e `content/worlds/`: tudo que desenha no mundo. Um hex
+  // literal fora de palette.ts é uma segunda paleta nascendo.
+  const pastas = ['src/world', 'content/worlds']
+
+  it.each(pastas)('%s não carrega hex próprio', (pasta) => {
+    for (const nome of readdirSync(join(raiz, pasta))) {
+      if (!nome.endsWith('.ts') || nome === 'palette.ts') continue
+      const fonte = readFileSync(join(raiz, pasta, nome), 'utf8')
+      const achado = /\b0x[0-9a-fA-F]{6}\b|['"]#[0-9a-fA-F]{3,6}['"]/.exec(fonte)
+      expect(achado, `${pasta}/${nome}: ${achado?.[0]}`).toBeNull()
+    }
   })
 })

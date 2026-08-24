@@ -4,9 +4,9 @@ import { Quality } from '../../core/Quality'
 import {
   beat,
   GeneratedPostWorld,
-  hueDaTag,
-  hueEnvelope,
   orphanWorlds,
+  pressaoDaTag,
+  pressaoEnvelope,
   twigLit,
   type PostWorldContext,
 } from '../PostWorld'
@@ -69,40 +69,40 @@ describe('beat', () => {
   })
 })
 
-describe('hueDaTag', () => {
-  it('sem tag é o verde da casa, exatamente', () => {
-    expect(hueDaTag(undefined)).toBe(150)
+describe('pressaoDaTag', () => {
+  it('sem tag é a pressão base, exatamente', () => {
+    expect(pressaoDaTag(undefined)).toBe(1)
   })
 
-  it('a mesma tag dá sempre o mesmo tom', () => {
-    expect(hueDaTag('carreira')).toBe(hueDaTag('carreira'))
+  it('a mesma tag dá sempre a mesma pressão', () => {
+    expect(pressaoDaTag('carreira')).toBe(pressaoDaTag('carreira'))
   })
 
-  it('tags diferentes tendem a dar tons diferentes', () => {
-    const tons = new Set(['meta', 'carreira', 'código', 'roça', 'cinema'].map(hueDaTag))
-    expect(tons.size).toBeGreaterThanOrEqual(4)
+  it('tags diferentes tendem a dar pressões diferentes', () => {
+    const maos = new Set(['meta', 'carreira', 'código', 'roça', 'cinema'].map(pressaoDaTag))
+    expect(maos.size).toBeGreaterThanOrEqual(4)
   })
 
-  it('nunca sai da vizinhança do verde — o contrato do mundo exige', () => {
+  it('nunca sai da faixa de mão leve a mão pesada — o contrato do mundo exige', () => {
     for (const tag of ['a', 'bb', 'ccc', 'zzzzzz', 'ção', '']) {
-      expect(hueDaTag(tag)).toBeGreaterThanOrEqual(80)
-      expect(hueDaTag(tag)).toBeLessThanOrEqual(220)
+      expect(pressaoDaTag(tag)).toBeGreaterThanOrEqual(0.8)
+      expect(pressaoDaTag(tag)).toBeLessThanOrEqual(1.3)
     }
   })
 })
 
-describe('hueEnvelope', () => {
-  it('começa verde', () => {
-    expect(hueEnvelope(0, 200)).toBe(150)
+describe('pressaoEnvelope', () => {
+  it('começa na base', () => {
+    expect(pressaoEnvelope(0, 1.2)).toBe(1)
   })
 
-  it('chega no tom da tag no meio da leitura', () => {
-    expect(hueEnvelope(0.5, 200)).toBe(200)
+  it('chega na pressão da tag no meio da leitura', () => {
+    expect(pressaoEnvelope(0.5, 1.2)).toBeCloseTo(1.2, 10)
   })
 
-  it('volta pro verde a partir de 0.97', () => {
-    expect(hueEnvelope(0.97, 200)).toBe(150)
-    expect(hueEnvelope(1, 200)).toBe(150)
+  it('volta pra base a partir de 0.97', () => {
+    expect(pressaoEnvelope(0.97, 1.2)).toBe(1)
+    expect(pressaoEnvelope(1, 1.2)).toBe(1)
   })
 })
 
