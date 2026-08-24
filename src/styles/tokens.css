@@ -1,58 +1,48 @@
 /*
  * Design tokens.
  *
- * The thesis: the world behind the page is the drama, so the page itself goes
- * quiet. Small, precise type over a living scene. The confidence to keep text
- * small is the whole effect — scale it up and the interface starts competing
- * with the thing it is sitting on.
+ * Tinta sobre papel. A tese continua a mesma — o mundo atrás da página é o
+ * drama, a página fica quieta — mas a paleta agora é a de uma folha impressa:
+ * preto puro, branco puro, um cinza só para filetes. Nenhuma cor de destaque.
+ * A única cor do site é o gato, e ela mora em `src/world/palette.ts`, não
+ * aqui, porque nenhum elemento DOM a usa.
  *
- * One family, two voices: Geist for everything, Geist Mono for the few places
- * where figures need to line up. Self-hosted, so the page makes no third-party
- * request before it has painted.
+ * Uma família só, um peso só: Cabin — a fonte livre inspirada na Gill Sans —
+ * em 400 para tudo. A hierarquia vem do tamanho. Geist Mono fica para código.
+ * Self-hosted, para que a página não faça request de terceiro antes de pintar.
+ *
+ * `__tests__/contraste.test.ts` lê este arquivo: mantenha um `:root { ... }`
+ * de topo, um único `:root { ... }` dentro de cada `@media`, e o
+ * `@media (prefers-contrast: less)` sozinho ANTES do combinado com
+ * `prefers-color-scheme` — o teste acha cada bloco por `indexOf`.
  */
 
-@import '@fontsource-variable/geist/index.css';
+@import '@fontsource-variable/cabin/index.css';
 @import '@fontsource-variable/geist-mono/index.css';
 
 :root {
-  --bg-deep: #030705;
-  --bg: #050b08;
-  --bg-card: #0b1710;
-  --bg-lifted: #14231a;
+  --paper: #ffffff;
+  --ink: #000000;
+  /* Filetes de 1px. Nunca texto. */
+  --rule: #bbbbbb;
 
-  /* Measured against all three surfaces; the tightest is --ink-faint on
-     --bg-lifted at 5.45:1, which clears AA for normal text. */
-  --ink: #e8f5ec;
-  --ink-dim: #9fbfae;
-  --ink-faint: #7d9c8b;
-  --green: #4fe08f;
-  --green-hot: #d9ffe9;
-  /* The single warm accent, reserved for the cat. */
-  --amber: #ffc27a;
-
-  /* Hairlines, not borders. */
-  --rule: color-mix(in srgb, var(--ink) 12%, transparent);
-
-  --font-sans:
-    'Geist Variable', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-sans: 'Cabin Variable', 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
   --font-mono: 'Geist Mono Variable', ui-monospace, 'SF Mono', Menlo, monospace;
 
   /*
-   * A compact scale. The old one topped out near 100px, which is a poster, not
-   * a page. Body sits at 16px and the largest thing on screen is roughly 44px.
+   * 29 / 24 / 20 / 17, e um 15 para o que é subordinado (datas, notas, nav).
+   * Escala curta: títulos discretos, quase do tamanho do texto. Em rem, para
+   * zoom e tamanho de fonte do usuário funcionarem.
    */
-  --text-xs: 0.75rem;
-  --text-sm: 0.8125rem;
-  --text-base: 0.9375rem;
-  --text-md: 1rem;
-  --text-lg: 1.125rem;
-  --text-xl: clamp(1.25rem, 1.1rem + 0.6vw, 1.5rem);
-  --text-2xl: clamp(1.75rem, 1.4rem + 1.4vw, 2.75rem);
+  --text-h1: 1.8125rem;
+  --text-h2: 1.5rem;
+  --text-h3: 1.25rem;
+  --text-body: 1.0625rem;
+  --text-small: 0.9375rem;
 
-  /* Large type needs negative tracking to stop looking loose; small type
-     needs none at all. */
-  --track-tight: -0.028em;
-  --track-snug: -0.014em;
+  /* Apertado, mas com ar: o texto flutua sobre uma cena que se mexe. */
+  --leading-body: 1.4;
+  --leading-title: 1.15;
 
   --space-1: 4px;
   --space-2: 8px;
@@ -65,13 +55,37 @@
   --space-9: 112px;
 
   --gutter: clamp(20px, 5vw, 40px);
-  /* Narrow. A short measure is most of what makes a page feel considered. */
+  /* Estreito. Uma medida curta é a maior parte do que faz uma página parecer pensada. */
   --measure: 34rem;
   --radius: 14px;
 
-  /* Semantic z-scale, so nothing ever reaches for 9999. */
+  /* Escala semântica de z, pra nada nunca pedir 9999. */
   --z-canvas: 0;
   --z-content: 2;
   --z-veil: 3;
   --z-cue: 4;
+}
+
+/* A noite é o negativo exato: tinta branca sobre papel preto. */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --paper: #000000;
+    --ink: #ffffff;
+    --rule: #444444;
+  }
+}
+
+/* Quem pede menos contraste no SO recebe um pouco menos — ainda 16:1. */
+@media (prefers-contrast: less) {
+  :root {
+    --paper: #fafafa;
+    --ink: #1a1a1a;
+  }
+}
+
+@media (prefers-contrast: less) and (prefers-color-scheme: dark) {
+  :root {
+    --paper: #0a0a0a;
+    --ink: #e6e6e6;
+  }
 }
