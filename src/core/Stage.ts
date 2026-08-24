@@ -15,9 +15,10 @@ import {
   Vector2,
   WebGLRenderer,
 } from 'three'
+import { PAPER } from '../world/palette'
 import type { Quality } from './Quality'
 
-export const BG_COLOR = 0x030705
+export const BG_COLOR = PAPER
 export const FOG_DENSITY = 0.019
 
 export interface StageOptions {

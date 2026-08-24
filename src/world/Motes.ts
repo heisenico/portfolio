@@ -19,6 +19,7 @@ import {
 import { motesFragment, motesVertex } from '../fx/shaders/motes'
 import type { Quality } from '../core/Quality'
 import { mulberry32, randRange } from '../util/rng'
+import { INK_REST } from './palette'
 
 const FIELD_RADIUS = 19
 const FIELD_HEIGHT = 27
@@ -37,7 +38,7 @@ export class Motes {
     private quality: Quality,
     scanOrigin: Vector3,
     seed = 1337,
-    color = 0x7fffb8,
+    color = INK_REST,
   ) {
     this.allocated = quality.allocation.motes
     const rng = mulberry32(seed)

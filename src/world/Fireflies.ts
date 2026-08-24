@@ -32,7 +32,7 @@ import { firefliesFragment, firefliesVertex } from '../fx/shaders/fireflies'
 import { curl3 } from '../util/noise'
 import { mulberry32, randRange } from '../util/rng'
 import { damp } from '../util/tween'
-import { SCAN_EDGE_COLOR } from './ScanReveal'
+import { INK } from './palette'
 
 /** Poucos de propósito — ver o comentário do arquivo. Chaveado por
  *  `initialTier`, não por `quality.allocation`: não há orçamento próprio
@@ -79,7 +79,7 @@ export class Fireflies {
   private posAttr: BufferAttribute
   private wanderTmp = new Vector3()
 
-  constructor(quality: Quality, color = SCAN_EDGE_COLOR) {
+  constructor(quality: Quality, color = INK) {
     this.count = COUNT_BY_TIER[quality.initialTier]
     const rng = mulberry32(4242)
 

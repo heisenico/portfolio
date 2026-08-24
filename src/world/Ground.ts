@@ -19,6 +19,7 @@ import {
   type Vector3,
 } from 'three'
 import { groundFragment, groundVertex } from '../fx/shaders/ground'
+import { INK_FAINT } from './palette'
 
 const RINGS = 16
 const SPOKES = 48
@@ -29,7 +30,7 @@ export class Ground {
   readonly mesh: LineSegments
   private material: ShaderMaterial
 
-  constructor(origin: Vector3, y = -2.6, color = 0x2f9c6a) {
+  constructor(origin: Vector3, y = -2.6, color = INK_FAINT) {
     const positions: number[] = []
     const distances: number[] = []
     const radii: number[] = []

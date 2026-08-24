@@ -31,6 +31,7 @@ import {
 } from 'three'
 import { catFragment, catVertex } from '../fx/shaders/cat'
 import type { CatPose } from './CatPose'
+import { AMBER, PAPER } from './palette'
 
 /** Height of the hips above the feet when standing. */
 const STAND_HEIGHT = 0.66
@@ -40,9 +41,6 @@ const LEG_LENGTH = 0.48
 const HIP_INSET = 0.18
 const TAIL_SEGMENTS = 8
 const TAIL_SEGMENT_LENGTH = 0.16
-
-export const CAT_COLOR = 0x07160f
-export const CAT_RIM = 0xffc27a
 
 export class Cat {
   readonly group = new Group()
@@ -64,8 +62,8 @@ export class Cat {
       uniforms: UniformsUtils.merge([
         UniformsLib.fog,
         {
-          uColor: { value: new Color(CAT_COLOR) },
-          uRim: { value: new Color(CAT_RIM) },
+          uColor: { value: new Color(PAPER) },
+          uRim: { value: new Color(AMBER) },
           uOpacity: { value: 0 },
           uTime: { value: 0 },
         },
@@ -76,7 +74,7 @@ export class Cat {
     })
 
     this.edgeMaterial = new LineBasicMaterial({
-      color: new Color(CAT_RIM),
+      color: new Color(AMBER),
       transparent: true,
       opacity: 0,
       depthWrite: false,

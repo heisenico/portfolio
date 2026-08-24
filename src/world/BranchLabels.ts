@@ -27,6 +27,7 @@ import {
 import type { Quality } from '../core/Quality'
 import { damp } from '../util/tween'
 import type { BranchRecord } from './BranchSystem'
+import { INK, INK_FAINT } from './palette'
 
 /** Profundidade em que um galho é grosso o bastante pra carregar um rótulo. */
 const PROFUNDIDADE_MIN = 2
@@ -116,8 +117,8 @@ export function assignBranches(
 const ALTURA = 0.42
 /** Quanto o rótulo flutua acima da ponta do galho. */
 const OFFSET = 0.55
-const COR_REPOUSO = '#9fbfae'
-const COR_ACESA = '#d9ffe9'
+const COR_REPOUSO = INK_FAINT
+const COR_ACESA = INK
 /** Velocidade com que o realce de hover se aproxima do alvo. */
 const REALCE_LAMBDA = 10
 /** Amplitude da respiração vertical de cada rótulo, em unidades de mundo. */
@@ -127,8 +128,8 @@ const BOB_AMPLITUDE = 0.04
  *  proporção largura/altura do texto importa pro resultado final — `ALTURA`
  *  fixa a altura no mundo, então isto só afeta a nitidez da textura. */
 const FONTE_PX = 32
-/** Mesmo peso dos títulos do resto da página (`.hero h1`, `.bloco h2`). */
-const FONTE_PESO = 500
+/** Mesmo peso do resto da página: 400 em tudo, a hierarquia é o tamanho. */
+const FONTE_PESO = 400
 const PAD_X = 16
 const PAD_Y = 10
 
@@ -181,7 +182,7 @@ function construirTextura(
   // reaplicada antes de desenhar.
   ctx.font = `${FONTE_PESO} ${fontePx}px ${familia}`
   ctx.textBaseline = 'middle'
-  ctx.fillStyle = '#ffffff'
+  ctx.fillStyle = new Color(INK).getStyle()
   ctx.fillText(titulo, padX, canvas.height / 2)
 
   const texture = new CanvasTexture(canvas)

@@ -25,6 +25,7 @@ import {
 } from 'three'
 import { alturasDosAneis, type Grupo } from '../content/paixoes'
 import { clamp01, damp } from '../util/tween'
+import { INK, INK_REST } from './palette'
 
 /** Segments per circle. Low enough to stay cheap, high enough to read round. */
 const SEGMENTS = 72
@@ -45,8 +46,8 @@ export class TrunkRings {
   private targets: number[] = []
   private current: number[] = []
   private geometry = circleGeometry(RING_RADIUS)
-  private restColor = new Color(0x4fe08f)
-  private litColor = new Color(0xd9ffe9)
+  private restColor = new Color(INK_REST)
+  private litColor = new Color(INK)
   private highlighted: number | null = null
 
   constructor(grupos: Grupo[]) {

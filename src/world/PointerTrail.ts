@@ -20,6 +20,7 @@ import type { Pointer } from '../core/Pointer'
 import type { Quality } from '../core/Quality'
 import { trailFragment, trailVertex } from '../fx/shaders/trail'
 import { mulberry32 } from '../util/rng'
+import { INK, INK_REST } from './palette'
 
 const LIFETIME = 1.25
 /** Particles per second at full pointer speed. */
@@ -54,7 +55,7 @@ export class PointerTrail {
   private lastPointer = new Vector3()
   private hasLast = false
 
-  constructor(quality: Quality, color = 0xa8ffd0) {
+  constructor(quality: Quality, color = INK_REST) {
     this.capacity = quality.allocation.trail
 
     this.positions = new Float32Array(this.capacity * 3)
@@ -87,7 +88,7 @@ export class PointerTrail {
         uSize: { value: 7.5 },
         uDpr: { value: 1 },
         uColor: { value: new Color(color) },
-        uHot: { value: new Color(0xffffff) },
+        uHot: { value: new Color(INK) },
         uOpacity: { value: 1 },
       },
       transparent: true,

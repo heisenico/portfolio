@@ -18,12 +18,13 @@ import {
   Vector3,
 } from 'three'
 import { pulseFragment, pulseVertex } from '../fx/shaders/pulse'
+import { INK_REST } from './palette'
 
 export class ScanPulse {
   readonly mesh: Mesh
   private material: ShaderMaterial
 
-  constructor(origin: Vector3, color = 0x8cffc0) {
+  constructor(origin: Vector3, color = INK_REST) {
     // Unit sphere, scaled per frame — one geometry for every radius.
     const geometry = new SphereGeometry(1, 48, 32)
 

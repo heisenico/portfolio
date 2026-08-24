@@ -26,6 +26,7 @@ import {
 import { branchFragment, branchVertex } from '../fx/shaders/branch'
 import { markerFragment, markerVertex } from '../fx/shaders/marker'
 import type { BranchData } from './BranchSystem'
+import { INK, INK_REST } from './palette'
 
 /** Width of the bright leading band, in world units. */
 const BAND = 2.6
@@ -36,9 +37,6 @@ const POP_DISTANCE = 1.4
 /** Distance over which a marker fades from hot to resting. */
 const SETTLE_DISTANCE = 4.0
 const MARKER_REST_ALPHA = 0.42
-
-export const SCAN_REST_COLOR = 0x4fe08f
-export const SCAN_EDGE_COLOR = 0xd9ffe9
 
 export class ScanReveal {
   readonly group = new Group()
@@ -70,8 +68,8 @@ export class ScanReveal {
           uRest: { value: REST_INTENSITY },
           uMaxDepth: { value: maxDepth },
           uTime: { value: 0 },
-          uRestColor: { value: new Color(SCAN_REST_COLOR) },
-          uEdgeColor: { value: new Color(SCAN_EDGE_COLOR) },
+          uRestColor: { value: new Color(INK_REST) },
+          uEdgeColor: { value: new Color(INK) },
           uOpacity: { value: 1 },
           uGain: { value: 1.35 },
           uHotGain: { value: 3.1 },
@@ -117,8 +115,8 @@ export class ScanReveal {
         uSettleDistance: { value: SETTLE_DISTANCE },
         uRestAlpha: { value: MARKER_REST_ALPHA },
         uTime: { value: 0 },
-        uRestColor: { value: new Color(SCAN_REST_COLOR) },
-        uEdgeColor: { value: new Color(SCAN_EDGE_COLOR) },
+        uRestColor: { value: new Color(INK_REST) },
+        uEdgeColor: { value: new Color(INK) },
         uOpacity: { value: 1 },
       },
       transparent: true,
