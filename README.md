@@ -77,7 +77,7 @@ tags: [career]
 - `data` must be `AAAA-MM-DD` (`YYYY-MM-DD`) — anything else throws, because
   posts sort by this string and a wrong format sorts wrong silently instead.
 - `tags` is optional and only its first entry currently does anything: it
-  seeds the colour a generated post-world drifts toward (see below).
+  seeds the pen pressure a generated post-world drifts toward (see below).
 - `rascunho: true` marks a draft. Drafts are included in dev and dropped from
   the production build.
 
@@ -102,8 +102,8 @@ no need to restart Vite.
 
 Every post gets a world automatically: `GeneratedPostWorld`
 (`src/world/PostWorld.ts`) grows a fan of twigs out of the branch tip, seeded
-deterministically from the post's slug, one twig per paragraph, tinted toward
-a hue derived from the post's first tag. Publishing never depends on anyone
+deterministically from the post's slug, one twig per paragraph, with the pen
+pressure (line gain) derived from the post's first tag. Publishing never depends on anyone
 having built a scene by hand.
 
 A post can replace that with a hand-built world instead: export a
@@ -132,9 +132,11 @@ contract:
    `src/fx/shaders/branch.ts` directly, or a sibling in `src/fx/shaders/` that
    is a documented copy of that pair plus one extra gate. Things do not fade
    in; they are *scanned* in.
-3. **Green in, green out.** The base hue starts at `--green` (`#4fe08f`) and
-   may drift anywhere while the reader is inside the post, but must be back at
-   green by `progress >= 0.97`. The reader leaves the way they came in.
+3. **Ink in, ink out.** The world is monochrome: lines start at `INK_REST`
+   (`src/world/palette.ts`) with gain `1.0`, may vary in *weight* while the
+   reader is inside the post, but must be back at gain `1.0` by
+   `progress >= 0.97`. Hue never drifts — the only colour on the site is the
+   cat. The reader leaves the way they came in.
 4. **It grows out of the branch.** The world is anchored at
    `ctx.branch.tip` and never hides or replaces the tree. Flying out must
    reveal the tree still standing exactly where it was.

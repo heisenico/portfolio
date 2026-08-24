@@ -1,7 +1,7 @@
 {
   "name": "portfolio",
   "version": "0.1.0",
-  "description": "Three.js portfolio — scanned world, liquid glass, a cat on a branch.",
+  "description": "Three.js portfolio — a scanned world in ink on paper, a cat on a branch.",
   "directories": {
     "doc": "docs"
   },
