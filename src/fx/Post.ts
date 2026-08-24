@@ -38,10 +38,15 @@ const VIGNETTE_NOITE = 0.85
 const VIGNETTE_PAPEL = 0
 
 /**
- * Desenha só a layer do gato por cima do buffer já com bloom, sem limpar a
- * cor. Limpa o depth antes: o quad de tela cheia do bloom pode ter escrito
- * profundidade, e o gato seria recusado inteiro. O custo aceito: galhos na
- * frente do gato não o ocluem no papel — raro na pose atual.
+ * Desenha só a layer do gato por cima do buffer já com bloom, sem limpar a cor.
+ *
+ * O que muda no papel é a **ordem de desenho**, não a oclusão: o gato deixa de
+ * ser ordenado junto com os transparentes da cena e passa a ser composto por
+ * último, depois de tudo. Profundidade nunca esteve em jogo — o corpo do gato é
+ * o único material da cena com `depthWrite`, todo o resto (árvore, chão, motes,
+ * rótulos) desenha com `depthWrite: false`, então galho nenhum jamais ocluiu o
+ * gato em tema algum. O `clearDepth()` é defensivo e, hoje, um no-op: o quad de
+ * composição do bloom também roda com `depthTest`/`depthWrite` desligados.
  */
 class CatPass extends Pass {
   constructor(
