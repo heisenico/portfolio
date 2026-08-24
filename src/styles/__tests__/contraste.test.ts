@@ -23,7 +23,11 @@ function bloco(media: string | null): string {
     if (!m) throw new Error(':root de topo não encontrado em tokens.css')
     return m[1]!
   }
-  const inicio = css.indexOf(`@media ${media}`)
+  // A abertura de bloco de verdade — começo de linha e `{` logo depois. Sem
+  // essas duas âncoras o `indexOf` casa com a própria menção a
+  // `@media (prefers-contrast: less)` no comentário de cabeçalho de tokens.css,
+  // e o teste vai medir o `:root` de topo achando que está no bloco.
+  const inicio = css.indexOf(`\n@media ${media} {`)
   if (inicio < 0) throw new Error(`@media ${media} não encontrado em tokens.css`)
   const abre = css.indexOf('{', css.indexOf(':root', inicio))
   const fecha = css.indexOf('}', abre)
@@ -46,7 +50,7 @@ function luminancia(hex: string): number {
 }
 
 /** Razão de contraste WCAG 2.x, sempre >= 1. */
-export function contraste(a: string, b: string): number {
+function contraste(a: string, b: string): number {
   const la = luminancia(a)
   const lb = luminancia(b)
   return (Math.max(la, lb) + 0.05) / (Math.min(la, lb) + 0.05)
@@ -74,14 +78,15 @@ const temas = [
 describe.each(temas)('tema $nome', ({ media }) => {
   const base = bloco(null)
   const proprio = media === null ? base : bloco(media)
-  // Um bloco de @media só redefine o que muda; o resto herda do topo.
-  const ler = (nome: string): string => {
-    try {
-      return token(proprio, nome)
-    } catch {
-      return token(base, nome)
-    }
-  }
+  /*
+   * Um bloco de @media só redefine o que muda; o resto herda do topo. A
+   * herança vale para token *ausente*, e só. Se o token está declarado ali e
+   * não é um hex de 6 dígitos — um `color-mix`, por exemplo — `token` grita.
+   * Cair no valor de topo nesse caso seria medir o contraste do tema errado e
+   * dizer que passou.
+   */
+  const ler = (nome: string): string =>
+    new RegExp(`--${nome}\\s*:`).test(proprio) ? token(proprio, nome) : token(base, nome)
   const paper = ler('paper')
   const ink = ler('ink')
 
