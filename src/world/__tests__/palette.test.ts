@@ -3,6 +3,7 @@ import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
 import { AMBER, AMBER_INVERTIDO, INK, INK_FAINT, INK_REST, PAPER } from '../palette'
+import { naTela } from './aces'
 
 const raiz = fileURLToPath(new URL('../../../', import.meta.url))
 
@@ -28,8 +29,24 @@ describe('palette', () => {
     expect(cinza(AMBER)).toBe(false)
   })
 
-  it('o âmbar invertido é o complemento exato, pra sair certo depois do passe final', () => {
-    expect(AMBER_INVERTIDO).toBe(0xffffff - AMBER)
+  // O complemento ingênuo (`0xffffff - AMBER`) está errado: o frame passa por
+  // ACES antes da inversão, e ACES não é simétrico sob `1 - x`. Invertendo o
+  // complemento chega-se a `#ffc864`, não a `#ffc27a`. O único jeito de fixar a
+  // cor do gato é rodar o pipeline — `aces.ts` faz isso.
+  it('o âmbar invertido sai #ffc27a na tela, depois de ACES e do passe final', () => {
+    const [r, g, b] = naTela(AMBER_INVERTIDO, 1.22, true)
+    expect(Math.abs(r - 0xff)).toBeLessThanOrEqual(1)
+    expect(Math.abs(g - 0xc2)).toBeLessThanOrEqual(1)
+    expect(Math.abs(b - 0x7a)).toBeLessThanOrEqual(1)
+  })
+
+  it('o âmbar da noite sai lavado por ACES, e é assim que o autor o quis', () => {
+    // Âncora do modelo: sem inversão, `AMBER` cheio chega à tela como #ebd4a5.
+    // Se `aces.ts` desandar, este teste cai junto com o de cima.
+    const [r, g, b] = naTela(AMBER, 1.22, false)
+    expect(Math.abs(r - 0xeb)).toBeLessThanOrEqual(3)
+    expect(Math.abs(g - 0xd4)).toBeLessThanOrEqual(3)
+    expect(Math.abs(b - 0xa5)).toBeLessThanOrEqual(3)
   })
 })
 

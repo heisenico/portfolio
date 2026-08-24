@@ -23,5 +23,18 @@ export const INK_REST = 0xb4b4b4
 export const INK_FAINT = 0x8c8c8c
 /** O gato. O único valor com cor no site inteiro. */
 export const AMBER = 0xffc27a
-/** `1 - AMBER`, canal a canal: o que o gato usa no papel pra sair âmbar depois da inversão. */
-export const AMBER_INVERTIDO = 0x003d85
+/**
+ * O que o gato usa no papel para sair `#ffc27a` **na tela**.
+ *
+ * Não é o complemento sRGB de `AMBER`: entre o uniform e o pixel existe ACES
+ * (exposição 1.22) e a codificação sRGB, e só depois o passe final inverte.
+ * ACES não é simétrico sob `1 - x`, então o complemento ingênuo (`0x003d85`)
+ * chegava a `#ffc864` — seis níveis de verde a mais, o âmbar puxando para
+ * amarelo. Este valor foi resolvido rodando o pipeline ao contrário
+ * (`__tests__/aces.ts`); acerta os três canais na mosca, e
+ * `__tests__/palette.test.ts` o mantém honesto.
+ *
+ * Na noite o gato usa `AMBER` cru, que o mesmo ACES entrega como ≈`#ebd4a5` a
+ * fresnel cheio — lavado de propósito, é como o autor ajustou a cena.
+ */
+export const AMBER_INVERTIDO = 0x1e4173

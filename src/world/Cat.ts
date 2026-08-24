@@ -211,8 +211,12 @@ export class Cat {
 
   /**
    * No papel o frame é invertido, então o gato recebe o negativo do que deve
-   * aparecer: corpo `INK` (sai preto), forro `AMBER_INVERTIDO` (sai #ffc27a),
-   * arestas `INK` (saem tinta). Na noite, o que sempre foi.
+   * aparecer: corpo `INK` (sai preto), forro `AMBER_INVERTIDO`, arestas `INK`
+   * (saem tinta). Na noite, o que sempre foi.
+   *
+   * "Negativo" aqui é o valor que *chega* invertido ao pixel certo, não o
+   * complemento aritmético: ACES fica entre o uniform e a tela. `#ffc27a` sai
+   * de `AMBER_INVERTIDO` no papel — ver o comentário dele em `palette.ts`.
    */
   setTema(tema: Tema): void {
     const papel = tema === 'papel'
