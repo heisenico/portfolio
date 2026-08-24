@@ -47,7 +47,7 @@ export class Nav {
       this.criarLink(buildPath('blog'), nav.blog),
     ]
 
-    // `--font-sans` troca de system-ui pra Geist com `font-display: swap`.
+    // `--font-sans` troca da fonte de reserva pra Cabin com `font-display: swap`.
     // Se `setActive` já rodou com a métrica de reserva, o indicador fica
     // com tamanho/posição errados até a próxima navegação — remedir depois
     // que a fonte resolve corrige isso sem esperar uma troca de rota.

@@ -18,7 +18,7 @@ body {
 
 body {
   margin: 0;
-  background: var(--bg-deep);
+  background: var(--paper);
   color: var(--ink);
   font-family: var(--font-sans);
   font-synthesis-weight: none;
@@ -49,7 +49,7 @@ body {
   position: fixed;
   inset: 0;
   z-index: 3;
-  background: var(--bg-deep);
+  background: var(--paper);
   pointer-events: none;
   opacity: 1;
   transition: opacity 900ms cubic-bezier(0.22, 1, 0.36, 1);
@@ -70,12 +70,12 @@ body {
 }
 
 ::selection {
-  background: color-mix(in srgb, var(--green) 40%, transparent);
-  color: var(--green-hot);
+  background: var(--ink);
+  color: var(--paper);
 }
 
 :focus-visible {
-  outline: 2px solid var(--green);
+  outline: 2px solid var(--ink);
   outline-offset: 3px;
   border-radius: 4px;
 }
@@ -90,15 +90,19 @@ body {
   padding: 22vh var(--gutter) 0;
 }
 .noscript h1 {
-  font-size: clamp(2rem, 7vw, 3.4rem);
-  font-weight: 500;
-  letter-spacing: -0.03em;
-  margin: 0 0 calc(var(--step) * 2);
+  font-size: var(--text-h1);
+  font-weight: 400;
+  line-height: var(--leading-title);
+  letter-spacing: 1px;
+  margin: 0 0 var(--space-4);
 }
 .noscript p {
-  color: var(--ink-dim);
-  line-height: 1.6;
+  color: var(--ink);
+  font-size: var(--text-body);
+  line-height: var(--leading-body);
 }
 .noscript a {
-  color: var(--green);
+  color: inherit;
+  text-decoration: underline;
+  text-underline-offset: 2px;
 }

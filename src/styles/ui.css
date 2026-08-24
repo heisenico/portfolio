@@ -1,9 +1,9 @@
 /*
  * Layout.
  *
- * Coluna única e estreita. A hierarquia vem de tamanho, peso e espaço — não de
- * cor e não de moldura. O verde aparece em três lugares no máximo; o resto é
- * tinta sobre o mundo.
+ * Coluna única e estreita. A hierarquia vem de tamanho e espaço — não de cor,
+ * não de peso, não de moldura. Nenhuma cor: tinta sobre papel. A única cor do
+ * site é o gato, e ele não mora aqui.
  */
 
 #ui {
@@ -58,20 +58,19 @@ button,
 }
 
 .hero h1 {
-  font-size: var(--text-2xl);
-  font-weight: 500;
-  line-height: 1.05;
-  letter-spacing: var(--track-tight);
+  font-size: var(--text-h1);
+  font-weight: 400;
+  line-height: var(--leading-title);
+  letter-spacing: 1px;
   margin: 0;
   color: var(--ink);
 }
 
 .hero .lead {
-  font-size: var(--text-lg);
+  font-size: var(--text-body);
   font-weight: 400;
-  line-height: 1.45;
-  letter-spacing: var(--track-snug);
-  color: var(--ink-dim);
+  line-height: var(--leading-body);
+  color: var(--ink);
   margin: var(--space-4) 0 0;
   max-width: 30rem;
   text-wrap: pretty;
@@ -82,8 +81,8 @@ button,
   flex-wrap: wrap;
   gap: var(--space-2) var(--space-4);
   margin: var(--space-6) 0 0;
-  font-size: var(--text-sm);
-  color: var(--ink-faint);
+  font-size: var(--text-small);
+  color: var(--ink);
 }
 
 /* Um ponto separador, em vez de régua e caixa-alta. */
@@ -127,24 +126,22 @@ button,
   transform-origin: left center;
 }
 
-/*
- * Títulos de seção pequenos e em caixa normal. A versão anterior usava
- * versalete com tracking largo em cima de cada bloco, que é exatamente o
- * andaime que aparece em toda página gerada.
- */
+/* O filete acima do h2 já existe: é o `.bloco + .bloco::before` animado,
+   com o espaço próprio do bloco. O `padding-top: 9px` da referência não se
+   aplica aqui — seria trocar o layout, que fica como está. */
 .bloco h2 {
-  font-size: var(--text-sm);
-  font-weight: 500;
+  font-size: var(--text-h2);
+  font-weight: 400;
+  line-height: var(--leading-title);
   letter-spacing: 0;
-  color: var(--ink-faint);
+  color: var(--ink);
   margin: 0 0 var(--space-4);
 }
 
 .prosa p {
-  font-size: var(--text-base);
-  line-height: 1.65;
-  letter-spacing: var(--track-snug);
-  color: var(--ink-dim);
+  font-size: var(--text-body);
+  line-height: var(--leading-body);
+  color: var(--ink);
   margin: 0 0 var(--space-4);
   text-wrap: pretty;
 }
@@ -167,21 +164,20 @@ button,
   display: flex;
   align-items: center;
   gap: var(--space-2);
-  font-size: var(--text-sm);
-  color: var(--ink-faint);
+  font-size: var(--text-small);
+  color: var(--ink);
 }
 
 .agenda dd {
   margin: 0;
-  font-size: var(--text-base);
-  letter-spacing: var(--track-snug);
+  font-size: var(--text-body);
   color: var(--ink);
 }
 
 .porque {
   display: block;
-  font-size: var(--text-sm);
-  color: var(--ink-faint);
+  font-size: var(--text-small);
+  color: var(--ink);
   margin-top: 2px;
 }
 
@@ -189,14 +185,14 @@ button,
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  border: 1px solid var(--ink-faint);
+  border: 1px solid var(--ink);
   flex: none;
 }
 
 /* Cheio: está acontecendo. Vazio: ainda não começou. */
 .ponto.is-agora {
-  background: var(--green);
-  border-color: var(--green);
+  background: var(--ink);
+  border-color: var(--ink);
 }
 
 /* ---------- Paixões ---------- */
@@ -206,9 +202,9 @@ button,
 }
 
 .grupo-rotulo {
-  font-size: var(--text-xs);
+  font-size: var(--text-small);
   font-weight: 400;
-  color: var(--ink-faint);
+  color: var(--ink);
   margin: 0 0 var(--space-2);
 }
 
@@ -224,10 +220,9 @@ button,
   justify-content: space-between;
   gap: var(--space-4);
   padding: var(--space-3) 0;
-  font-size: var(--text-base);
-  letter-spacing: var(--track-snug);
   cursor: default;
   transition: opacity 220ms cubic-bezier(0.22, 1, 0.36, 1);
+  font-size: var(--text-body);
 }
 
 .paixao + .paixao {
@@ -239,8 +234,8 @@ button,
 }
 
 .paixao-nota {
-  font-size: var(--text-sm);
-  color: var(--ink-faint);
+  font-size: var(--text-small);
+  color: var(--ink);
   text-align: right;
 }
 
@@ -274,44 +269,47 @@ button,
   padding: var(--space-3) 0;
   text-decoration: none;
   color: var(--ink);
-  font-size: var(--text-base);
-  letter-spacing: var(--track-snug);
+  font-size: var(--text-body);
 }
 
+/* O link é a linha inteira; o sublinhado fica só no rótulo, como texto. */
 .link-rotulo {
-  transition: color 200ms cubic-bezier(0.22, 1, 0.36, 1);
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 2px;
+  transition: text-decoration-thickness 200ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .link-nota {
-  font-size: var(--text-sm);
-  color: var(--ink-faint);
+  font-size: var(--text-small);
+  color: var(--ink);
   text-align: right;
 }
 
-.links a:hover .link-rotulo {
-  color: var(--green);
+.links a:hover .link-rotulo,
+.links a:focus-visible .link-rotulo {
+  text-decoration-thickness: 2px;
 }
 
 /* ---------- Convite ---------- */
 
 .convite p {
   margin: 0;
-  font-size: var(--text-base);
-  line-height: 1.6;
-  letter-spacing: var(--track-snug);
-  color: var(--ink-dim);
+  font-size: var(--text-body);
+  line-height: var(--leading-body);
+  color: var(--ink);
 }
 
 .convite a {
-  color: var(--green);
+  color: inherit;
   text-decoration: underline;
-  text-underline-offset: 0.22em;
+  text-underline-offset: 2px;
   text-decoration-thickness: 1px;
-  text-decoration-color: color-mix(in srgb, var(--green) 40%, transparent);
 }
 
-.convite a:hover {
-  text-decoration-color: var(--green);
+.convite a:hover,
+.convite a:focus-visible {
+  text-decoration-thickness: 2px;
 }
 
 /* ---------- Blog ---------- */
@@ -340,24 +338,26 @@ button,
   padding: var(--space-3) 0;
   text-decoration: none;
   color: var(--ink);
-  font-size: var(--text-base);
-  letter-spacing: var(--track-snug);
+  font-size: var(--text-body);
 }
 
 .galho-titulo {
-  transition: color 200ms cubic-bezier(0.22, 1, 0.36, 1);
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 2px;
+  transition: text-decoration-thickness 200ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .galho-meta {
-  font-size: var(--text-sm);
-  color: var(--ink-faint);
+  font-size: var(--text-small);
+  color: var(--ink);
   text-align: right;
   white-space: nowrap;
 }
 
 .galhos a:hover .galho-titulo,
 .galhos a:focus-visible .galho-titulo {
-  color: var(--green);
+  text-decoration-thickness: 2px;
 }
 
 /* ---------- Rodapé ---------- */
@@ -368,8 +368,8 @@ button,
   flex-wrap: wrap;
   gap: var(--space-3);
   justify-content: space-between;
-  font-size: var(--text-xs);
-  color: var(--ink-faint);
+  font-size: var(--text-small);
+  color: var(--ink);
 }
 
 /* ---------- Pista de rolagem ---------- */
@@ -380,8 +380,8 @@ button,
   bottom: 22px;
   translate: -50% 0;
   z-index: var(--z-cue);
-  font-size: var(--text-xs);
-  color: var(--ink-faint);
+  font-size: var(--text-small);
+  color: var(--ink);
   pointer-events: none;
   transition: opacity 400ms ease;
 }
@@ -444,7 +444,7 @@ button,
   padding: 3px;
   border-radius: 999px;
   border: 1px solid var(--rule);
-  background: color-mix(in srgb, var(--bg-deep) 72%, transparent);
+  background: color-mix(in srgb, var(--paper) 72%, transparent);
   isolation: isolate;
 }
 
@@ -463,19 +463,9 @@ button,
   z-index: 1;
   padding: 6px 16px;
   border-radius: 999px;
-  font-size: var(--text-sm);
-  letter-spacing: var(--track-snug);
-  color: var(--ink-faint);
-  text-decoration: none;
-  transition: color 240ms var(--ease-saida);
-}
-
-.pilula a[aria-current='page'] {
+  font-size: var(--text-small);
   color: var(--ink);
-}
-
-.pilula a:hover {
-  color: var(--ink-dim);
+  text-decoration: none;
 }
 
 .thumb {
@@ -484,8 +474,8 @@ button,
   inset-block: 3px;
   inset-inline-start: 0;
   border-radius: 999px;
-  background: color-mix(in srgb, var(--green) 16%, transparent);
-  border: 1px solid color-mix(in srgb, var(--green) 34%, transparent);
+  background: color-mix(in srgb, var(--ink) 8%, transparent);
+  border: 1px solid color-mix(in srgb, var(--ink) 24%, transparent);
   transition:
     transform 420ms var(--ease-mola),
     width 420ms var(--ease-mola),

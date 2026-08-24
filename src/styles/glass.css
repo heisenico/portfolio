@@ -16,12 +16,11 @@
   isolation: isolate;
   border-radius: var(--radius);
   /*
-   * 84%, medido e não estimado. A 62% o texto secundário caía pra 2.55:1
-   * quando o tronco aceso passava por trás — a superfície é translúcida, então
-   * o fundo do texto é variável, e o pior caso é o que manda. A 84% o mundo
-   * ainda atravessa e todo o texto passa de 4.5:1.
+   * 84%, medido e não estimado — ver `contraste.test.ts`, que calcula o
+   * pior caso: uma linha de tinta pura atravessando 16% do vidro. A 84%
+   * todo texto passa de 4.5:1 nos dois temas.
    */
-  background: color-mix(in srgb, var(--bg-deep) 84%, transparent);
+  background: color-mix(in srgb, var(--paper) 84%, transparent);
   border: 1px solid var(--rule);
 }
 
@@ -42,22 +41,7 @@
 
 /* Sem backdrop-filter: painel opaco, pra que o texto continue legível. */
 .lg-no-backdrop .material {
-  background: color-mix(in srgb, var(--bg-deep) 94%, transparent);
+  background: color-mix(in srgb, var(--paper) 94%, transparent);
 }
 
-/*
- * Um único realce no topo, do jeito que uma borda iluminada se comporta.
- * O rim conico girando em volta do painel era efeito, não luz.
- */
-.material::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  pointer-events: none;
-  background: linear-gradient(
-    180deg,
-    color-mix(in srgb, var(--ink) 7%, transparent),
-    transparent 38%
-  );
-}
+/* Sem realce, sem sombra. Uma folha sobre outra folha é só um filete. */
