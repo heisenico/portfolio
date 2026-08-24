@@ -225,8 +225,11 @@ no papel. Solução: o gato vive numa `Layer` própria (`CAT_LAYER`). No papel,
 recebe tone mapping e inversão, mas não bloom. Na noite, a layer volta para a
 passada principal e a passada extra é desabilitada.
 
-Degradação aceita no papel: a passada extra não tem o depth da cena, então
-galhos *na frente* do gato deixam de ocluí-lo. Na pose atual isso é raro.
+A passada extra não tem o depth da cena, mas isso não custa oclusão nenhuma:
+todas as linhas do mundo desenham com `depthWrite: false`, então galho nenhum
+jamais ocluiu o gato — nem no papel, nem na noite. O que a passada extra muda é
+a *ordem de desenho*: o gato deixa de ser ordenado entre os transparentes e
+passa a ser composto por último.
 
 `CAT_COLOR`/`CAT_RIM` deixam de ser exportados de `Cat.ts`; vêm de
 `palette.ts`.
@@ -348,9 +351,10 @@ No browser (Chrome, via MCP), nos dois temas trocando a aparência do macOS:
 - **Cabin 400 para tudo.** Sem Light, corpo e título têm o mesmo peso. Se a
   hierarquia não segurar só no tamanho, o recurso é `letter-spacing` nos
   títulos, nunca peso.
-- **Depth do gato no papel.** Degradação aceita (§5). Se incomodar, a
-  alternativa é copiar o depth buffer da passada principal para a passada do
-  gato — fora deste spec.
+- **Depth do gato no papel.** Risco encerrado durante a implementação: como
+  nenhuma linha do mundo escreve profundidade, não havia oclusão a perder (§5).
+  Copiar o depth buffer da passada principal seria remédio para doença que não
+  existe.
 - **Refração sobre branco.** O `feDisplacementMap` entorta um fundo quase
   todo branco; o efeito fica mais sutil que hoje. Aceito: vidro raro e com
   propósito.
