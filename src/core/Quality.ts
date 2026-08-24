@@ -12,6 +12,10 @@
  *
  * Downgrades are one-way. A machine that stutters early and recovers keeps the
  * cheaper settings rather than oscillating between them.
+ *
+ * Também carrega o tema (`papel` | `noite`), porque é o mesmo tipo de fato —
+ * uma preferência do SO lida uma vez e observada depois — e todo subsistema
+ * já recebe `Quality` na construção.
  */
 
 export type Tier = 'high' | 'moderate' | 'low'
@@ -94,6 +98,13 @@ function readReducedMotion(): boolean {
   return window.matchMedia('(prefers-reduced-motion: reduce)').matches
 }
 
+export type Tema = 'papel' | 'noite'
+
+function readTema(): Tema {
+  if (typeof window === 'undefined' || !window.matchMedia) return 'papel'
+  return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'noite' : 'papel'
+}
+
 export class Quality {
   /** The tier every buffer was sized for. Never changes after construction. */
   readonly initialTier: Tier
@@ -102,11 +113,18 @@ export class Quality {
   private samples: number[] = []
   private runningTier: Tier
   private listeners: ((q: Quality) => void)[] = []
+  private temaAtual: Tema
+  private temaListeners: ((tema: Tema) => void)[] = []
 
-  constructor(hints: DeviceHints = readHints(), reducedMotion: boolean = readReducedMotion()) {
+  constructor(
+    hints: DeviceHints = readHints(),
+    reducedMotion: boolean = readReducedMotion(),
+    tema: Tema = readTema(),
+  ) {
     this.initialTier = tierFromHints(hints)
     this.runningTier = this.initialTier
     this.reducedMotion = reducedMotion
+    this.temaAtual = tema
   }
 
   /** Feed one frame's duration in milliseconds. Stalls are discarded. */
@@ -147,6 +165,22 @@ export class Quality {
   /** Fired once if the measured tier turns out worse than the estimate. */
   onDowngrade(fn: (q: Quality) => void): void {
     this.listeners.push(fn)
+  }
+
+  /** Papel por padrão; noite quando o SO pede. O SO é o único toggle. */
+  get tema(): Tema {
+    return this.temaAtual
+  }
+
+  /** Chamado pelo listener da media query em `main.ts`. Injetável pra teste. */
+  setTema(tema: Tema): void {
+    if (tema === this.temaAtual) return
+    this.temaAtual = tema
+    for (const fn of this.temaListeners) fn(tema)
+  }
+
+  onTema(fn: (tema: Tema) => void): void {
+    this.temaListeners.push(fn)
   }
 
   /**

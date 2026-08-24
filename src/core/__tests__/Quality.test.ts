@@ -139,3 +139,32 @@ describe('Quality', () => {
     expect(q.reducedMotion).toBe(true)
   })
 })
+
+describe('Quality.tema', () => {
+  it('fora do browser é papel', () => {
+    // O terceiro parâmetro não é passado: o default lê matchMedia, que não
+    // existe no ambiente node do vitest.
+    expect(new Quality(desktop, false).tema).toBe('papel')
+  })
+
+  it('aceita o tema injetado', () => {
+    expect(new Quality(desktop, false, 'noite').tema).toBe('noite')
+  })
+
+  it('avisa quem escuta quando o tema muda, com o valor novo', () => {
+    const q = new Quality(desktop, false, 'papel')
+    const spy = vi.fn()
+    q.onTema(spy)
+    q.setTema('noite')
+    expect(q.tema).toBe('noite')
+    expect(spy).toHaveBeenCalledWith('noite')
+  })
+
+  it('não avisa quando o tema é o mesmo', () => {
+    const q = new Quality(desktop, false, 'papel')
+    const spy = vi.fn()
+    q.onTema(spy)
+    q.setTema('papel')
+    expect(spy).not.toHaveBeenCalled()
+  })
+})
