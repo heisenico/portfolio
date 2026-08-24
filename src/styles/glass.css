@@ -9,6 +9,9 @@
  * A refração continua sendo o que separa vidro de fosco: o `feDisplacementMap`
  * entorta o fundo na borda e deixa o miolo reto. Só que agora com muito menos
  * volume.
+ *
+ * O `backdrop-filter` não mexe mais na saturação: o fundo é monocromático e a
+ * única croma que passa por trás do vidro é o gato, que o filtro distorceria.
  */
 
 .material {
@@ -26,17 +29,17 @@
 
 /* Chromium: o fundo é de fato entortado na borda pela lente SVG. */
 .lg-refract .material {
-  backdrop-filter: url(#lg-displace) blur(18px) saturate(135%);
-  -webkit-backdrop-filter: blur(18px) saturate(135%);
+  backdrop-filter: url(#lg-displace) blur(18px);
+  -webkit-backdrop-filter: blur(18px);
 }
 
 /*
  * Safari e Firefox não honram referência a filtro SVG dentro de
- * backdrop-filter. Perde-se a refração; o desfoque e a saturação ficam.
+ * backdrop-filter. Perde-se a refração; o desfoque fica.
  */
 .lg-fallback .material {
-  backdrop-filter: blur(22px) saturate(130%);
-  -webkit-backdrop-filter: blur(22px) saturate(130%);
+  backdrop-filter: blur(22px);
+  -webkit-backdrop-filter: blur(22px);
 }
 
 /* Sem backdrop-filter: painel opaco, pra que o texto continue legível. */

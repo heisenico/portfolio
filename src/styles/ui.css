@@ -449,13 +449,13 @@ button,
 }
 
 .lg-refract .pilula {
-  backdrop-filter: url(#lg-displace) blur(14px) saturate(140%);
-  -webkit-backdrop-filter: blur(14px) saturate(140%);
+  backdrop-filter: url(#lg-displace) blur(14px);
+  -webkit-backdrop-filter: blur(14px);
 }
 
 .lg-fallback .pilula {
-  backdrop-filter: blur(16px) saturate(135%);
-  -webkit-backdrop-filter: blur(16px) saturate(135%);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
 }
 
 .pilula a {

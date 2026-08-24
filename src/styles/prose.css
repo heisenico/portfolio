@@ -19,8 +19,8 @@
 }
 
 .lg-refract .leitura {
-  backdrop-filter: url(#lg-displace) blur(22px) saturate(130%);
-  -webkit-backdrop-filter: blur(22px) saturate(130%);
+  backdrop-filter: url(#lg-displace) blur(22px);
+  -webkit-backdrop-filter: blur(22px);
 }
 
 .voltar {
@@ -79,7 +79,13 @@
   margin-top: var(--space-7);
 }
 
-.prosa-post h2 { font-size: var(--text-h2); }
+/* Filete acima do h2, com o `padding-top: 9px` da referência (spec §2). Ao
+   contrário do `.bloco h2`, aqui não existe filete de bloco para herdar. */
+.prosa-post h2 {
+  font-size: var(--text-h2);
+  border-top: 1px solid var(--rule);
+  padding-top: 9px;
+}
 .prosa-post h3 { font-size: var(--text-h3); margin-bottom: 6px; }
 
 .prosa-post a {
