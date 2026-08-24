@@ -45,6 +45,13 @@ const canvas = document.getElementById('stage') as HTMLCanvasElement
 const VERIFY = new URLSearchParams(location.search).has('verify')
 
 const quality = new Quality()
+
+// O SO é o toggle de tema. Trocar a aparência com o site aberto troca o tema
+// ao vivo; o CSS já reage sozinho via @media, isto é só pro mundo.
+window
+  .matchMedia('(prefers-color-scheme: dark)')
+  .addEventListener('change', (e) => quality.setTema(e.matches ? 'noite' : 'papel'))
+
 const stage = new Stage(canvas, quality, { preserveDrawingBuffer: VERIFY })
 const loop = new Loop()
 const pointer = new Pointer(stage.camera)

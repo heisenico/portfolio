@@ -16,6 +16,7 @@ import { RenderPass } from 'three/addons/postprocessing/RenderPass.js'
 import { ShaderPass } from 'three/addons/postprocessing/ShaderPass.js'
 import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js'
 import type { Quality } from '../core/Quality'
+import type { Tema } from '../core/Quality'
 import type { Stage } from '../core/Stage'
 import { finishShader } from './shaders/finish'
 
@@ -23,6 +24,10 @@ const BLOOM_STRENGTH = 0.92
 const BLOOM_RADIUS = 0.62
 /** Low, because most of the scene sits well under 1.0 and still wants a halo. */
 const BLOOM_THRESHOLD = 0.1
+
+/** Zero no papel: a referência não tem sombra nenhuma. */
+const VIGNETTE_NOITE = 0.85
+const VIGNETTE_PAPEL = 0
 
 export class Post {
   private composer: EffectComposer
@@ -61,6 +66,9 @@ export class Post {
     quality.onDowngrade(() => {
       this.finish.uniforms['uGrain']!.value = quality.grain ? 0.035 : 0
     })
+
+    this.setTema(quality.tema)
+    quality.onTema((tema) => this.setTema(tema))
   }
 
   private resize(width: number, height: number, dpr: number): void {
@@ -70,6 +78,13 @@ export class Post {
     this.composer.setPixelRatio(dpr)
     this.bloom.setSize(w * this.quality.bloomScale, h * this.quality.bloomScale)
     this.finish.uniforms['uResolution']!.value = [w, h]
+  }
+
+  /** Papel inverte o frame e apaga a vinheta; noite é a cena como renderizada. */
+  setTema(tema: Tema): void {
+    const papel = tema === 'papel'
+    this.finish.uniforms['uInvert']!.value = papel ? 1 : 0
+    this.finish.uniforms['uVignette']!.value = papel ? VIGNETTE_PAPEL : VIGNETTE_NOITE
   }
 
   render(_dt: number, elapsed: number): void {

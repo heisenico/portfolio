@@ -1,9 +1,12 @@
 /**
- * Final grade: radial chromatic aberration, vignette, and film grain.
+ * Final grade: inversão de tema, aberração cromática radial, vinheta e grão.
  *
- * Runs after tone mapping and sRGB encoding, so grain and vignette operate in
- * display space where their strength is predictable. Applying them in linear
- * space makes the grain invisible in shadows and overpowering in highlights.
+ * Roda depois do tone mapping e da codificação sRGB, então tudo aqui opera
+ * em espaço de exibição. A inversão vem antes da vinheta e do grão de
+ * propósito: os dois precisam agir sobre a imagem final — no papel, a vinheta
+ * escureceria bordas (por isso é zero lá) e o grão vira textura de papel.
+ * A aberração fica antes da inversão: as franjas trocam pelas complementares
+ * e ninguém nota; um caminho separado não paga o próprio custo.
  */
 
 export const finishShader = {
@@ -16,6 +19,8 @@ export const finishShader = {
     uGrain: { value: 0.035 },
     uVignette: { value: 0.85 },
     uAberration: { value: 0.0035 },
+    /** 1 no papel: o frame inteiro vira o negativo. 0 na noite. */
+    uInvert: { value: 0 },
   },
 
   vertexShader: /* glsl */ `
@@ -33,6 +38,7 @@ export const finishShader = {
     uniform float uGrain;
     uniform float uVignette;
     uniform float uAberration;
+    uniform float uInvert;
 
     varying vec2 vUv;
 
@@ -48,6 +54,9 @@ export const finishShader = {
       float red = texture2D(tDiffuse, vUv - offset).r;
       float blue = texture2D(tDiffuse, vUv + offset).b;
       vec3 color = vec3(red, base.g, blue);
+
+      // Tinta sobre papel: o mundo é renderizado como luz e invertido aqui.
+      color = mix(color, 1.0 - color, uInvert);
 
       color *= 1.0 - smoothstep(0.06, 0.58, r2) * uVignette;
 
