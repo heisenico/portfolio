@@ -13,23 +13,24 @@ export interface Secao {
 }
 
 export const sobre = {
-  lead: 'cuido de arquitetura e direção de front-end na base exchange, com react, next.js e javascript.',
+  lead: '',
 
   secoes: [
     {
       id: 'sobre',
       titulo: 'sobre',
       corpo: [
-        'trabalho com interface há tempo suficiente pra saber que a decisão de arquitetura e a decisão de design quase sempre são a mesma decisão, tomada duas vezes.',
-        'boa parte da minha carreira aconteceu dentro de empresa, em time, resolvendo problema de gente de verdade. é esse tipo de trabalho que eu gosto de fazer.',
+        'eu moro no rio de janeiro. trabalho com desenvolvimento de software na base exchange, ajudo a criar uma nova bolsa de valores no Brasil.',
+        'gosto muito de aprender sobre coisas novas. engenharia, design, arte, música, cinema, literatura.',
+        'se estiver pelo rio e quiser trocar uma idea, me mande uma DM. adoraria tomar um café e conversar sobre criar coisas novas, fazer a web mais acessível e divertida, além de claro, IA.',
       ],
     },
     {
-      id: 'fora',
-      titulo: 'fora do trabalho',
+      id: 'essesite',
+      titulo: 'esse site',
       corpo: [
-        'leio, vejo filme e passo tempo demais aprendendo coisa que eu ainda não sei fazer.',
-        'não uso rede social. mantenho um canal no youtube que funciona como diário, e onde também falo de javascript.',
+        'esse site é um experimento. é uma forma de criar arte na web. espero que esteja curtindo essa passagem por aqui. é feito com typescript, three.js e vite. o código fonte está no github.',
+        '',
       ],
     },
   ] satisfies Secao[],
