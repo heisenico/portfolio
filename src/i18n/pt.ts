@@ -1,0 +1,45 @@
+import type { UIStrings } from './types';
+
+export const pt: UIStrings = {
+  brand: 'nicholas ferrer',
+  skipLink: 'pular para o conteúdo',
+  navHome: 'home',
+  navDiario: 'diário digital',
+  soundPlaying: 'som: tocando',
+  soundPaused: 'som: pausado',
+  h1Lines: ['nicholas', 'ferrer'],
+  bio: [
+    'eu moro no rio de janeiro. trabalho com desenvolvimento de software na base exchange, ajudo a criar uma nova bolsa de valores no Brasil.',
+    'gosto muito de aprender sobre coisas novas. engenharia, design, arte, música, cinema, literatura.',
+    'se estiver pelo rio e quiser trocar uma idea, me mande uma DM. adoraria tomar um café e conversar sobre criar coisas novas, fazer a web mais acessível e divertida, além de claro, IA.',
+  ],
+  mapKicker: 'por onde passei',
+  mapCountLine: (n) => `${n} lugares · 1 próximo`,
+  mapCaptionMobile: 'nômade digital, raiz no rio. toque em um nó para ler o que vivi lá.',
+  mapCaptionDesktopA: 'nômade digital, raiz no rio.',
+  mapCaptionDesktopB: 'passe o mouse em um nó para ler.',
+  nodeAriaLabel: (place, count) =>
+    count === 1 ? `${place}, 1 entrada no diário` : `${place}, ${count} entradas no diário`,
+  conviteKicker: 'convite',
+  conviteIntro: 'pra trabalho criativo, de engenharia a design:',
+  links: [
+    { label: 'youtube', href: 'https://www.youtube.com/@heisenico', note: 'um diário digital. também falo de javascript e faço umas playlists legais!' },
+    { label: 'goodreads', href: 'https://www.goodreads.com/user/show/203531558-nicholas', note: 'o que eu ando lendo.' },
+    { label: 'letterboxd', href: 'https://letterboxd.com/nicholasferrer/', note: 'o que eu ando assistindo.' },
+    { label: 'linkedin', href: 'https://www.linkedin.com/in/ferrernicholas/', note: 'a parte formal' },
+    { label: 'github', href: 'https://github.com/heisenico', note: 'onde este site mora.' },
+  ],
+  diarioCta: 'diário digital',
+  diarioLast: (d) => `último: ${d} →`,
+  footerExperiment:
+    'esse site é um experimento. é uma forma de criar arte na web. espero que esteja curtindo essa passagem por aqui. é feito com typescript, three.js e vite. o código fonte está no {github}.',
+  footerSound: 'som: deep house sem vocal, toca no primeiro toque. desligue na barra acima.',
+  diarioKicker: 'diário digital',
+  diarioH1: 'o que eu ando vivendo',
+  diarioIntro: 'notas curtas, fotos e vídeos do caminho. os vídeos moram no {youtube}.',
+  inPortuguese: 'em português',
+  filterShowing: (place) => `mostrando: ${place}`,
+  filterClear: 'limpar',
+  seeOnMap: 'ver no mapa →',
+  notTranslated: 'ainda em inglês por aqui — tradução vem.',
+};

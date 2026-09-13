@@ -1,0 +1,45 @@
+import type { UIStrings } from './types';
+
+export const en: UIStrings = {
+  brand: 'nicholas ferrer',
+  skipLink: 'skip to content',
+  navHome: 'home',
+  navDiario: 'digital diary',
+  soundPlaying: 'sound: playing',
+  soundPaused: 'sound: paused',
+  h1Lines: ['nicholas', 'ferrer'],
+  bio: [
+    'i live in rio de janeiro. i work in software development at base exchange, helping build a new stock exchange in Brazil.',
+    'i love learning new things. engineering, design, art, music, film, literature.',
+    "if you're around rio and want to talk, send me a DM. i'd love to grab a coffee and chat about making new things, making the web more accessible and fun — and of course, AI.",
+  ],
+  mapKicker: 'where i have been',
+  mapCountLine: (n) => `${n} places · 1 next`,
+  mapCaptionMobile: 'digital nomad, roots in rio. tap a node to read what i lived there.',
+  mapCaptionDesktopA: 'digital nomad, roots in rio.',
+  mapCaptionDesktopB: 'hover a node to read.',
+  nodeAriaLabel: (place, count) =>
+    count === 1 ? `${place}, 1 diary entry` : `${place}, ${count} diary entries`,
+  conviteKicker: 'invitation',
+  conviteIntro: 'for creative work, from engineering to design:',
+  links: [
+    { label: 'youtube', href: 'https://www.youtube.com/@heisenico', note: 'a digital diary. i also talk javascript and make some nice playlists!' },
+    { label: 'goodreads', href: 'https://www.goodreads.com/user/show/203531558-nicholas', note: 'what i am reading.' },
+    { label: 'letterboxd', href: 'https://letterboxd.com/nicholasferrer/', note: 'what i am watching.' },
+    { label: 'linkedin', href: 'https://www.linkedin.com/in/ferrernicholas/', note: 'the formal part' },
+    { label: 'github', href: 'https://github.com/heisenico', note: 'where this site lives.' },
+  ],
+  diarioCta: 'digital diary',
+  diarioLast: (d) => `latest: ${d} →`,
+  footerExperiment:
+    'this site is an experiment. a way of making art on the web. i hope you are enjoying your time here. it is built with typescript, three.js and vite. the source code is on {github}.',
+  footerSound: 'sound: no-vocal deep house, starts on your first tap. turn it off in the bar above.',
+  diarioKicker: 'digital diary',
+  diarioH1: 'what i have been living',
+  diarioIntro: 'short notes, photos and videos from the road. the videos live on {youtube}.',
+  inPortuguese: 'em português',
+  filterShowing: (place) => `showing: ${place}`,
+  filterClear: 'clear',
+  seeOnMap: 'see on the map →',
+  notTranslated: 'still in english here — translation coming.',
+};
