@@ -1,8 +1,11 @@
 node_modules
 dist
+.astro
+test-results
+playwright-report
 .DS_Store
-*.local
-.vite
-coverage
 .worktrees
 .superpowers
+coverage
+*.local
+.vite
