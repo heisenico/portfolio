@@ -1,0 +1,50 @@
+* { box-sizing: border-box; margin: 0; }
+html { font-family: var(--font-serif); color: var(--color-text); background: var(--color-bg); }
+body { min-height: 100dvh; }
+
+.glass {
+  background: rgba(255, 255, 255, 0.52);
+  border: 1px solid rgba(255, 255, 255, 0.72);
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.8) inset, 0 12px 32px rgba(14, 23, 80, 0.14);
+  border-radius: var(--radius-glass);
+  position: relative;
+  overflow: hidden;
+}
+@supports (backdrop-filter: blur(1px)) {
+  .glass { backdrop-filter: blur(18px) saturate(1.5); }
+}
+@supports not (backdrop-filter: blur(1px)) {
+  .glass { background: rgba(255, 255, 255, 0.85); }
+}
+.glass::before {
+  content: ""; position: absolute; inset: 0; pointer-events: none;
+  border-radius: inherit;
+  background: linear-gradient(135deg, rgba(255,255,255,.55), transparent 40%, transparent 70%, rgba(255,255,255,.25));
+}
+
+/* CSS fallback for the WebGL field; stays underneath everything */
+.field-css {
+  position: fixed; inset: 0; z-index: -2; pointer-events: none;
+  background:
+    radial-gradient(60% 55% at var(--field-x, 80%) var(--field-y, 85%), color-mix(in srgb, var(--lb) 55%, transparent), transparent 70%),
+    radial-gradient(45% 40% at calc(var(--field-x, 80%) - 12%) calc(var(--field-y, 85%) - 10%), color-mix(in srgb, var(--lb-500) 45%, transparent), transparent 70%),
+    radial-gradient(70% 60% at calc(var(--field-x, 80%) + 8%) calc(var(--field-y, 85%) + 8%), color-mix(in srgb, var(--lb-300) 60%, transparent), transparent 75%),
+    var(--color-bg);
+}
+.halftone-overlay {
+  position: fixed; inset: 0; z-index: -1; pointer-events: none;
+  background-image: radial-gradient(circle, rgba(14, 23, 80, 0.18) 30%, transparent 32%);
+  background-size: 3px 3px;
+  mix-blend-mode: multiply;
+  opacity: 0.5;
+}
+
+a { color: var(--lb-700); text-decoration: none; }
+a:hover { color: var(--lb); }
+:focus-visible { outline: 2px solid var(--lb); outline-offset: 2px; }
+
+.skip-link {
+  position: absolute; left: -9999px; top: 8px; z-index: 10;
+  background: #fff; color: var(--lb-700); padding: 8px 14px; border-radius: var(--radius-pill);
+}
+.skip-link:focus-visible { left: 8px; }

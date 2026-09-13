@@ -1,0 +1,17 @@
+:root {
+  --font-serif: "Source Serif 4", Georgia, "Times New Roman", serif;
+  --color-bg: #f3f2f2;
+  --color-text: #201e1d;
+  --lb: #2743c9;
+  --lb-100: #ecf0ff;
+  --lb-200: #d5ddff;
+  --lb-300: #b0bfff;
+  --lb-400: #7f95f5;
+  --lb-500: #4f6be0;
+  --lb-700: #1c31a0;
+  --lb-900: #0e1750;
+  --radius-glass: 18px;
+  --radius-nav: 12px;
+  --radius-thumb: 10px;
+  --radius-pill: 999px;
+}
