@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet data-dc-atomics><meta name="design_doc_mode" content="canvas">
+<link rel="stylesheet" href="_ds/broadsheet-ccf954e4-29c3-493b-b381-eacec2a12ace/styles.css">
+<script src="_ds/broadsheet-ccf954e4-29c3-493b-b381-eacec2a12ace/_ds_bundle.js"></script>
+<style>
+:root{--lb:#2743c9;--lb-100:#ecf0ff;--lb-200:#d5ddff;--lb-300:#b0bfff;--lb-400:#7f95f5;--lb-500:#4f6be0;--lb-700:#1c31a0;--lb-900:#0e1750;
+--glass:rgba(255,255,255,.52);--glass-edge:rgba(255,255,255,.72);--glass-shadow:0 1px 0 rgba(255,255,255,.8) inset,0 12px 32px rgba(14,23,80,.14)}
+body{margin:0;background:#e9e8e6;font-family:var(--font-body);color:var(--color-text);text-wrap:pretty}
+a{color:var(--lb-700);text-decoration-thickness:1px;text-underline-offset:3px}a:hover{color:var(--lb)}
+.dv-turn{padding:40px 44px 32px;scroll-margin-top:16px}.dv-thd{display:flex;align-items:baseline;gap:10px;margin:0 0 20px}
+.dv-tid{font:600 10px ui-monospace,Menlo,monospace;padding:3px 7px;background:#1a1a1a;color:#fff;border-radius:4px;text-decoration:none}
+.dv-tname{font:600 13px/1.2 var(--font-body);color:#1a1a1a}.dv-opts{display:flex;flex-wrap:wrap;gap:28px;align-items:flex-start}
+.dv-opt{flex:none;display:flex;flex-direction:column;gap:9px;scroll-margin-top:16px}
+.dv-oid{font:600 10.5px ui-monospace,Menlo,monospace;padding:3px 7px;background:rgba(0,0,0,.08);color:#1a1a1a;border-radius:5px;text-decoration:none}
+.dv-olabel{display:flex;align-items:baseline;gap:8px;font:400 12px/1.3 var(--font-body);color:rgba(0,0,0,.6)}
+.dv-card{max-width:100%;background:var(--color-bg);border-radius:8px;box-shadow:0 1px 3px rgba(0,0,0,.08),0 20px 50px rgba(0,0,0,.08);overflow:hidden;position:relative}
+.dv-opt:target .dv-oid{background:var(--lb);color:#fff}.dv-next{margin:22px 0 0;font:13px/1.5 var(--font-body);color:rgba(0,0,0,.55)}
+.field{position:absolute;inset:0;pointer-events:none;background:
+radial-gradient(60% 40% at 78% 62%,rgba(39,67,201,.55),transparent 70%),
+radial-gradient(45% 30% at 62% 78%,rgba(79,107,224,.45),transparent 70%),
+radial-gradient(40% 35% at 90% 30%,rgba(176,191,255,.6),transparent 70%),
+radial-gradient(30% 20% at 20% 95%,rgba(39,67,201,.28),transparent 70%)}
+.field::after{content:"";position:absolute;inset:0;background-image:radial-gradient(circle,rgba(14,23,80,.18) 30%,transparent 32%);background-size:3px 3px;mix-blend-mode:multiply;opacity:.5}
+.glass{background:var(--glass);backdrop-filter:blur(18px) saturate(1.5);-webkit-backdrop-filter:blur(18px) saturate(1.5);border:1px solid var(--glass-edge);box-shadow:var(--glass-shadow);border-radius:18px;position:relative}
+.glass::before{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;background:linear-gradient(135deg,rgba(255,255,255,.55),rgba(255,255,255,0) 40%,rgba(255,255,255,0) 70%,rgba(255,255,255,.25))}
+.node{fill:var(--lb);stroke:#fff;stroke-width:1.2}.node-next{fill:#fff;stroke:var(--lb);stroke-width:1.2;stroke-dasharray:1.6 1.2}
+.edge{stroke:var(--lb-700);stroke-width:.5;fill:none;opacity:.55}
+.lbl{font:italic 3.3px var(--font-body);fill:var(--color-text)}
+@keyframes bar{0%,100%{transform:scaleY(.35)}50%{transform:scaleY(1)}}
+.snd i{display:block;width:2px;height:12px;background:var(--lb);border-radius:1px;transform-origin:bottom;animation:bar 1.1s ease-in-out infinite}
+.snd i:nth-child(2){animation-delay:.2s}.snd i:nth-child(3){animation-delay:.4s}.snd i:nth-child(4){animation-delay:.1s}
+@media (prefers-reduced-motion:reduce){.snd i{animation:none;transform:scaleY(.6)}}
+.seg{display:flex;gap:2px;padding:2px;border-radius:999px;background:rgba(255,255,255,.4);border:1px solid var(--glass-edge)}
+.seg span{font-size:12px;line-height:24px;min-width:32px;text-align:center;border-radius:999px;color:var(--lb-700)}
+.seg span[aria-current]{background:var(--lb);color:#fff}
+.mob header.glass{padding-left:14px;padding-right:6px}.mob header .seg span{min-width:26px;font-size:11px}.mob header>span,.mob header>a{white-space:nowrap}
+.mob{width:390px;min-height:844px;padding:0 20px 28px;position:relative;isolation:isolate}
+.desk{width:1280px;min-height:800px;position:relative;isolation:isolate}
+.h1{font-family:var(--font-heading);font-weight:600;letter-spacing:-.02em;margin:0;line-height:1.05}
+.p{font-size:16px;line-height:26px;margin:0;color:color-mix(in srgb,var(--color-text) 82%,transparent)}
+.k{display:block;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:color-mix(in srgb,var(--color-text) 70%,transparent)}
+.lnk{display:flex;align-items:baseline;gap:12px;font-size:16px;line-height:26px;padding:10px 0}
+.lnk b{font-weight:600;color:var(--lb-700);min-width:88px}.lnk span{color:color-mix(in srgb,var(--color-text) 70%,transparent);font-size:14.5px}
+.photo{background:linear-gradient(135deg,var(--lb-200),var(--lb-400));position:relative;overflow:hidden}
+.photo::after{content:"";position:absolute;inset:0;background-image:radial-gradient(circle,rgba(14,23,80,.28) 30%,transparent 32%);background-size:3px 3px;mix-blend-mode:multiply}
+.photo em{position:absolute;left:12px;bottom:10px;font-size:12px;color:var(--lb-900);z-index:1}
+</style></helmet>
+
+<section class="dv-turn" id="t1" style="max-width:1400px">
+<div class="dv-thd"><a class="dv-tid" href="#t1">1</a><span class="dv-tname">nicholas ferrer · home + diário · mobile first, desktop após</span></div>
+
+<div class="glass" style="padding:20px 24px;max-width:760px;margin:0 0 28px;font-size:14px;line-height:22px;background:rgba(255,255,255,.7)">
+<span class="k">premissas e decisões</span>
+<p style="margin:10px 0 0">Broadsheet mantido: papel, Source Serif 4 em tudo (o serif é o chrome), sem caixas para estrutura, hierarquia por escala e espaço. Único acento trocado: o ciano vira <b style="color:var(--lb)">Luminous Blue</b> (WGSN × Coloro 125-28-38, cor do ano 2027 — lápis-lazúli/cobalto, tema "interconexão"). O magenta sai; um só spot color.</p>
+<p style="margin:8px 0 0">Liquid glass: painéis translúcidos flutuam sobre um campo azul difuso (a baía) com retícula de meio-tom — as únicas "superfícies" da página; texto sempre 4.5:1 sobre elas. Mapa = pontos e arestas em SVG, Rio como nó-raiz, Estônia como próximo nó (tracejado). Som: deep house sem vocal toca no primeiro toque em qualquer lugar; aviso discreto no rodapé, controle sempre visível na barra. Idiomas: pt · en · fr · es · 中 · 日 no topo. Acessibilidade: skip link, foco visível, reduced-motion desliga o pulso do player, alvos ≥44px.</p>
+</div>
+
+<div class="dv-opts">
+
+<div class="dv-opt" id="1a"><div class="dv-olabel"><a class="dv-oid" href="#1a">1a</a>home · mobile 390</div>
+<div class="dv-card mob" data-screen-label="home mobile">
+<div class="field"></div>
+<a href="#" style="position:absolute;left:-999px;top:8px">pular para o conteúdo</a>
+<header class="glass" style="margin:14px 0 0;padding:10px 12px 10px 16px;display:flex;align-items:center;justify-content:space-between;border-radius:999px">
+<span style="font-family:var(--font-heading);font-weight:600;font-size:17px">nicholas ferrer</span>
+<div style="display:flex;align-items:center;gap:8px">
+<div class="seg" aria-label="idioma"><span aria-current="true">pt</span><span>en</span><span>fr</span><span>es</span><span>中</span><span>日</span></div>
+<button class="snd" aria-label="som: tocando" style="width:44px;height:44px;border:0;background:transparent;display:flex;align-items:flex-end;justify-content:center;gap:2px;padding:0 0 15px;cursor:pointer"><i></i><i></i><i></i><i></i></button>
+</div></header>
+
+<main style="padding:56px 4px 0">
+<h1 class="h1" style="font-size:54px">nicholas<br>ferrer</h1>
+<p class="p" style="margin-top:22px">eu moro no rio de janeiro. trabalho com desenvolvimento de software na base exchange, ajudo a criar uma nova bolsa de valores no Brasil.</p>
+<p class="p" style="margin-top:14px">gosto muito de aprender sobre coisas novas. engenharia, design, arte, música, cinema, literatura.</p>
+<p class="p" style="margin-top:14px">se estiver pelo rio e quiser trocar uma idea, me mande uma DM. adoraria tomar um café e conversar sobre criar coisas novas, fazer a web mais acessível e divertida, além de claro, IA.</p>
+
+<figure class="glass" style="margin:44px 0 0;padding:18px 18px 14px" aria-label="mapa dos lugares">
+<span class="k">por onde passei</span>
+<svg viewBox="0 0 100 100" style="display:block;width:100%;aspect-ratio:1;margin-top:8px;overflow:visible" role="img" aria-label="Nós ligando Rio de Janeiro a Salvador, João Pessoa, Recife, Natal, Atins, Tiradentes, Chapada dos Veadeiros, Buenos Aires, Cancún, Havana, Nova York, Washington e o próximo: Estônia">
+<g class="edge"><path d="M41.4 83.7 L40.7 82 M41.4 83.7 L38 75.4 M41.4 83.7 L45.2 74.3 L48.1 69.6 L48.1 68.7 L47.8 67.4 L41.8 64.4 M41.4 83.7 L29.3 94.9 M41.4 83.7 L10.1 39.9 L6.5 41.8 M10.1 39.9 L14.4 24.9 L16.8 23.1"></path><path d="M16.8 23.1 Q60 -6 95.8 5.3" stroke-dasharray="1.5 1.5"></path></g>
+<circle class="node" cx="40.7" cy="82" r="1.5"></circle><circle class="node" cx="38" cy="75.4" r="1.5"></circle><circle class="node" cx="45.2" cy="74.3" r="1.5"></circle><circle class="node" cx="48.1" cy="69.6" r="1.5"></circle><circle class="node" cx="48.1" cy="68.7" r="1.5"></circle><circle class="node" cx="47.8" cy="67.4" r="1.5"></circle><circle class="node" cx="41.8" cy="64.4" r="1.5"></circle><circle class="node" cx="29.3" cy="94.9" r="1.5"></circle><circle class="node" cx="10.1" cy="39.9" r="1.5"></circle><circle class="node" cx="6.5" cy="41.8" r="1.5"></circle><circle class="node" cx="14.4" cy="24.9" r="1.5"></circle><circle class="node" cx="16.8" cy="23.1" r="1.5"></circle>
+<circle cx="41.4" cy="83.7" r="4.2" fill="var(--lb)" opacity=".18"></circle><circle class="node" cx="41.4" cy="83.7" r="2.4"></circle>
+<circle class="node-next" cx="95.8" cy="5.3" r="2.2"></circle>
+<text class="lbl" x="45" y="86.5">rio de janeiro</text><text class="lbl" x="48" y="75">salvador</text><text class="lbl" x="51" y="68">recife · joão pessoa · natal</text><text class="lbl" x="44" y="63.5">atins</text><text class="lbl" x="31" y="97.5">buenos aires</text><text class="lbl" x="13" y="38.5">havana</text><text class="lbl" x="2" y="46">cancún</text><text class="lbl" x="19.5" y="22.5">new york · dc</text><text class="lbl" x="27" y="82">tiradentes</text><text class="lbl" x="21" y="74">chapada</text><text class="lbl" x="82" y="10.5" style="fill:var(--lb-700)">estônia · próximo</text>
+</svg>
+<figcaption style="font-size:13px;line-height:20px;margin-top:6px;color:color-mix(in srgb,var(--color-text) 70%,transparent)">nômade digital, raiz no rio. toque em um nó para ler o que vivi lá.</figcaption>
+</figure>
+
+<section style="margin-top:44px">
+<span class="k">convite</span>
+<p class="p" style="margin-top:8px;font-style:italic">pra trabalho criativo, de engenharia a design:</p>
+<div style="display:flex;flex-direction:column;margin-top:8px">
+<a class="lnk" href="https://www.youtube.com/@heisenico" style="text-decoration:none;color:inherit"><b>youtube</b><span>um diário digital. também falo de javascript e faço umas playlists legais!</span></a>
+<a class="lnk" href="https://www.goodreads.com/user/show/203531558-nicholas" style="text-decoration:none;color:inherit"><b>goodreads</b><span>o que eu ando lendo.</span></a>
+<a class="lnk" href="https://letterboxd.com/nicholasferrer/" style="text-decoration:none;color:inherit"><b>letterboxd</b><span>o que eu ando assistindo.</span></a>
+<a class="lnk" href="https://www.linkedin.com/in/ferrernicholas/" style="text-decoration:none;color:inherit"><b>linkedin</b><span>a parte formal</span></a>
+<a class="lnk" href="https://github.com/heisenico" style="text-decoration:none;color:inherit"><b>github</b><span>onde este site mora.</span></a>
+</div></section>
+
+<a href="#1c" class="glass" style="display:flex;justify-content:space-between;align-items:center;margin-top:40px;padding:16px 18px;text-decoration:none;color:inherit"><span style="font-family:var(--font-heading);font-weight:600;font-size:18px">diário digital</span><span style="color:var(--lb-700);font-size:14px">último: 04 set →</span></a>
+
+<footer style="margin-top:40px;font-size:13px;line-height:21px;color:color-mix(in srgb,var(--color-text) 70%,transparent)">
+<p style="margin:0">esse site é um experimento. é uma forma de criar arte na web. espero que esteja curtindo essa passagem por aqui. é feito com typescript, three.js e vite. o código fonte está no <a href="https://github.com/heisenico">github</a>.</p>
+<p style="margin:12px 0 0;font-style:italic">som: deep house sem vocal, toca no primeiro toque. desligue na barra acima.</p>
+</footer>
+</main>
+</div></div>
+
+<div class="dv-opt" id="1b"><div class="dv-olabel"><a class="dv-oid" href="#1b">1b</a>home · desktop 1280</div>
+<div class="dv-card desk" data-screen-label="home desktop">
+<div class="field" style="background:radial-gradient(50% 70% at 80% 55%,rgba(39,67,201,.55),transparent 70%),radial-gradient(35% 45% at 62% 85%,rgba(79,107,224,.45),transparent 70%),radial-gradient(30% 40% at 95% 15%,rgba(176,191,255,.65),transparent 70%)"></div>
+<div style="position:relative;padding:24px 56px 48px;display:grid;grid-template-columns:minmax(0,5fr) minmax(0,7fr);gap:0 64px;min-height:800px;box-sizing:border-box">
+<header class="glass" style="grid-column:1/-1;padding:8px 10px 8px 20px;display:flex;align-items:center;justify-content:space-between;border-radius:999px;align-self:start">
+<span style="font-family:var(--font-heading);font-weight:600;font-size:17px">nicholas ferrer</span>
+<nav style="display:flex;gap:28px;font-size:15px"><a href="#" style="text-decoration:none;color:var(--color-text)">home</a><a href="#1d" style="text-decoration:none">diário digital</a></nav>
+<div style="display:flex;align-items:center;gap:10px"><div class="seg" aria-label="idioma"><span aria-current="true">pt</span><span>en</span><span>fr</span><span>es</span><span>中</span><span>日</span></div>
+<button class="snd" aria-label="som: tocando" style="width:44px;height:44px;border:0;background:transparent;display:flex;align-items:flex-end;justify-content:center;gap:2px;padding:0 0 15px;cursor:pointer"><i></i><i></i><i></i><i></i></button></div>
+</header>
+<main style="padding-top:96px;max-width:52ch">
+<h1 class="h1" style="font-size:88px;margin-left:-.035em">nicholas<br>ferrer</h1>
+<p class="p" style="margin-top:36px;font-size:17px;line-height:28px">eu moro no rio de janeiro. trabalho com desenvolvimento de software na base exchange, ajudo a criar uma nova bolsa de valores no Brasil.</p>
+<p class="p" style="margin-top:14px;font-size:17px;line-height:28px">gosto muito de aprender sobre coisas novas. engenharia, design, arte, música, cinema, literatura.</p>
+<p class="p" style="margin-top:14px;font-size:17px;line-height:28px">se estiver pelo rio e quiser trocar uma idea, me mande uma DM. adoraria tomar um café e conversar sobre criar coisas novas, fazer a web mais acessível e divertida, além de claro, IA.</p>
+<section style="margin-top:48px"><span class="k">convite</span><p class="p" style="margin-top:8px;font-style:italic">pra trabalho criativo, de engenharia a design:</p>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:0 24px;margin-top:8px">
+<a class="lnk" href="https://www.youtube.com/@heisenico" style="text-decoration:none;color:inherit;flex-direction:column;gap:2px"><b>youtube</b><span>um diário digital. também falo de javascript e faço umas playlists legais!</span></a>
+<a class="lnk" href="https://www.goodreads.com/user/show/203531558-nicholas" style="text-decoration:none;color:inherit;flex-direction:column;gap:2px"><b>goodreads</b><span>o que eu ando lendo.</span></a>
+<a class="lnk" href="https://letterboxd.com/nicholasferrer/" style="text-decoration:none;color:inherit;flex-direction:column;gap:2px"><b>letterboxd</b><span>o que eu ando assistindo.</span></a>
+<a class="lnk" href="https://www.linkedin.com/in/ferrernicholas/" style="text-decoration:none;color:inherit;flex-direction:column;gap:2px"><b>linkedin</b><span>a parte formal</span></a>
+<a class="lnk" href="https://github.com/heisenico" style="text-decoration:none;color:inherit;flex-direction:column;gap:2px"><b>github</b><span>onde este site mora.</span></a>
+</div></section>
+<footer style="margin-top:56px;font-size:13px;line-height:21px;color:color-mix(in srgb,var(--color-text) 70%,transparent)"><p style="margin:0">esse site é um experimento. é uma forma de criar arte na web. espero que esteja curtindo essa passagem por aqui. é feito com typescript, three.js e vite. o código fonte está no <a href="https://github.com/heisenico">github</a>.</p><p style="margin:10px 0 0;font-style:italic">som: deep house sem vocal, toca no primeiro clique.</p></footer>
+</main>
+<figure class="glass" style="margin:72px 0 0;padding:24px 28px 20px;align-self:start;position:sticky;top:24px">
+<div style="display:flex;justify-content:space-between;align-items:baseline"><span class="k">por onde passei</span><span style="font-size:13px;color:var(--lb-700)">13 lugares · 1 próximo</span></div>
+<svg viewBox="0 0 100 100" style="display:block;width:100%;aspect-ratio:1;margin-top:10px;overflow:visible" role="img" aria-label="Mapa de nós: Rio de Janeiro como raiz, ligado aos lugares vividos; Estônia como próximo destino">
+<g class="edge"><path d="M41.4 83.7 L40.7 82 M41.4 83.7 L38 75.4 M41.4 83.7 L45.2 74.3 L48.1 69.6 L48.1 68.7 L47.8 67.4 L41.8 64.4 M41.4 83.7 L29.3 94.9 M41.4 83.7 L10.1 39.9 L6.5 41.8 M10.1 39.9 L14.4 24.9 L16.8 23.1"></path><path d="M16.8 23.1 Q60 -6 95.8 5.3" stroke-dasharray="1.5 1.5"></path></g>
+<circle class="node" cx="40.7" cy="82" r="1.3"></circle><circle class="node" cx="38" cy="75.4" r="1.3"></circle><circle class="node" cx="45.2" cy="74.3" r="1.3"></circle><circle class="node" cx="48.1" cy="69.6" r="1.3"></circle><circle class="node" cx="48.1" cy="68.7" r="1.3"></circle><circle class="node" cx="47.8" cy="67.4" r="1.3"></circle><circle class="node" cx="41.8" cy="64.4" r="1.3"></circle><circle class="node" cx="29.3" cy="94.9" r="1.3"></circle><circle class="node" cx="10.1" cy="39.9" r="1.3"></circle><circle class="node" cx="6.5" cy="41.8" r="1.3"></circle><circle class="node" cx="14.4" cy="24.9" r="1.3"></circle><circle class="node" cx="16.8" cy="23.1" r="1.3"></circle>
+<circle cx="41.4" cy="83.7" r="4" fill="var(--lb)" opacity=".18"></circle><circle class="node" cx="41.4" cy="83.7" r="2.2"></circle>
+<circle class="node-next" cx="95.8" cy="5.3" r="2"></circle>
+<g style="font-size:2.6px"><text class="lbl" x="44.5" y="86" style="font-size:2.6px">rio de janeiro</text><text class="lbl" x="47.5" y="75" style="font-size:2.6px">salvador</text><text class="lbl" x="50.5" y="70.5" style="font-size:2.6px">recife</text><text class="lbl" x="50.5" y="67.5" style="font-size:2.6px">joão pessoa · natal</text><text class="lbl" x="44" y="63.5" style="font-size:2.6px">atins</text><text class="lbl" x="31" y="97.5" style="font-size:2.6px">buenos aires</text><text class="lbl" x="12.5" y="38.5" style="font-size:2.6px">havana</text><text class="lbl" x="2" y="45.5" style="font-size:2.6px">cancún</text><text class="lbl" x="19" y="22.5" style="font-size:2.6px">new york · washington dc</text><text class="lbl" x="29" y="82" style="font-size:2.6px">tiradentes</text><text class="lbl" x="19" y="74" style="font-size:2.6px">chapada dos veadeiros</text><text class="lbl" x="80" y="10.5" style="font-size:2.6px;fill:var(--lb-700)">estônia · próximo</text></g>
+</svg>
+<figcaption style="display:flex;justify-content:space-between;font-size:13px;line-height:20px;margin-top:8px;color:color-mix(in srgb,var(--color-text) 70%,transparent)"><span>nômade digital, raiz no rio.</span><span>passe o mouse em um nó para ler.</span></figcaption>
+</figure>
+</div></div></div>
+
+<div class="dv-opt" id="1c"><div class="dv-olabel"><a class="dv-oid" href="#1c">1c</a>diário digital · mobile 390</div>
+<div class="dv-card mob" data-screen-label="diário mobile">
+<div class="field" style="background:radial-gradient(60% 30% at 20% 30%,rgba(39,67,201,.45),transparent 70%),radial-gradient(40% 30% at 85% 70%,rgba(79,107,224,.4),transparent 70%)"></div>
+<header class="glass" style="margin:14px 0 0;padding:10px 12px 10px 16px;display:flex;align-items:center;justify-content:space-between;border-radius:999px">
+<a href="#1a" style="font-family:var(--font-heading);font-weight:600;font-size:17px;text-decoration:none;color:var(--color-text)">nicholas ferrer</a>
+<div style="display:flex;align-items:center;gap:8px"><div class="seg" aria-label="idioma"><span aria-current="true">pt</span><span>en</span><span>fr</span><span>es</span><span>中</span><span>日</span></div>
+<button class="snd" aria-label="som: tocando" style="width:44px;height:44px;border:0;background:transparent;display:flex;align-items:flex-end;justify-content:center;gap:2px;padding:0 0 15px;cursor:pointer"><i></i><i></i><i></i><i></i></button></div></header>
+<main style="padding:48px 4px 0">
+<span class="k">diário digital</span>
+<h1 class="h1" style="font-size:40px;margin-top:10px">o que eu ando vivendo</h1>
+<p class="p" style="margin-top:14px;font-size:15px;line-height:24px">notas curtas, fotos e vídeos, quase sempre escritos de onde eu estava. também no <a href="https://www.youtube.com/@heisenico">youtube</a>.</p>
+
+<div style="display:flex;flex-direction:column;gap:20px;margin-top:36px">
+<article class="glass" style="padding:0;overflow:hidden">
+<div class="photo" style="aspect-ratio:4/3"><em>foto · arpoador, 6h</em></div>
+<div style="padding:16px 18px 18px"><div style="display:flex;justify-content:space-between;font-size:12.5px;color:color-mix(in srgb,var(--color-text) 70%,transparent)"><span>04 set 2026 · rio de janeiro</span><span style="color:var(--lb-700)">nó: rio</span></div>
+<h2 class="h1" style="font-size:22px;margin-top:8px;letter-spacing:-.01em">corpo e mente antes do trabalho</h2>
+<p class="p" style="font-size:15px;line-height:24px;margin-top:8px">nadar antes de abrir o laptop muda o dia inteiro. anotei três ideias sobre acessibilidade em three.js enquanto secava no sol.</p></div></article>
+
+<article class="glass" style="padding:16px 18px 18px">
+<div style="display:flex;justify-content:space-between;font-size:12.5px;color:color-mix(in srgb,var(--color-text) 70%,transparent)"><span>28 ago 2026 · atins</span><span style="color:var(--lb-700)">nó: atins</span></div>
+<h2 class="h1" style="font-size:22px;margin-top:8px;letter-spacing:-.01em">sem sinal nos lençóis</h2>
+<p class="p" style="font-size:15px;line-height:24px;margin-top:8px">três dias offline. voltei com um caderno cheio e uma playlist de deep house pra este site.</p>
+<div style="display:flex;gap:8px;margin-top:14px"><div class="photo" style="flex:1;aspect-ratio:1;border-radius:10px"><em>foto</em></div><div class="photo" style="flex:1;aspect-ratio:1;border-radius:10px"><em>foto</em></div><div class="photo" style="flex:1;aspect-ratio:1;border-radius:10px;display:grid;place-items:center"><span style="position:relative;z-index:1;width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,.85);display:grid;place-items:center;color:var(--lb)" aria-label="vídeo">▶</span></div></div></article>
+
+<article class="glass" style="padding:16px 18px 18px">
+<div style="display:flex;justify-content:space-between;font-size:12.5px;color:color-mix(in srgb,var(--color-text) 70%,transparent)"><span>11 ago 2026 · rio de janeiro</span><span style="color:var(--lb-700)">nó: rio</span></div>
+<h2 class="h1" style="font-size:22px;margin-top:8px;letter-spacing:-.01em">por que a estônia</h2>
+<p class="p" style="font-size:15px;line-height:24px;margin-top:8px">um país que colocou o governo inteiro na web. quero ver de perto, e trabalhar de lá.</p></article>
+</div>
+<p style="text-align:center;margin:32px 0 0;font-size:14px"><a href="#">mais antigas ↓</a></p>
+</main></div></div>
+
+<div class="dv-opt" id="1d"><div class="dv-olabel"><a class="dv-oid" href="#1d">1d</a>diário digital · desktop 1280 · entrada aberta</div>
+<div class="dv-card desk" data-screen-label="diário desktop">
+<div class="field" style="background:radial-gradient(45% 60% at 15% 40%,rgba(39,67,201,.5),transparent 70%),radial-gradient(35% 40% at 70% 90%,rgba(79,107,224,.4),transparent 70%),radial-gradient(25% 35% at 95% 10%,rgba(176,191,255,.6),transparent 70%)"></div>
+<div style="position:relative;padding:24px 56px 56px;min-height:800px;box-sizing:border-box">
+<header class="glass" style="padding:8px 10px 8px 20px;display:flex;align-items:center;justify-content:space-between;border-radius:999px">
+<a href="#1b" style="font-family:var(--font-heading);font-weight:600;font-size:17px;text-decoration:none;color:var(--color-text)">nicholas ferrer</a>
+<nav style="display:flex;gap:28px;font-size:15px"><a href="#1b" style="text-decoration:none">home</a><a href="#" style="text-decoration:none;color:var(--color-text)">diário digital</a></nav>
+<div style="display:flex;align-items:center;gap:10px"><div class="seg" aria-label="idioma"><span aria-current="true">pt</span><span>en</span><span>fr</span><span>es</span><span>中</span><span>日</span></div>
+<button class="snd" aria-label="som: tocando" style="width:44px;height:44px;border:0;background:transparent;display:flex;align-items:flex-end;justify-content:center;gap:2px;padding:0 0 15px;cursor:pointer"><i></i><i></i><i></i><i></i></button></div></header>
+<div style="display:grid;grid-template-columns:300px minmax(0,1fr);gap:0 72px;margin-top:72px">
+<aside>
+<span class="k">diário digital</span>
+<h1 class="h1" style="font-size:34px;margin-top:10px">o que eu ando vivendo</h1>
+<p class="p" style="margin-top:14px;font-size:15px;line-height:24px">notas curtas, fotos e vídeos, quase sempre escritos de onde eu estava.</p>
+<nav aria-label="entradas" style="display:flex;flex-direction:column;margin-top:36px">
+<a href="#" style="text-decoration:none;color:inherit;padding:12px 14px;margin:0 -14px;border-radius:12px;background:var(--glass);border:1px solid var(--glass-edge)"><span style="display:block;font-size:12.5px;color:color-mix(in srgb,var(--color-text) 70%,transparent)">04 set · rio</span><span style="font-weight:600">corpo e mente antes do trabalho</span></a>
+<a href="#" style="text-decoration:none;color:inherit;padding:12px 0"><span style="display:block;font-size:12.5px;color:color-mix(in srgb,var(--color-text) 70%,transparent)">28 ago · atins</span><span>sem sinal nos lençóis</span></a>
+<a href="#" style="text-decoration:none;color:inherit;padding:12px 0"><span style="display:block;font-size:12.5px;color:color-mix(in srgb,var(--color-text) 70%,transparent)">11 ago · rio</span><span>por que a estônia</span></a>
+<a href="#" style="text-decoration:none;color:inherit;padding:12px 0"><span style="display:block;font-size:12.5px;color:color-mix(in srgb,var(--color-text) 70%,transparent)">19 jul · chapada</span><span>água e silêncio</span></a>
+<a href="#" style="text-decoration:none;color:inherit;padding:12px 0"><span style="display:block;font-size:12.5px;color:color-mix(in srgb,var(--color-text) 70%,transparent)">02 jul · tiradentes</span><span>pedra, ferro e um café</span></a>
+</nav></aside>
+<article class="glass" style="padding:0;overflow:hidden;max-width:760px">
+<div class="photo" style="aspect-ratio:16/9"><em>foto · arpoador, 6h</em></div>
+<div style="padding:28px 36px 36px">
+<div style="display:flex;justify-content:space-between;font-size:13px;color:color-mix(in srgb,var(--color-text) 70%,transparent)"><span>04 set 2026 · rio de janeiro</span><a href="#1b" style="text-decoration:none;color:var(--lb-700)">ver no mapa →</a></div>
+<h2 class="h1" style="font-size:36px;margin-top:12px;letter-spacing:-.015em">corpo e mente antes do trabalho</h2>
+<p class="p" style="font-size:17px;line-height:28px;margin-top:20px;max-width:58ch">nadar antes de abrir o laptop muda o dia inteiro. a água do arpoador às seis está gelada o suficiente pra acordar tudo, e o silêncio da cidade antes do trânsito é o melhor lugar pra pensar.</p>
+<p class="p" style="font-size:17px;line-height:28px;margin-top:14px;max-width:58ch">anotei três ideias sobre acessibilidade em three.js enquanto secava no sol. uma delas vira este diário. as outras duas, talvez vídeos no canal.</p>
+<blockquote style="font-style:italic;font-size:22px;line-height:32px;margin:28px 0 0;max-width:34ch;color:var(--lb-900)">“o corpo primeiro. a mente chega depois, mais leve.”</blockquote>
+</div></article>
+</div></div></div></div>
+
+</div>
+<p class="dv-next">Try next: "menos vidro, só a barra e o mapa em <a class="dv-oid" href="#1a">1a</a>" · "campo azul mais forte, quase cobalto cheio" · "mostrar o mapa em 3D com three.js" · "versão en/ja da home"</p>
+</section>
+</x-dc>
+</body>
+</html>
