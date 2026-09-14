@@ -36,7 +36,6 @@
   });
 
   const rebind = () => bindMapDepth(field, synth);
-  rebind();
   document.addEventListener('astro:page-load', rebind);
   document.addEventListener('astro:before-preparation', () => synth.swell());
 
@@ -45,7 +44,7 @@
     const start = performance.now();
     setInterval(() => {
       const lb = engine.lowBand();
-      field!.setBreath(lb > 0 ? lb : 0.5 + 0.5 * Math.sin((performance.now() - start) / 4000));
+      field!.setBreath(lb > 0 ? lb : 0.5 + 0.5 * Math.sin(((performance.now() - start) / 4000) * 2 * Math.PI));
     }, 100);
   }
 </script>
