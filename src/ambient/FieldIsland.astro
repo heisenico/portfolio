@@ -2,26 +2,52 @@
 <script>
   import { startField } from './field';
   import { wireSound } from '../sound/wire';
+  import { createSynth, makePlayTone } from '../sound/synth';
+  import { bindMapDepth } from './mapDepth';
 
   const canvas = document.getElementById('field-canvas') as HTMLCanvasElement | null;
+  let field: ReturnType<typeof startField> = null;
   if (canvas && !canvas.dataset.started) {
     canvas.dataset.started = '1';
-    const field = startField(canvas);
+    field = startField(canvas);
     if (!field) {
       canvas.remove(); // CSS field beneath takes over
     } else {
       (window as any).__field = field; // Task 11/12 attach audio + glow here
-      const sync = () => field.setAnchor(document.body.dataset.fieldAnchor === 'diario' ? 'diario' : 'home');
+      const sync = () => field!.setAnchor(document.body.dataset.fieldAnchor === 'diario' ? 'diario' : 'home');
       sync();
       document.addEventListener('astro:page-load', sync);
       addEventListener('pointermove', (e) => {
-        field.setPointer((e.clientX / innerWidth) * 2 - 1, (e.clientY / innerHeight) * 2 - 1);
+        field!.setPointer((e.clientX / innerWidth) * 2 - 1, (e.clientY / innerHeight) * 2 - 1);
       }, { passive: true });
     }
   }
 
   const engine = wireSound(import.meta.env.BASE_URL);
   (window as any).__sound = engine;
+
+  let synthCtx: AudioContext | null = null;
+  const synth = createSynth({
+    getState: () => engine.getState(),
+    playTone: (f, d, g) => {
+      synthCtx ??= new AudioContext();
+      makePlayTone(synthCtx)(f, d, g);
+    },
+  });
+
+  const rebind = () => bindMapDepth(field, synth);
+  rebind();
+  document.addEventListener('astro:page-load', rebind);
+  document.addEventListener('astro:before-preparation', () => synth.swell());
+
+  /* breathing: poll lowBand; fall back to a slow sine when silent */
+  if (field) {
+    const start = performance.now();
+    setInterval(() => {
+      const lb = engine.lowBand();
+      field!.setBreath(lb > 0 ? lb : 0.5 + 0.5 * Math.sin((performance.now() - start) / 4000));
+    }, 100);
+  }
 </script>
 <style>
   canvas { position: fixed; inset: 0; z-index: -2; width: 100%; height: 100%; pointer-events: none; }
