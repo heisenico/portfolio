@@ -38,7 +38,9 @@ export function startField(canvas: HTMLCanvasElement): FieldHandle | null {
 
   const scene = new THREE.Scene();
   const camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
-  scene.add(new THREE.Mesh(new THREE.PlaneGeometry(2, 2), new THREE.ShaderMaterial({ uniforms, vertexShader, fragmentShader })));
+  const geometry = new THREE.PlaneGeometry(2, 2);
+  const material = new THREE.ShaderMaterial({ uniforms, vertexShader, fragmentShader });
+  scene.add(new THREE.Mesh(geometry, material));
 
   const resize = () => {
     renderer.setSize(innerWidth, innerHeight, false);
@@ -60,10 +62,13 @@ export function startField(canvas: HTMLCanvasElement): FieldHandle | null {
   };
   const onVisibility = () => {
     if (document.hidden) cancelAnimationFrame(raf);
-    else raf = requestAnimationFrame(frame);
+    else {
+      cancelAnimationFrame(raf);
+      raf = requestAnimationFrame(frame);
+    }
   };
   document.addEventListener('visibilitychange', onVisibility);
-  raf = requestAnimationFrame(frame);
+  if (!document.hidden) raf = requestAnimationFrame(frame);
 
   return {
     setAnchor: (a) => target.anchor.copy(ANCHORS[a]),
@@ -74,6 +79,8 @@ export function startField(canvas: HTMLCanvasElement): FieldHandle | null {
       cancelAnimationFrame(raf);
       removeEventListener('resize', resize);
       document.removeEventListener('visibilitychange', onVisibility);
+      geometry.dispose();
+      material.dispose();
       renderer.dispose();
     },
   };
