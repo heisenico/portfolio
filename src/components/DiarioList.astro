@@ -27,6 +27,8 @@ const [introPre, introPost] = t.diarioIntro.split('{youtube}');
   </div>
 </div>
 <script>
+  import { navigate } from 'astro:transitions/client';
+
   function applyFilter() {
     const chip = document.querySelector<HTMLElement>('[data-chip]');
     const wrap = document.querySelector<HTMLElement>('[data-entries]');
@@ -43,7 +45,7 @@ const [introPre, introPost] = t.diarioIntro.split('{youtube}');
   }
   document.addEventListener('astro:page-load', applyFilter);
   document.addEventListener('click', (e) => {
-    if ((e.target as HTMLElement).closest('[data-chip-clear]')) location.search = '';
+    if ((e.target as HTMLElement).closest('[data-chip-clear]')) navigate(location.pathname);
   });
 </script>
 <style>

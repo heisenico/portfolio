@@ -12,6 +12,8 @@ export interface SoundEngine {
   handleFirstGesture(): void;
   toggle(): void;
   getState(): SoundState;
+  /** True once a first gesture happened and the stored preference isn't 'paused' — gates interaction sounds even when the ambient track is unavailable. */
+  soundEnabled(): boolean;
   subscribe(cb: (s: SoundState) => void): () => void;
   lowBand(): number;
 }
@@ -47,14 +49,21 @@ export function createSoundEngine(deps: EngineDeps): SoundEngine {
 
   return {
     handleFirstGesture() {
-      if (gestured || state === 'unavailable') return;
+      if (gestured) return;
       gestured = true;
+      if (state === 'unavailable') return; // no audio graph to start, but the gesture still counts
       if (deps.storage.getItem(KEY) === 'paused') set('paused');
       else play();
     },
     toggle() {
-      if (state === 'unavailable') return;
       gestured = true;
+      if (state === 'unavailable') {
+        // no audio to (un)pause — just flip the remembered preference so interaction sounds can mute/unmute
+        const next = deps.storage.getItem(KEY) === 'paused' ? 'playing' : 'paused';
+        deps.storage.setItem(KEY, next);
+        set(state);
+        return;
+      }
       if (state === 'playing') {
         audio.pause();
         deps.storage.setItem(KEY, 'paused');
@@ -64,6 +73,7 @@ export function createSoundEngine(deps: EngineDeps): SoundEngine {
       }
     },
     getState: () => state,
+    soundEnabled: () => gestured && deps.storage.getItem(KEY) !== 'paused',
     subscribe(cb) {
       subs.add(cb);
       return () => subs.delete(cb);

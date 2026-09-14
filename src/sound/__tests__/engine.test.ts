@@ -56,13 +56,16 @@ describe('máquina de estados do som', () => {
     expect(audio.play).toHaveBeenCalledTimes(2);
     expect(store.get('som')).toBe('playing');
   });
-  it('erro no áudio → unavailable, toggle vira no-op', () => {
-    const { deps, audio, listeners } = fakeDeps();
+  it('erro no áudio → unavailable; toggle não chama áudio, mas alterna a preferência', () => {
+    const { deps, audio, listeners, store } = fakeDeps();
     const e = createSoundEngine(deps);
     listeners['error']?.();
     expect(e.getState()).toBe('unavailable');
     e.toggle();
     expect(audio.play).not.toHaveBeenCalled();
+    expect(audio.pause).not.toHaveBeenCalled();
+    expect(store.get('som')).toBe('paused');
+    expect(e.getState()).toBe('unavailable');
   });
   it('gesto repetido não reinicia', () => {
     const { deps, audio } = fakeDeps();
@@ -102,5 +105,43 @@ describe('máquina de estados do som', () => {
     await Promise.resolve();
     await Promise.resolve();
     expect(e.getState()).toBe('unavailable');
+  });
+});
+
+describe('soundEnabled: sons de interação sobrevivem sem mp3', () => {
+  it('erro antes do gesto + handleFirstGesture sem preferência salva → soundEnabled true', () => {
+    const { deps, listeners } = fakeDeps();
+    const e = createSoundEngine(deps);
+    listeners['error']?.();
+    expect(e.getState()).toBe('unavailable');
+    expect(e.soundEnabled()).toBe(false);
+    e.handleFirstGesture();
+    expect(e.soundEnabled()).toBe(true);
+  });
+  it('erro antes do gesto + preferência pausada salva → soundEnabled continua false', () => {
+    const { deps, listeners, store } = fakeDeps();
+    store.set('som', 'paused');
+    const e = createSoundEngine(deps);
+    listeners['error']?.();
+    e.handleFirstGesture();
+    expect(e.soundEnabled()).toBe(false);
+  });
+  it('toggle() durante unavailable alterna a preferência e soundEnabled()', () => {
+    const { deps, audio, listeners, store } = fakeDeps();
+    const e = createSoundEngine(deps);
+    listeners['error']?.();
+    e.handleFirstGesture();
+    expect(e.soundEnabled()).toBe(true);
+
+    e.toggle();
+    expect(store.get('som')).toBe('paused');
+    expect(e.soundEnabled()).toBe(false);
+    expect(e.getState()).toBe('unavailable');
+    expect(audio.play).not.toHaveBeenCalled();
+
+    e.toggle();
+    expect(store.get('som')).toBe('playing');
+    expect(e.soundEnabled()).toBe(true);
+    expect(audio.play).not.toHaveBeenCalled();
   });
 });

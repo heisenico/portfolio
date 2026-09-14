@@ -12,30 +12,8 @@ const latest = await latestEntry(locale);
 const [footerPre, footerPost] = t.footerExperiment.split('{github}');
 ---
 <div class="home">
-  <div class="col-left">
-    <h1>{t.h1Lines[0]}<br />{t.h1Lines[1]}</h1>
-    {t.bio.map((p) => <p class="bio">{p}</p>)}
-
-    <section class="convite">
-      <p class="kicker">{t.conviteKicker}</p>
-      <p class="convite-intro">{t.conviteIntro}</p>
-      <ul class="convite-links">
-        {t.links.map((l) => (
-          <li><a href={l.href} rel="me"><b>{l.label}</b><span>{l.note}</span></a></li>
-        ))}
-      </ul>
-    </section>
-
-    <a class="glass diario-cta" href={localeUrl(locale, '/diario/')}>
-      <span class="cta-title">{t.diarioCta}</span>
-      {latest && <span class="cta-latest">{t.diarioLast(formatDayMonth(latest.entry.data.date, locale))}</span>}
-    </a>
-
-    <footer>
-      <p>{footerPre}<a class="footer-gh" href="https://github.com/heisenico/portfolio">github</a>{footerPost}</p>
-      <p class="footer-sound"><i>{t.footerSound}</i></p>
-    </footer>
-  </div>
+  <h1>{t.h1Lines[0]}<br />{t.h1Lines[1]}</h1>
+  {t.bio.map((p) => <p class="bio">{p}</p>)}
 
   <figure class="glass map-figure" id="mapa" data-tilt>
     <figcaption class="map-head">
@@ -49,6 +27,26 @@ const [footerPre, footerPost] = t.footerExperiment.split('{github}');
       <span class="caption-desktop-b">{t.mapCaptionDesktopB}</span>
     </p>
   </figure>
+
+  <section class="convite">
+    <p class="kicker">{t.conviteKicker}</p>
+    <p class="convite-intro">{t.conviteIntro}</p>
+    <ul class="convite-links">
+      {t.links.map((l) => (
+        <li><a href={l.href} rel="me"><b>{l.label}</b><span>{l.note}</span></a></li>
+      ))}
+    </ul>
+  </section>
+
+  <a class="glass diario-cta" href={localeUrl(locale, '/diario/')}>
+    <span class="cta-title">{t.diarioCta}</span>
+    {latest && <span class="cta-latest">{t.diarioLast(formatDayMonth(latest.entry.data.date, locale))}</span>}
+  </a>
+
+  <footer>
+    <p>{footerPre}<a class="footer-gh" href="https://github.com/heisenico/portfolio">github</a>{footerPost}</p>
+    <p class="footer-sound"><i>{t.footerSound}</i></p>
+  </footer>
 </div>
 <style>
   .home { padding: 0 20px 28px; }
@@ -75,14 +73,14 @@ const [footerPre, footerPost] = t.footerExperiment.split('{github}');
 
   @media (min-width: 1024px) {
     .home { display: grid; grid-template-columns: 5fr 7fr; column-gap: 64px; padding: 0 56px 48px; }
-    .col-left { max-width: 52ch; padding-top: 96px; }
-    h1 { font-size: 88px; margin-left: -0.035em; margin-top: 0; }
+    .home > :not(.map-figure) { grid-column: 1; max-width: 52ch; }
+    h1 { font-size: 88px; margin-left: -0.035em; margin-top: 96px; }
     .bio { font-size: 17px; line-height: 28px; }
     .bio:first-of-type { margin-top: 36px; }
     .convite-links { display: grid; grid-template-columns: 1fr 1fr; column-gap: 24px; }
     .convite-links a { flex-direction: column; align-items: flex-start; gap: 2px; }
     footer { margin-top: 56px; }
-    .map-figure { padding: 24px 28px 20px; margin-top: 72px; position: sticky; top: 24px; }
+    .map-figure { grid-column: 2; grid-row: 1 / span 7; padding: 24px 28px 20px; margin-top: 72px; position: sticky; top: 24px; }
     .map-count { display: inline; font-size: 13px; color: var(--lb-700); }
     .map-caption > span:first-child { display: none; }
     .map-caption { display: flex; justify-content: space-between; }

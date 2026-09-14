@@ -28,7 +28,7 @@
 
   let synthCtx: AudioContext | null = null;
   const synth = createSynth({
-    getState: () => engine.getState(),
+    enabled: () => engine.soundEnabled(),
     playTone: (f, d, g) => {
       synthCtx ??= new AudioContext();
       makePlayTone(synthCtx)(f, d, g);

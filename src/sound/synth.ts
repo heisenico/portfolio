@@ -1,5 +1,6 @@
 export interface SynthDeps {
-  getState: () => 'idle' | 'playing' | 'paused' | 'unavailable';
+  /** True when interaction sounds should play — independent of whether the ambient track loaded. */
+  enabled: () => boolean;
   /** (freq, durationSec, gainPeak) — injected; real impl uses WebAudio */
   playTone: (freq: number, duration: number, gain: number) => void;
 }
@@ -9,12 +10,12 @@ const SCALE = [220, 261.63, 293.66, 329.63, 392, 440, 523.25, 587.33];
 
 export function createSynth(deps: SynthDeps) {
   const gated = (fn: () => void) => () => {
-    if (deps.getState() === 'playing') fn();
+    if (deps.enabled()) fn();
   };
   return {
     tick: gated(() => deps.playTone(SCALE[5]!, 0.06, 0.03)),
     tap(index: number) {
-      if (deps.getState() !== 'playing') return;
+      if (!deps.enabled()) return;
       deps.playTone(SCALE[index % SCALE.length]!, 0.18, 0.06);
       deps.playTone(SCALE[index % SCALE.length]! * 2, 0.12, 0.02);
     },
