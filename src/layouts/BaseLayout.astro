@@ -4,6 +4,7 @@ import '../styles/tokens.css';
 import '../styles/base.css';
 import { ClientRouter } from 'astro:transitions';
 import Header from '../components/Header.astro';
+import FieldIsland from '../ambient/FieldIsland.astro';
 
 interface Props {
   locale: Locale;
@@ -33,6 +34,7 @@ const t = getStrings(locale);
   <body data-field-anchor={fieldAnchor}>
     <a class="skip-link" href="#conteudo">{t.skipLink}</a>
     <div class="field-css" aria-hidden="true"></div>
+    <FieldIsland />
     <div class="halftone-overlay" aria-hidden="true"></div>
     <Header locale={locale} path={path} />
     <main id="conteudo">

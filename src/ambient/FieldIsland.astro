@@ -1,0 +1,24 @@
+<canvas id="field-canvas" transition:persist="field" aria-hidden="true"></canvas>
+<script>
+  import { startField } from './field';
+
+  const canvas = document.getElementById('field-canvas') as HTMLCanvasElement | null;
+  if (canvas && !canvas.dataset.started) {
+    canvas.dataset.started = '1';
+    const field = startField(canvas);
+    if (!field) {
+      canvas.remove(); // CSS field beneath takes over
+    } else {
+      (window as any).__field = field; // Task 11/12 attach audio + glow here
+      const sync = () => field.setAnchor(document.body.dataset.fieldAnchor === 'diario' ? 'diario' : 'home');
+      sync();
+      document.addEventListener('astro:page-load', sync);
+      addEventListener('pointermove', (e) => {
+        field.setPointer((e.clientX / innerWidth) * 2 - 1, (e.clientY / innerHeight) * 2 - 1);
+      }, { passive: true });
+    }
+  }
+</script>
+<style>
+  canvas { position: fixed; inset: 0; z-index: -2; width: 100%; height: 100%; pointer-events: none; }
+</style>
