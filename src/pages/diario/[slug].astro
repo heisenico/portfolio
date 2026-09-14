@@ -1,0 +1,16 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import EntryPage from '../../components/EntryPage.astro';
+import { listEntries } from '../../content/entries';
+import { getStrings } from '../../i18n';
+
+export async function getStaticPaths() {
+  const all = await listEntries('pt');
+  return all.map((item) => ({ params: { slug: item.slug }, props: { item, all } }));
+}
+const { item, all } = Astro.props;
+const t = getStrings('pt');
+---
+<BaseLayout locale="pt" title={`${item.entry.data.title} — ${t.brand}`} path={`/diario/${item.slug}/`} fieldAnchor="diario">
+  <EntryPage locale="pt" item={item} all={all} />
+</BaseLayout>

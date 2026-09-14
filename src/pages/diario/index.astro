@@ -1,0 +1,9 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import DiarioList from '../../components/DiarioList.astro';
+import { getStrings } from '../../i18n';
+const t = getStrings('pt');
+---
+<BaseLayout locale="pt" title={`${t.diarioCta} — ${t.brand}`} path="/diario/" fieldAnchor="diario">
+  <DiarioList locale="pt" />
+</BaseLayout>

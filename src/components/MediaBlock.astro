@@ -1,0 +1,45 @@
+---
+import type { EntryData } from '../content/schema';
+interface Props { media: NonNullable<EntryData['media']>; ratio?: string }
+const { media, ratio = '4 / 3' } = Astro.props;
+---
+{media.type === 'photo' && (
+  media.src
+    ? <img src={media.src} alt={media.alt} style={`aspect-ratio:${ratio}`} />
+    : <div class="ph" role="img" aria-label={media.alt} style={`aspect-ratio:${ratio}`}></div>
+)}
+{media.type === 'gallery' && (
+  <div class="gallery">
+    {media.items.map((it) => (
+      <div class="thumb">
+        {it.src
+          ? <img src={it.src} alt={it.alt} />
+          : <div class="ph square" role="img" aria-label={it.alt}></div>}
+        {it.video && <span class="play" aria-hidden="true">▶</span>}
+      </div>
+    ))}
+  </div>
+)}
+{media.type === 'video' && (
+  <a class="video" href={media.url} aria-label={media.alt}>
+    <div class="ph" style={`aspect-ratio:${ratio}`}></div>
+    <span class="play" aria-hidden="true">▶</span>
+  </a>
+)}
+<style>
+  img, .ph { width: 100%; display: block; object-fit: cover; }
+  .ph {
+    background: linear-gradient(135deg, var(--lb-200), var(--lb-400));
+    background-image: radial-gradient(circle, rgba(14,23,80,.18) 30%, transparent 32%), linear-gradient(135deg, var(--lb-200), var(--lb-400));
+    background-size: 3px 3px, cover;
+    background-blend-mode: multiply, normal;
+  }
+  .gallery { display: flex; gap: 8px; }
+  .thumb { position: relative; flex: 1; border-radius: var(--radius-thumb); overflow: hidden; }
+  .ph.square { aspect-ratio: 1; }
+  .play {
+    position: absolute; inset: 0; margin: auto; width: 36px; height: 36px;
+    display: grid; place-items: center; border-radius: 50%;
+    background: rgba(255,255,255,.85); color: var(--lb); font-size: 12px;
+  }
+</style>

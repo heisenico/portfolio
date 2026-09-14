@@ -1,0 +1,37 @@
+---
+import { formatEntryDate, getStrings, localeUrl, type Locale } from '../i18n';
+import { PLACES } from '../map/places';
+import type { DiaryEntry } from '../content/entries';
+import MediaBlock from './MediaBlock.astro';
+
+interface Props { locale: Locale; item: DiaryEntry; excerpt: string }
+const { locale, item, excerpt } = Astro.props;
+const t = getStrings(locale);
+const { data } = item.entry;
+---
+<article class="glass card" data-place={data.place}>
+  {data.media?.type === 'photo' && <MediaBlock media={data.media} />}
+  <div class="body">
+    <p class="meta">
+      <span>{formatEntryDate(data.date, locale)} · {PLACES[data.place].label}</span>
+      <span class="meta-right">
+        {item.fromPt && <span class="tag-pt">{t.inPortuguese}</span>}
+        <span class="node-ref">nó: {PLACES[data.place].label.split(' ')[0]}</span>
+      </span>
+    </p>
+    <h2><a href={localeUrl(locale, `/diario/${item.slug}/`)}>{data.title}</a></h2>
+    {data.media && data.media.type !== 'photo' && <div class="media-inline"><MediaBlock media={data.media} /></div>}
+    <p class="excerpt">{excerpt}</p>
+  </div>
+</article>
+<style>
+  .body { padding: 16px 18px 18px; }
+  .meta { display: flex; justify-content: space-between; font-size: 12.5px; color: color-mix(in srgb, var(--color-text) 70%, transparent); }
+  .meta-right { display: flex; gap: 8px; }
+  .node-ref { color: var(--lb-700); }
+  .tag-pt { color: var(--lb-700); border: 1px solid var(--lb-300); border-radius: var(--radius-pill); padding: 0 8px; }
+  h2 { font-size: 22px; font-weight: 600; letter-spacing: -0.01em; margin-top: 8px; }
+  h2 a { color: var(--color-text); }
+  .media-inline { margin-top: 12px; }
+  .excerpt { font-size: 15px; line-height: 24px; margin-top: 8px; }
+</style>

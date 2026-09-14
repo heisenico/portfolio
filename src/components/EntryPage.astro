@@ -1,0 +1,78 @@
+---
+import { formatEntryDate, getStrings, localeUrl, type Locale } from '../i18n';
+import { PLACES } from '../map/places';
+import { render, type DiaryEntry } from '../content/entries';
+import MediaBlock from './MediaBlock.astro';
+
+interface Props { locale: Locale; item: DiaryEntry; all: DiaryEntry[] }
+const { locale, item, all } = Astro.props;
+const t = getStrings(locale);
+const { data } = item.entry;
+const { Content } = await render(item.entry);
+---
+<div class="entry-grid">
+  <aside>
+    <p class="kicker">{t.diarioKicker}</p>
+    <h1>{t.diarioH1}</h1>
+    <nav class="entry-nav" aria-label={t.diarioKicker}>
+      {all.map((e) => (
+        <a href={localeUrl(locale, `/diario/${e.slug}/`)} aria-current={e.slug === item.slug ? 'page' : undefined}>
+          <span class="nav-meta">{formatEntryDate(e.entry.data.date, locale)} · {PLACES[e.entry.data.place].label}</span>
+          <span class="nav-title">{e.entry.data.title}</span>
+        </a>
+      ))}
+    </nav>
+  </aside>
+  <article class="glass">
+    {data.media?.type === 'photo' && <MediaBlock media={data.media} ratio="16 / 9" />}
+    <div class="body">
+      <p class="meta">
+        <span>{formatEntryDate(data.date, locale)} · {PLACES[data.place].label}</span>
+        <a href={`${localeUrl(locale, '/')}#mapa`}>{t.seeOnMap}</a>
+      </p>
+      <h2>{data.title}</h2>
+      {data.media && data.media.type !== 'photo' && <MediaBlock media={data.media} />}
+      <div class="prose"><Content /></div>
+    </div>
+  </article>
+</div>
+<style>
+  /* mobile: single column, article shown before the nav (order:-1 puts it first
+     visually while the aside stays first in source/DOM order for desktop's grid) */
+  .entry-grid { display: flex; flex-direction: column; padding: 0 20px 28px; }
+  article.glass { order: -1; max-width: 760px; }
+  aside { order: 0; margin-top: 32px; }
+
+  .kicker { font-size: 12px; text-transform: uppercase; letter-spacing: 0.08em; color: color-mix(in srgb, var(--color-text) 70%, transparent); margin-top: 48px; }
+  aside h1 { font-size: 34px; margin-top: 8px; }
+
+  .entry-nav { margin-top: 24px; }
+  .entry-nav a { display: block; padding: 12px 0; }
+  .nav-meta { font-size: 12.5px; color: color-mix(in srgb, var(--color-text) 70%, transparent); display: block; }
+  .nav-title { font-weight: 600; }
+  .entry-nav a[aria-current] {
+    padding: 12px 14px; margin: 0 -14px;
+    background: rgba(255,255,255,.52); border: 1px solid rgba(255,255,255,.72);
+    border-radius: var(--radius-nav);
+  }
+
+  .body { padding: 28px 36px 36px; }
+  .meta { display: flex; justify-content: space-between; align-items: baseline; font-size: 12.5px; color: color-mix(in srgb, var(--color-text) 70%, transparent); }
+  h2 { font-size: 36px; letter-spacing: -0.015em; margin-top: 12px; }
+  h2 + :global(.gallery), h2 + :global(.video) { margin-top: 16px; }
+  .prose { font-size: 17px; line-height: 28px; max-width: 58ch; margin-top: 20px; }
+  .prose :global(p + p) { margin-top: 16px; }
+  .prose :global(blockquote) {
+    font-style: italic; font-size: 22px; line-height: 32px;
+    color: var(--lb-900); max-width: 34ch; margin-top: 28px;
+  }
+
+  @media (min-width: 1024px) {
+    .entry-grid {
+      display: grid; grid-template-columns: 300px 1fr; gap: 72px;
+      margin-top: 72px; padding: 0 56px 56px;
+    }
+    article.glass { order: 0; }
+    aside { margin-top: 0; }
+  }
+</style>
