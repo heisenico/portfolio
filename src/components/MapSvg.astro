@@ -1,0 +1,40 @@
+---
+import { getStrings, localeUrl, type Locale } from '../i18n';
+import { EDGES, EDGE_NEXT, PLACES, PLACE_IDS, ROOT, type PlaceId } from '../map/places';
+
+interface Props { locale: Locale; counts: Record<PlaceId, number> }
+const { locale, counts } = Astro.props;
+const t = getStrings(locale);
+---
+<svg viewBox="0 0 100 100" width="100%" role="group" aria-label={t.mapKicker} data-map>
+  <path d={EDGES} fill="none" stroke="var(--lb-700)" stroke-width="0.5" opacity="0.55" />
+  <path d={EDGE_NEXT} fill="none" stroke="var(--lb-700)" stroke-width="0.5" opacity="0.55" stroke-dasharray="1.5 1.5" />
+  {PLACE_IDS.map((id) => {
+    const p = PLACES[id];
+    return (
+      <a href={`${localeUrl(locale, '/diario/')}?lugar=${id}`} aria-label={t.nodeAriaLabel(p.label, counts[id])} data-node={id}>
+        {id === ROOT && <circle cx={p.cx} cy={p.cy} r="4.2" fill="var(--lb)" opacity="0.18" />}
+        <circle
+          cx={p.cx} cy={p.cy}
+          r={id === ROOT ? 2.4 : 1.5}
+          fill={p.next ? '#fff' : 'var(--lb)'}
+          stroke={p.next ? 'var(--lb)' : '#fff'}
+          stroke-width="1.2"
+          stroke-dasharray={p.next ? '1.6 1.2' : undefined}
+          class={id === ROOT ? 'dot root' : 'dot'}
+        />
+        <circle cx={p.cx} cy={p.cy} r="6.5" fill="transparent" class="hit" />
+        <text x={p.cx + 2.8 + (p.labelDx ?? 0)} y={p.cy + 1 + (p.labelDy ?? 0)} class="label">{p.label}</text>
+      </a>
+    );
+  })}
+</svg>
+<style>
+  a { outline-offset: 2px; }
+  a:hover .dot, a:focus-visible .dot { filter: brightness(1.15); }
+  .label { font-style: italic; font-size: 3.3px; fill: var(--color-text); }
+  @media (min-width: 1024px) {
+    .label { font-size: 2.6px; }
+    .dot:not(.root) { r: 1.3; }
+  }
+</style>

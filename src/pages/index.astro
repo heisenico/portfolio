@@ -1,6 +1,9 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
+import HomePage from '../components/HomePage.astro';
+import { getStrings } from '../i18n';
+const t = getStrings('pt');
 ---
-<BaseLayout locale="pt" title="nicholas ferrer" path="/" fieldAnchor="home">
-  <h1>nicholas ferrer</h1>
+<BaseLayout locale="pt" title={t.brand} description={t.bio[0]} path="/" fieldAnchor="home">
+  <HomePage locale="pt" />
 </BaseLayout>

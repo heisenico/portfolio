@@ -1,0 +1,91 @@
+---
+import { formatDayMonth, getStrings, localeUrl, type Locale } from '../i18n';
+import { countByPlace, latestEntry } from '../content/entries';
+import { PLACE_IDS } from '../map/places';
+import MapSvg from './MapSvg.astro';
+
+interface Props { locale: Locale }
+const { locale } = Astro.props;
+const t = getStrings(locale);
+const counts = await countByPlace();
+const latest = await latestEntry(locale);
+const [footerPre, footerPost] = t.footerExperiment.split('{github}');
+---
+<div class="home">
+  <div class="col-left">
+    <h1>{t.h1Lines[0]}<br />{t.h1Lines[1]}</h1>
+    {t.bio.map((p) => <p class="bio">{p}</p>)}
+
+    <section class="convite">
+      <p class="kicker">{t.conviteKicker}</p>
+      <p class="convite-intro">{t.conviteIntro}</p>
+      <ul class="convite-links">
+        {t.links.map((l) => (
+          <li><a href={l.href} rel="me"><b>{l.label}</b><span>{l.note}</span></a></li>
+        ))}
+      </ul>
+    </section>
+
+    <a class="glass diario-cta" href={localeUrl(locale, '/diario/')}>
+      <span class="cta-title">{t.diarioCta}</span>
+      {latest && <span class="cta-latest">{t.diarioLast(formatDayMonth(latest.entry.data.date, locale))}</span>}
+    </a>
+
+    <footer>
+      <p>{footerPre}<a class="footer-gh" href="https://github.com/heisenico/portfolio">github</a>{footerPost}</p>
+      <p class="footer-sound"><i>{t.footerSound}</i></p>
+    </footer>
+  </div>
+
+  <figure class="glass map-figure" id="mapa" data-tilt>
+    <figcaption class="map-head">
+      <span class="kicker">{t.mapKicker}</span>
+      <span class="map-count">{t.mapCountLine(PLACE_IDS.length - 1)}</span>
+    </figcaption>
+    <MapSvg locale={locale} counts={counts} />
+    <p class="map-caption">
+      <span>{t.mapCaptionMobile}</span>
+      <span class="caption-desktop-a">{t.mapCaptionDesktopA}</span>
+      <span class="caption-desktop-b">{t.mapCaptionDesktopB}</span>
+    </p>
+  </figure>
+</div>
+<style>
+  .home { padding: 0 20px 28px; }
+  h1 { font-weight: 600; font-size: 54px; line-height: 1.05; letter-spacing: -0.02em; margin-top: 56px; }
+  .bio { font-size: 16px; line-height: 26px; color: color-mix(in srgb, var(--color-text) 82%, transparent); margin-top: 14px; }
+  .bio:first-of-type { margin-top: 22px; }
+  .kicker { font-size: 12px; text-transform: uppercase; letter-spacing: 0.08em; color: color-mix(in srgb, var(--color-text) 70%, transparent); }
+  .convite { margin-top: 44px; }
+  .convite-intro { font-style: italic; margin-top: 6px; }
+  .convite-links { list-style: none; padding: 0; }
+  .convite-links a { display: flex; align-items: baseline; gap: 12px; padding: 10px 0; font-size: 16px; line-height: 26px; }
+  .convite-links b { color: var(--lb-700); min-width: 88px; font-weight: 700; }
+  .convite-links span { font-size: 14.5px; color: color-mix(in srgb, var(--color-text) 70%, transparent); }
+  .diario-cta { display: flex; justify-content: space-between; align-items: center; margin-top: 40px; padding: 16px 18px; }
+  .cta-title { font-weight: 600; font-size: 18px; color: var(--color-text); }
+  .cta-latest { color: var(--lb-700); font-size: 14px; }
+  footer { margin-top: 40px; font-size: 13px; line-height: 21px; color: color-mix(in srgb, var(--color-text) 70%, transparent); }
+  .footer-gh { text-decoration: underline; }
+  .footer-sound { margin-top: 12px; }
+  .map-figure { margin-top: 44px; padding: 18px 18px 14px; }
+  .map-head { display: flex; justify-content: space-between; align-items: baseline; }
+  .map-count, .caption-desktop-a, .caption-desktop-b { display: none; }
+  .map-caption { font-size: 13px; line-height: 20px; color: color-mix(in srgb, var(--color-text) 70%, transparent); margin-top: 8px; }
+
+  @media (min-width: 1024px) {
+    .home { display: grid; grid-template-columns: 5fr 7fr; column-gap: 64px; padding: 0 56px 48px; }
+    .col-left { max-width: 52ch; padding-top: 96px; }
+    h1 { font-size: 88px; margin-left: -0.035em; margin-top: 0; }
+    .bio { font-size: 17px; line-height: 28px; }
+    .bio:first-of-type { margin-top: 36px; }
+    .convite-links { display: grid; grid-template-columns: 1fr 1fr; column-gap: 24px; }
+    .convite-links a { flex-direction: column; align-items: flex-start; gap: 2px; }
+    footer { margin-top: 56px; }
+    .map-figure { padding: 24px 28px 20px; margin-top: 72px; position: sticky; top: 24px; }
+    .map-count { display: inline; font-size: 13px; color: var(--lb-700); }
+    .map-caption > span:first-child { display: none; }
+    .map-caption { display: flex; justify-content: space-between; }
+    .caption-desktop-a, .caption-desktop-b { display: inline; }
+  }
+</style>
