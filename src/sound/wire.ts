@@ -26,9 +26,15 @@ export function wireSound(base: string): SoundEngine {
     },
   });
 
-  const gesture = () => engine.handleFirstGesture();
-  addEventListener('pointerdown', gesture, { once: true });
-  addEventListener('keydown', gesture, { once: true });
+  const gesture = (e: Event) => {
+    const t = e.target;
+    if (t instanceof Element && t.closest('#sound-toggle')) return; // toggle() owns this interaction
+    engine.handleFirstGesture();
+    removeEventListener('pointerdown', gesture);
+    removeEventListener('keydown', gesture);
+  };
+  addEventListener('pointerdown', gesture);
+  addEventListener('keydown', gesture);
 
   const syncButton = () => {
     const btn = document.getElementById('sound-toggle');

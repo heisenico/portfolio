@@ -85,4 +85,22 @@ describe('máquina de estados do som', () => {
     e.toggle();
     expect(seen).toEqual(['playing', 'paused']);
   });
+  it('AbortError do play() interrompido não marca unavailable', async () => {
+    const { deps, audio } = fakeDeps();
+    audio.play.mockRejectedValue(Object.assign(new Error('x'), { name: 'AbortError' }));
+    const e = createSoundEngine(deps);
+    e.handleFirstGesture();
+    await Promise.resolve();
+    await Promise.resolve();
+    expect(e.getState()).not.toBe('unavailable');
+  });
+  it('erro real no play() marca unavailable', async () => {
+    const { deps, audio } = fakeDeps();
+    audio.play.mockRejectedValue(new Error('boom'));
+    const e = createSoundEngine(deps);
+    e.handleFirstGesture();
+    await Promise.resolve();
+    await Promise.resolve();
+    expect(e.getState()).toBe('unavailable');
+  });
 });

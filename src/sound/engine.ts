@@ -36,7 +36,9 @@ export function createSoundEngine(deps: EngineDeps): SoundEngine {
 
   function play() {
     analyser ??= deps.connectAnalyser?.(audio) ?? null;
-    void audio.play().catch(() => set('unavailable'));
+    void audio.play().catch((err: unknown) => {
+      if (!(err instanceof Error && err.name === 'AbortError')) set('unavailable');
+    });
     if (state !== 'unavailable') {
       deps.storage.setItem(KEY, 'playing');
       set('playing');
