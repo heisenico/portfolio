@@ -48,3 +48,8 @@ a:hover { color: var(--lb); }
   background: #fff; color: var(--lb-700); padding: 8px 14px; border-radius: var(--radius-pill);
 }
 .skip-link:focus-visible { left: 8px; }
+
+.site-header { margin-inline: 20px; }
+@media (min-width: 1024px) {
+  .site-header { margin-inline: 56px; margin-top: 24px; }
+}

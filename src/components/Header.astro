@@ -1,0 +1,63 @@
+---
+import { LOCALES, getStrings, localeUrl, type Locale } from '../i18n';
+import SoundButton from './SoundButton.astro';
+
+interface Props { locale: Locale; path: string }
+const { locale, path } = Astro.props;
+const t = getStrings(locale);
+const isDiario = path.startsWith('/diario');
+---
+<header class="glass site-header">
+  <a class="brand" href={localeUrl(locale, '/')}>{t.brand}</a>
+  <nav class="desktop-nav" aria-label="principal">
+    <a href={localeUrl(locale, '/')} aria-current={!isDiario ? 'page' : undefined}>{t.navHome}</a>
+    <a href={localeUrl(locale, '/diario/')} aria-current={isDiario ? 'page' : undefined}>{t.navDiario}</a>
+  </nav>
+  <div class="header-right">
+    <nav class="lang-seg" aria-label="idioma">
+      {LOCALES.map((l) => (
+        <a
+          href={localeUrl(l, path)}
+          aria-current={l === locale ? 'true' : undefined}
+          data-lang={l}
+        >{{ pt: 'pt', en: 'en', fr: 'fr', es: 'es', zh: '中', ja: '日' }[l]}</a>
+      ))}
+    </nav>
+    <SoundButton locale={locale} />
+  </div>
+</header>
+<script>
+  document.addEventListener('click', (e) => {
+    const a = (e.target as HTMLElement).closest<HTMLAnchorElement>('.lang-seg a');
+    if (a?.dataset.lang) {
+      try { localStorage.setItem('lang', a.dataset.lang); } catch { /* preferência só não persiste */ }
+    }
+  });
+</script>
+<style>
+  .site-header {
+    display: flex; align-items: center; justify-content: space-between;
+    border-radius: var(--radius-pill);
+    padding: 10px 6px 10px 14px; margin-top: 14px;
+  }
+  .brand { font-weight: 600; font-size: 17px; white-space: nowrap; color: var(--color-text); }
+  .desktop-nav { display: none; }
+  .header-right { display: flex; align-items: center; gap: 8px; }
+  .lang-seg {
+    display: flex; gap: 2px; padding: 2px;
+    background: rgba(255,255,255,.4); border: 1px solid rgba(255,255,255,.72);
+    border-radius: var(--radius-pill);
+  }
+  .lang-seg a {
+    font-size: 11px; line-height: 24px; min-width: 26px; text-align: center;
+    color: var(--lb-700); border-radius: var(--radius-pill);
+  }
+  .lang-seg a[aria-current='true'] { background: var(--lb); color: #fff; }
+  @media (min-width: 1024px) {
+    .site-header { padding: 8px 10px 8px 20px; }
+    .desktop-nav { display: flex; gap: 28px; font-size: 15px; }
+    .desktop-nav a[aria-current='page'] { color: var(--color-text); }
+    .header-right { gap: 10px; }
+    .lang-seg a { font-size: 12px; min-width: 32px; }
+  }
+</style>

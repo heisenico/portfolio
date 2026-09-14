@@ -1,0 +1,32 @@
+---
+import { getStrings, type Locale } from '../i18n';
+interface Props { locale: Locale }
+const t = getStrings(Astro.props.locale);
+---
+<button
+  id="sound-toggle"
+  type="button"
+  aria-label={t.soundPaused}
+  data-label-playing={t.soundPlaying}
+  data-label-paused={t.soundPaused}
+  data-state="paused"
+>
+  <span class="bars" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
+</button>
+<style>
+  button {
+    width: 44px; height: 44px; display: grid; place-items: center;
+    background: none; border: none; cursor: pointer; border-radius: var(--radius-pill);
+  }
+  .bars { display: flex; gap: 3px; align-items: center; height: 12px; }
+  .bars i { width: 2px; height: 12px; background: var(--lb); transform: scaleY(0.6); }
+  button[data-state='playing'] .bars i { animation: bounce 1.1s ease-in-out infinite; }
+  button[data-state='playing'] .bars i:nth-child(1) { animation-delay: 0s; }
+  button[data-state='playing'] .bars i:nth-child(2) { animation-delay: .2s; }
+  button[data-state='playing'] .bars i:nth-child(3) { animation-delay: .4s; }
+  button[data-state='playing'] .bars i:nth-child(4) { animation-delay: .1s; }
+  @keyframes bounce { 0%, 100% { transform: scaleY(0.4); } 50% { transform: scaleY(1); } }
+  @media (prefers-reduced-motion: reduce) {
+    button[data-state='playing'] .bars i { animation: none; transform: scaleY(0.6); }
+  }
+</style>
