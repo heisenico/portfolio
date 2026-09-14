@@ -1,5 +1,4 @@
-name: Deploy to GitHub Pages
-
+name: deploy
 on:
   push:
     branches: [main]
@@ -10,47 +9,30 @@ permissions:
   pages: write
   id-token: write
 
-# Let an in-flight deploy finish rather than cancelling it mid-publish.
 concurrency:
   group: pages
-  cancel-in-progress: false
+  cancel-in-progress: true
 
 jobs:
-  build:
+  test:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-
       - uses: actions/setup-node@v4
-        with:
-          node-version: 20
-          cache: npm
-
+        with: { node-version: 22, cache: npm }
       - run: npm ci
-
-      - name: Typecheck and test
-        run: |
-          npm run typecheck
-          npm test
-
-      - name: Build
-        run: npm run build
-
-      - name: SPA fallback for deep links
-        run: cp dist/index.html dist/404.html
-
-      - uses: actions/configure-pages@v5
-
-      - uses: actions/upload-pages-artifact@v3
-        with:
-          path: dist
+      - run: npm test
+      - run: npx playwright install --with-deps chromium
+      - run: npx playwright test
 
   deploy:
-    needs: build
+    needs: test
     runs-on: ubuntu-latest
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
-      - id: deployment
-        uses: actions/deploy-pages@v4
+      - uses: actions/checkout@v4
+      - uses: withastro/action@v3
+      - uses: actions/deploy-pages@v4
+        id: deployment
